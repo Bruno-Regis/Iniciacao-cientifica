@@ -2,6 +2,6 @@
   <Project Path="api/DoctorPilot.Api/DoctorPilot.Api.csproj" />
   <Project Path="api/DoctorPilot.Application/DoctorPilot.Application.csproj" />
   <Project Path="api/DoctorPilot.Core/DoctorPilot.Core.csproj" />
-  <Project Path="Api/Infrastructure/DoctorPilot.Infrastructure.csproj" />
+  <Project Path="Api/DoctorPilot.Infrastructure/DoctorPilot.Infrastructure.csproj" />
   <Project Path="app/DoctorPilot.Web/DoctorPilot.Web.csproj" />
 </Solution>
