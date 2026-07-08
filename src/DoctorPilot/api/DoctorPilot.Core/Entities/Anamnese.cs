@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DoctorPilot.Core.Entities
+﻿namespace DoctorPilot.Core.Entities
 {
     public class Anamnese : BaseEntity
     {
@@ -12,11 +8,13 @@ namespace DoctorPilot.Core.Entities
             ProfissionalId = profissionalId;
             NomeDaAnamnese = nomeDaAnamnese;
             Observacoes = observacoes;
+            Sessoes = [];
         }
 
         public Guid PacienteId { get; set; }
         public Guid ProfissionalId { get; set; }
         public string NomeDaAnamnese { get; set; }
         public string? Observacoes { get; set; }
+        public List<AnamneseSessao> Sessoes { get; set; }
     }
 }

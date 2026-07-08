@@ -1,8 +1,4 @@
 ﻿using DoctorPilot.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DoctorPilot.Core.Entities
 {
     public class AnamneseSessao : BaseEntity
@@ -16,6 +12,7 @@ namespace DoctorPilot.Core.Entities
         }
 
         public Guid AnamneseId { get; set; }
+        public Anamnese Anamnese { get; set; }
         public string Pergunta { get; set; }
         public string Resposta { get; set; }
         public AnamneseSessaoTypeEnum Tipo { get; set; }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DoctorPilot.Core.Entities
+﻿namespace DoctorPilot.Core.Entities
 {
     public class ChatMensagem : BaseEntity
     {
@@ -14,6 +10,7 @@ namespace DoctorPilot.Core.Entities
         }
 
         public Guid ChatId { get; set; }
+        public Chat Chat { get; set; }
         public string Conteudo { get; set; }
         public TipoMensagemEnum TipoMensagem { get; set; }
     }

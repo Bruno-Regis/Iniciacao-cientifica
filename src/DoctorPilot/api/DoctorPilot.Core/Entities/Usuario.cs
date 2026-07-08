@@ -15,6 +15,7 @@ namespace DoctorPilot.Core.Entities
         }
 
         public Guid ClinicaId { get; set; }
+        public Clinica Clinica { get; set; }
         public string Email { get; set; }
         public string Senha { get; set; }
         public RoleEnum Role { get; set; }

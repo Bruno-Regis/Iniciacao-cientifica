@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DoctorPilot.Core.Entities
+﻿namespace DoctorPilot.Core.Entities
 {
     public class Chat : BaseEntity
     {
@@ -10,9 +6,11 @@ namespace DoctorPilot.Core.Entities
         {
             UsuarioId = usuarioId;
             Titulo = titulo;
+            Mensagens = [];
         }
 
         public Guid UsuarioId { get; set; }
         public string Titulo { get; set; }
+        public List<ChatMensagem> Mensagens { get; set; }
     }
 }

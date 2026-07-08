@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DoctorPilot.Core.Entities
+﻿namespace DoctorPilot.Core.Entities
 {
     public class Evolucao : BaseEntity
     {
