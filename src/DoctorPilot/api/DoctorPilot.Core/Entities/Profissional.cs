@@ -16,7 +16,6 @@
         public Clinica Clinica { get; set; }
         public Guid UsuarioId { get; set; }
         public Usuario Usuario { get; set; }
-        public int MyProperty { get; set; }
         public string Nome { get; set; }
         public string Profissao { get; set; }
         public string? FotoUrl { get; set; }

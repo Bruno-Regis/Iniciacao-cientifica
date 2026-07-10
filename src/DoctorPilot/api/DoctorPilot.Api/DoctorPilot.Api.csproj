@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
       <PrivateAssets>all</PrivateAssets>
@@ -18,7 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DoctorPilot.Application\DoctorPilot.Application.csproj" />
     <ProjectReference Include="..\DoctorPilot.Infrastructure\DoctorPilot.Infrastructure.csproj" />
-    <ProjectReference Include="..\Infrastructure\DoctorPilot.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
