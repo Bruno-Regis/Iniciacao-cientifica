@@ -1,4 +1,6 @@
-﻿using DoctorPilot.Infrastructure.Persistence;
+﻿using DoctorPilot.Core.Repositories;
+using DoctorPilot.Infrastructure.Persistence;
+using DoctorPilot.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +12,8 @@ namespace DoctorPilot.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services
-                .AddData(configuration);
+                .AddData(configuration)
+                .AddRepositories();
 
             return services;
         }
@@ -21,5 +24,13 @@ namespace DoctorPilot.Infrastructure
 
             return services;
         }
+
+        private static IServiceCollection AddRepositories(this IServiceCollection services)
+        {
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            return services;
+        }
+
     }
 }
