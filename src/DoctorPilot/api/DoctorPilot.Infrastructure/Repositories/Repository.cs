@@ -8,7 +8,7 @@ namespace DoctorPilot.Infrastructure.Repositories
     public class Repository<T> : IRepository<T> where T : BaseEntity
     {
         private readonly DoctorPilotDbContext _context;
-        private readonly DbSet<T> _dbSet;
+        protected readonly DbSet<T> _dbSet;
         public Repository(DoctorPilotDbContext context)
         {
             _context = context;
