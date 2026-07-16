@@ -1,0 +1,28 @@
+﻿using DoctorPilot.Application.Commands.ClinicasCommands.InsertClinicas;
+using Mediator;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DoctorPilot.Api.Controllers
+{
+    [Route("api/clinicas")]
+    [ApiController]
+    public class ClinicasController : ControllerBase
+    {
+        private readonly IMediator _mediator;
+
+        public ClinicasController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        // POST api/clinicas
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] InsertClinicasCommand command)
+        {
+            var result = await _mediator.Send(command);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+            return CreatedAtAction(nameof(Post), new { id = result.Data }, result);
+        }
+    }
+}

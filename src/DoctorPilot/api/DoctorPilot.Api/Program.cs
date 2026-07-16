@@ -1,4 +1,6 @@
 using DoctorPilot.Infrastructure;
+using DoctorPilot.Application;
+
 namespace DoctorPilot.Api
 {
     public class Program
@@ -9,6 +11,7 @@ namespace DoctorPilot.Api
 
 
             builder.Services
+                .AddApplication()
                 .AddInfrastructure(builder.Configuration);
 
             // Add services to the container.

@@ -29,6 +29,11 @@ namespace DoctorPilot.Infrastructure
         {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IAgendamentoRepository, AgendamentoRepository>();
+            services.AddScoped<IAnamneseRepository, AnamneseRepository>();
+            services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IPacienteRepository, PacienteRepository>();
+            services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             return services;
         }
 
