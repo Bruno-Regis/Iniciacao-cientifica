@@ -1,4 +1,6 @@
 ﻿using DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios;
+using DoctorPilot.Application.Queries.UsuariosQueries.GetAllUsuarios;
+using DoctorPilot.Application.Queries.UsuariosQueries.GetUsuarioById;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +25,24 @@ namespace DoctorPilot.Api.Controllers
             if (!result.IsSuccess)
                 return BadRequest(result);
             return CreatedAtAction(nameof(Post), new { id = result.Data }, result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll([FromQuery] GetAllUsuariosQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var query = new GetUsuarioByIdQuery(id);
+
+            var result = await _mediator.Send(query);
+            if (!result.IsSuccess)
+                return NotFound(result);
+            return Ok(result);
         }
     }
 }
