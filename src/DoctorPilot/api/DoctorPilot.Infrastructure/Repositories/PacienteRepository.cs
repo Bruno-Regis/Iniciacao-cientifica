@@ -11,6 +11,16 @@ namespace DoctorPilot.Infrastructure.Repositories
         {
         }
 
+        public async Task<IEnumerable<Paciente>> GetByClinicaIdAsync(Guid clinicaId, int page = 1, int pageSize = 20)
+        {
+            return await _dbSet
+                .Where(p => p.ClinicaId == clinicaId)
+                .OrderBy(p => p.Nome)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         public async Task<Paciente?> GetByCpfAsync(string cpf)
         {
             return await _dbSet
