@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
 {
-    [Route("api/pacientes")]
+    [Route("api/agendamentos")]
     [ApiController]
     public class AgendamentosController : ControllerBase 
     {
