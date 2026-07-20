@@ -223,6 +223,83 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.ToTable("AnamneseSessoes");
                 });
 
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ClinicaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClinicaId");
+
+                    b.ToTable("AnamneseTemplates");
+                });
+
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplateSessao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AnamneseTemplateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Pergunta")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnamneseTemplateId");
+
+                    b.ToTable("AnamneseTemplateSessoes");
+                });
+
             modelBuilder.Entity("DoctorPilot.Core.Entities.Chat", b =>
                 {
                     b.Property<Guid>("Id")
@@ -691,6 +768,26 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.Navigation("Anamnese");
                 });
 
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplate", b =>
+                {
+                    b.HasOne("DoctorPilot.Core.Entities.Clinica", "Clinica")
+                        .WithMany()
+                        .HasForeignKey("ClinicaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Clinica");
+                });
+
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplateSessao", b =>
+                {
+                    b.HasOne("DoctorPilot.Core.Entities.AnamneseTemplate", null)
+                        .WithMany("Sessoes")
+                        .HasForeignKey("AnamneseTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("DoctorPilot.Core.Entities.Chat", b =>
                 {
                     b.HasOne("DoctorPilot.Core.Entities.Usuario", null)
@@ -771,6 +868,11 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.Anamnese", b =>
+                {
+                    b.Navigation("Sessoes");
+                });
+
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplate", b =>
                 {
                     b.Navigation("Sessoes");
                 });

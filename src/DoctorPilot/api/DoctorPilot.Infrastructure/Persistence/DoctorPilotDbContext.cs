@@ -24,7 +24,9 @@ namespace DoctorPilot.Infrastructure.Persistence
         public DbSet<Transcricao> Transcricoes { get; set; }
         public DbSet<Chat> Chats { get; set; }
         public DbSet<ChatMensagem> ChatMensagens { get; set; }
-        
+        public DbSet<AnamneseTemplate> AnamneseTemplates { get; set; }
+        public DbSet<AnamneseTemplateSessao> AnamneseTemplateSessoes { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.ApplyConfiguration(new UsuariosConfiguration());
@@ -39,6 +41,8 @@ namespace DoctorPilot.Infrastructure.Persistence
             builder.ApplyConfiguration(new TranscricoesConfiguration());
             builder.ApplyConfiguration(new ChatsConfiguration());
             builder.ApplyConfiguration(new ChatMensagensConfiguration());
+            builder.ApplyConfiguration(new AnamneseTemplateConfiguration());
+            builder.ApplyConfiguration(new AnamneseTemplateSessaoConfiguration());
         }
     }
 }
