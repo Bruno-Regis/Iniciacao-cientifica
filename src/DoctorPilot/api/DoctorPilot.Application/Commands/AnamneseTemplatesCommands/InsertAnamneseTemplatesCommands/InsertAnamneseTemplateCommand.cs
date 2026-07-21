@@ -2,11 +2,8 @@
 using DoctorPilot.Application.Models;
 using DoctorPilot.Core.Entities;
 using Mediator;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace DoctorPilot.Application.Commands.AnamneseTemplatesCommands.InsertAnamneseTemplate
+namespace DoctorPilot.Application.Commands.InsertAnamneseTemplatesCommands.InsertAnamneseTemplate
 {
     public class InsertAnamneseTemplateCommand : ICommand<ResultViewModel<Guid>>
     {
