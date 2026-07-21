@@ -36,6 +36,7 @@ namespace DoctorPilot.Infrastructure
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             services.AddScoped<IProfissionalRepository, ProfissionalRepository>();
             services.AddScoped<IAnamneseTemplateRepository, AnamneseTemplateRepository>();
+            services.AddScoped<IEvolucaoRepository, EvolucaoRepository>();
             return services;
         }
 
