@@ -3,5 +3,6 @@
   <Project Path="api/DoctorPilot.Application/DoctorPilot.Application.csproj" />
   <Project Path="api/DoctorPilot.Core/DoctorPilot.Core.csproj" />
   <Project Path="Api/DoctorPilot.Infrastructure/DoctorPilot.Infrastructure.csproj" />
-  <Project Path="app/DoctorPilot.Web/DoctorPilot.Web.csproj" />
+  <Project Path="DoctorPilot.Web/DoctorPilot.Web.Client/DoctorPilot.Web.Client.csproj" Id="fe8720f5-64be-40e2-81f2-b8318ca7441f" />
+  <Project Path="DoctorPilot.Web/DoctorPilot.Web/DoctorPilot.Web.csproj" Id="6d7df604-3113-499d-a1c2-7f70f21520cf" />
 </Solution>
