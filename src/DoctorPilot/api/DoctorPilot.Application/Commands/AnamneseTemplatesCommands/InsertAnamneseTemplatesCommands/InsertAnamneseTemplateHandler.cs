@@ -1,8 +1,9 @@
-﻿using DoctorPilot.Application.Commands.InsertAnamneseTemplatesCommands.InsertAnamneseTemplate;
-using DoctorPilot.Application.Models;
+using DoctorPilot.Application.Commands.InsertAnamneseTemplatesCommands.InsertAnamneseTemplate;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.InsertAnamneseTemplatesCommands.AnamneseTemplatesCommands
 {

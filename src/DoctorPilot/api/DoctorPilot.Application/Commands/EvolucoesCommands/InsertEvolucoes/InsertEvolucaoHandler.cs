@@ -1,6 +1,7 @@
-Ôªøusing DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
 {
@@ -20,11 +21,11 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
         {
             var agendamentoExiste = await _agendamentoRepository.ExistsAsync(command.AgendamentoId);
             if (!agendamentoExiste)
-                return ResultViewModel<Guid>.Error("Agendamento n√£o encontrado.");
+                return ResultViewModel<Guid>.Error("Agendamento n„o encontrado.");
 
             var evolucaoExistente = await _evolucaoRepository.GetByAgendamentoIdAsync(command.AgendamentoId);
             if (evolucaoExistente is not null)
-                return ResultViewModel<Guid>.Error("J√° existe uma evolu√ß√£o para este agendamento.");
+                return ResultViewModel<Guid>.Error("J· existe uma evoluÁ„o para este agendamento.");
 
             var evolucao = command.ToEntity();
 

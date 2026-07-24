@@ -1,10 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Agendamentos;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Agendamentos;
 using Mediator;
 
 namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPaciente
 {
-    public class GetAllAgendamentosByPacienteQuery : IQuery<ResultViewModel<IEnumerable<AgendamentoItemViewModel>>>
+    public class GetAllAgendamentosByPacienteQuery : IQuery<ResultViewModel<IEnumerable<AgendamentoItemDto>>>
     {
         public GetAllAgendamentosByPacienteQuery(Guid pacienteId, int page = 1, int pageSize = 20)
         {

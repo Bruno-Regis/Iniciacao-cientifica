@@ -1,10 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.AnamneseTemplates;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.AnamneseTemplates;
 using Mediator;
 
 namespace DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamneseTemplatesByClinica
 {
-    public class GetAllAnamneseTemplatesByClinicaQuery : IQuery<ResultViewModel<IEnumerable<AnamneseTemplateItemViewModel>>>
+    public class GetAllAnamneseTemplatesByClinicaQuery : IQuery<ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>>
     {
         public GetAllAnamneseTemplatesByClinicaQuery(Guid clinicaId, int page = 1, int pageSize = 20)
         {

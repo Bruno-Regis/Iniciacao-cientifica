@@ -1,11 +1,12 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.AnamneseTemplates;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.AnamneseTemplates;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamneseTemplatesByClinica
 {
-    public class GetAllAnamneseTemplatesByClinicaHandler : IQueryHandler<GetAllAnamneseTemplatesByClinicaQuery, ResultViewModel<IEnumerable<AnamneseTemplateItemViewModel>>>
+    public class GetAllAnamneseTemplatesByClinicaHandler : IQueryHandler<GetAllAnamneseTemplatesByClinicaQuery, ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>>
     {
         private readonly IAnamneseTemplateRepository _templateRepository;
 
@@ -14,15 +15,15 @@ namespace DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamnes
             _templateRepository = templateRepository;
         }
 
-        public async ValueTask<ResultViewModel<IEnumerable<AnamneseTemplateItemViewModel>>> Handle(GetAllAnamneseTemplatesByClinicaQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>> Handle(GetAllAnamneseTemplatesByClinicaQuery query, CancellationToken cancellationToken)
         {
             var templates = await _templateRepository
                 .GetByClinicaIdAsync(query.ClinicaId, query.Page, query.PageSize);
 
             var viewModels = templates
-                .Select(AnamneseTemplateItemViewModel.FromEntity);
+                .Select(t => t.ToItemDto());
 
-            return ResultViewModel<IEnumerable<AnamneseTemplateItemViewModel>>.Success(viewModels);
+            return ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>.Success(viewModels);
         }
     }
 }

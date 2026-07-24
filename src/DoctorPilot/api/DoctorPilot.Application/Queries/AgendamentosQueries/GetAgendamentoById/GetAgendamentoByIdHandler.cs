@@ -1,11 +1,12 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Agendamentos;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Agendamentos;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentoById
 {
-    public class GetAgendamentoByIdHandler : IQueryHandler<GetAgendamentoByIdQuery, ResultViewModel<AgendamentoDetailsViewModel>>
+    public class GetAgendamentoByIdHandler : IQueryHandler<GetAgendamentoByIdQuery, ResultViewModel<AgendamentoDetailsDto>>
     {
         private readonly IAgendamentoRepository _agendamentoRepository;
 
@@ -13,14 +14,14 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentoById
         {
             _agendamentoRepository = agendamentoRepository;
         }
-        public async ValueTask<ResultViewModel<AgendamentoDetailsViewModel>> Handle(GetAgendamentoByIdQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<AgendamentoDetailsDto>> Handle(GetAgendamentoByIdQuery query, CancellationToken cancellationToken)
         {
             var agendamento = await _agendamentoRepository.GetByIdAsync(query.Id);
 
             if (agendamento is null)
-                return ResultViewModel<AgendamentoDetailsViewModel>.Error("Agendamento não encontrado.");
+                return ResultViewModel<AgendamentoDetailsDto>.Error("Agendamento n�o encontrado.");
 
-            return ResultViewModel<AgendamentoDetailsViewModel>.Success(AgendamentoDetailsViewModel.FromEntity(agendamento));
+            return ResultViewModel<AgendamentoDetailsDto>.Success(agendamento.ToDetailsDto());
         }
     }
 }

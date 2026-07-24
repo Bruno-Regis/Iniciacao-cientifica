@@ -1,10 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Profissionais;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Profissionais;
 using Mediator;
 
 namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalById
 {
-    public class GetProfissionalByIdQuery : IQuery<ResultViewModel<ProfissionalDetailsViewModel>>
+    public class GetProfissionalByIdQuery : IQuery<ResultViewModel<ProfissionalDetailsDto>>
     {
         public GetProfissionalByIdQuery(Guid id)
         {

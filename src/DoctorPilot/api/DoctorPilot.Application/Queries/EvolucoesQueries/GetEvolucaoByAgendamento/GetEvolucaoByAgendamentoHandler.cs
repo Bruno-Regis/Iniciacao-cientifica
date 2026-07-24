@@ -1,11 +1,12 @@
-Ôªøusing DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Evolucoes;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Evolucoes;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucaoByAgendamento
 {
-    public class GetEvolucaoByAgendamentoHandler : IQueryHandler<GetEvolucaoByAgendamentoQuery, ResultViewModel<EvolucaoViewModel>>
+    public class GetEvolucaoByAgendamentoHandler : IQueryHandler<GetEvolucaoByAgendamentoQuery, ResultViewModel<EvolucaoDto>>
     {
         private readonly IEvolucaoRepository _evolucaoRepository;
 
@@ -13,14 +14,14 @@ namespace DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucaoByAgendame
         {
             _evolucaoRepository = evolucaoRepository;
         }
-        public async ValueTask<ResultViewModel<EvolucaoViewModel>> Handle(GetEvolucaoByAgendamentoQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<EvolucaoDto>> Handle(GetEvolucaoByAgendamentoQuery query, CancellationToken cancellationToken)
         {
             var evolucao = await _evolucaoRepository.GetByAgendamentoIdAsync(query.AgendamentoId);
 
             if (evolucao is null)
-                return ResultViewModel<EvolucaoViewModel>.Error("Evolu√ß√£o n√£o encontrada para este agendamento.");
+                return ResultViewModel<EvolucaoDto>.Error("EvoluÁ„o n„o encontrada para este agendamento.");
 
-            return ResultViewModel<EvolucaoViewModel>.Success(EvolucaoViewModel.FromEntity(evolucao));
+            return ResultViewModel<EvolucaoDto>.Success(evolucao.ToDto());
         }
     }
 }

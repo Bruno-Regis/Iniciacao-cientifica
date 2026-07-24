@@ -1,6 +1,7 @@
-Ôªøusing DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
 {
@@ -19,7 +20,7 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
             var usuarioJaExiste = await _usuarioRepository.ExistsEmailAsync(command.Email);
 
             if (usuarioJaExiste)
-                return ResultViewModel<Guid>.Error("J√° existe um usu√°rio com este e-mail.");
+                return ResultViewModel<Guid>.Error("J· existe um usu·rio com este e-mail.");
             
             var usuario = command.ToEntity();
 

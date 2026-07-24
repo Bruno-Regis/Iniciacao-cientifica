@@ -1,4 +1,4 @@
-﻿using DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Enums;
 using Mediator;

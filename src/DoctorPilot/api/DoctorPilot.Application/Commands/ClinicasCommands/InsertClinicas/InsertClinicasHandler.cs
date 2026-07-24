@@ -1,7 +1,8 @@
-﻿using DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.ClinicasCommands.InsertClinicas
 {

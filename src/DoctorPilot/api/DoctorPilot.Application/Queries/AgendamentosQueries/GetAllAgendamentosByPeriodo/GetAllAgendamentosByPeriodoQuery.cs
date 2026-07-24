@@ -1,10 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Agendamentos;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Agendamentos;
 using Mediator;
 
 namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPeriodo
 {
-    public class GetAllAgendamentosByPeriodoQuery : IQuery<ResultViewModel<IEnumerable<AgendamentoItemViewModel>>>
+    public class GetAllAgendamentosByPeriodoQuery : IQuery<ResultViewModel<IEnumerable<AgendamentoItemDto>>>
     {
         public GetAllAgendamentosByPeriodoQuery(DateTime inicio, DateTime fim)
         {

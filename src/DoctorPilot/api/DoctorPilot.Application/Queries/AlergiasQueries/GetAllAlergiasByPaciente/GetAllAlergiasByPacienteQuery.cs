@@ -1,10 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Alergias;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Alergias;
 using Mediator;
 
 namespace DoctorPilot.Application.Queries.AlergiasQueries.GetAllAlergiasByPaciente
 {
-    public class GetAllAlergiasByPacienteQuery : IQuery<ResultViewModel<IEnumerable<AlergiaViewModel>>>
+    public class GetAllAlergiasByPacienteQuery : IQuery<ResultViewModel<IEnumerable<AlergiaDto>>>
     {
         public GetAllAlergiasByPacienteQuery(Guid pacienteId)
         {

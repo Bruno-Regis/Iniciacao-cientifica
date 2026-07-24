@@ -1,10 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Pacientes;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Pacientes;
 using Mediator;
 
 namespace DoctorPilot.Application.Queries.PacientesQueries.GetAllPacientesByClinica
 {
-    public class GetAllPacientesByClinicaQuery : IQuery<ResultViewModel<IEnumerable<PacienteItemViewModel>>>
+    public class GetAllPacientesByClinicaQuery : IQuery<ResultViewModel<IEnumerable<PacienteItemDto>>>
     {
         public GetAllPacientesByClinicaQuery(Guid clinicaId, int page = 1, int pageSize = 20)
         {

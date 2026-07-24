@@ -1,7 +1,8 @@
-﻿using DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.AlergiasCommands.InsertAlergias
 {
@@ -22,7 +23,7 @@ namespace DoctorPilot.Application.Commands.AlergiasCommands.InsertAlergias
         {
             var pacienteExiste = await _pacienteRepository.ExistsAsync(command.PacienteId);
             if (!pacienteExiste)
-                return ResultViewModel<Guid>.Error("Paciente não encontrado.");
+                return ResultViewModel<Guid>.Error("Paciente n�o encontrado.");
 
             var alergia = command.ToEntity();
 

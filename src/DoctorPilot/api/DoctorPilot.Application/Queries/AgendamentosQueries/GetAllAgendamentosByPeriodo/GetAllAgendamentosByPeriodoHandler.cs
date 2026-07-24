@@ -1,11 +1,12 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Agendamentos;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Agendamentos;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPeriodo
 {
-    public class GetAllAgendamentosByPeriodoHandler : IQueryHandler<GetAllAgendamentosByPeriodoQuery, ResultViewModel<IEnumerable<AgendamentoItemViewModel>>>
+    public class GetAllAgendamentosByPeriodoHandler : IQueryHandler<GetAllAgendamentosByPeriodoQuery, ResultViewModel<IEnumerable<AgendamentoItemDto>>>
     {
         private readonly IAgendamentoRepository _agendamentoRepository;
 
@@ -13,11 +14,11 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentos
         {
             _agendamentoRepository = agendamentoRepository;
         }
-        public async ValueTask<ResultViewModel<IEnumerable<AgendamentoItemViewModel>>> Handle(GetAllAgendamentosByPeriodoQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<IEnumerable<AgendamentoItemDto>>> Handle(GetAllAgendamentosByPeriodoQuery query, CancellationToken cancellationToken)
         {
             var agendamentos = await _agendamentoRepository.GetByPeriodoAsync(query.Inicio, query.Fim);
-            var viewModels = agendamentos.Select(AgendamentoItemViewModel.FromEntity);
-            return ResultViewModel<IEnumerable<AgendamentoItemViewModel>>.Success(viewModels);
+            var viewModels = agendamentos.Select(a => a.ToItemDto());
+            return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Success(viewModels);
         }
     }
 }

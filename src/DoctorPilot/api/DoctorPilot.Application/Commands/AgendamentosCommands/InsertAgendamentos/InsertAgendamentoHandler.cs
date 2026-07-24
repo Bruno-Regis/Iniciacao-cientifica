@@ -1,6 +1,7 @@
-Ôªøusing DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendamentos
 {
@@ -21,11 +22,11 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
 
             var conflitoComProfissional = conflitos.Any(a => a.ProfissionalId == command.ProfissionalId);
             if (conflitoComProfissional)
-                return ResultViewModel<Guid>.Error("Profissional j√° possui um agendamento neste per√≠odo.");
+                return ResultViewModel<Guid>.Error("Profissional j· possui um agendamento neste perÌodo.");
 
             var conflitoComSala = command.Sala is not null && conflitos.Any(a => a.Sala == command.Sala);
             if (conflitoComSala)
-                return ResultViewModel<Guid>.Error("Sala j√° est√° ocupada neste per√≠odo.");
+                return ResultViewModel<Guid>.Error("Sala j· est· ocupada neste perÌodo.");
 
             var agendamento = command.ToEntity();
             await _agendamentoRepository.AddAsync(agendamento);

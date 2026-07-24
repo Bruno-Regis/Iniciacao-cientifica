@@ -1,5 +1,5 @@
-﻿using DoctorPilot.Application.DTOs;
-using DoctorPilot.Application.Models;
+using DoctorPilot.Application.DTOs;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
 using Mediator;
 
