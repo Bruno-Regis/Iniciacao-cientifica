@@ -1,6 +1,6 @@
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Profissionais;
-using DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalByClinica;
+using DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissionaisByClinica;
 using DoctorPilot.Core.Repositories;
 using Mediator;
 using DoctorPilot.Application.Mappings;

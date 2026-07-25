@@ -4,10 +4,11 @@ namespace DoctorPilot.Core.Entities
 {
     public class Agendamento : BaseEntity
     {
-        public Agendamento(Guid pacienteId, Guid profissionalId, TipoAgendamentoEnum tipo, string procedimento, DateTime dataHoraInicial, DateTime dataHoraFinal, string? sala, bool confirmacao, string? descricao)
+        public Agendamento(Guid pacienteId, Guid profissionalId, Guid clinicaId, TipoAgendamentoEnum tipo, string procedimento, DateTime dataHoraInicial, DateTime dataHoraFinal, string? sala, bool confirmacao, string? descricao)
         {
             PacienteId = pacienteId;
             ProfissionalId = profissionalId;
+            ClinicaId = clinicaId;
             Status = StatusAgendamentoEnum.agendado;
             Tipo = tipo;
             Procedimento = procedimento;
@@ -20,6 +21,7 @@ namespace DoctorPilot.Core.Entities
 
         public Guid PacienteId { get; set; }
         public Guid ProfissionalId { get; set; }
+        public Guid ClinicaId { get; set; }
         public StatusAgendamentoEnum Status { get; set; }
         public TipoAgendamentoEnum Tipo { get; set; }
         public string Procedimento { get; set; }

@@ -1,5 +1,5 @@
 ﻿using DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissionais;
-using DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalByClinica;
+using DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissionaisByClinica;
 using DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalById;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;

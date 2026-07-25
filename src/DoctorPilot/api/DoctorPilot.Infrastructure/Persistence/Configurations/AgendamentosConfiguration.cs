@@ -72,6 +72,15 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(a => a.ProfissionalId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasOne<Clinica>()
+                .WithMany()
+                .HasForeignKey(a => a.ClinicaId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasIndex(a => new { a.ClinicaId, a.DataHoraInicial }); // Para otimizar consultas por clínica e data/hora inicial
         }
     }
 }

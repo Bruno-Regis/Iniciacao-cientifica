@@ -28,6 +28,9 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("ClinicaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("Confirmacao")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -86,6 +89,8 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.HasIndex("PacienteId");
 
                     b.HasIndex("ProfissionalId");
+
+                    b.HasIndex("ClinicaId", "DataHoraInicial");
 
                     b.ToTable("Agendamentos");
                 });
@@ -718,6 +723,12 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.Agendamento", b =>
                 {
+                    b.HasOne("DoctorPilot.Core.Entities.Clinica", null)
+                        .WithMany()
+                        .HasForeignKey("ClinicaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("DoctorPilot.Core.Entities.Paciente", null)
                         .WithMany()
                         .HasForeignKey("PacienteId")

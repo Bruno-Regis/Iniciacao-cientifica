@@ -5,6 +5,7 @@ namespace DoctorPilot.Contracts.Agendamentos
         public Guid Id { get; set; }
         public Guid PacienteId { get; set; }
         public Guid ProfissionalId { get; set; }
+        public Guid ClinicaId { get; set; }
         public string Status { get; set; }
         public string Tipo { get; set; }
         public string Procedimento { get; set; }
