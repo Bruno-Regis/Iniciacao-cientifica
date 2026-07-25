@@ -1,9 +1,9 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Anamneses;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Anamneses;
 using Mediator;
 namespace DoctorPilot.Application.Queries.AnamnesesQueries.GetAllAnamnesesByPaciente
 {
-    public class GetAllAnamnesesByPacienteQuery : IQuery<ResultViewModel<IEnumerable<AnamneseItemViewModel>>>
+    public class GetAllAnamnesesByPacienteQuery : IQuery<ResultViewModel<IEnumerable<AnamneseItemDto>>>
     {
         public GetAllAnamnesesByPacienteQuery(Guid pacienteId, int page = 1, int pageSize = 20)
         {

@@ -1,13 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Profissionais;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Profissionais;
 using Mediator;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalByClinica
+namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissionaisByClinica
 {
-    public class GetAllProfissionaisByClinicaQuery : IQuery<ResultViewModel<IEnumerable<ProfissionalItemViewModel>>>
+    public class GetAllProfissionaisByClinicaQuery : IQuery<ResultViewModel<IEnumerable<ProfissionalItemDto>>>
     {
         public GetAllProfissionaisByClinicaQuery(Guid clinicaId, int page = 1, int pageSize = 20)
         {

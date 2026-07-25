@@ -1,10 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Pacientes;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Pacientes;
 using Mediator;
 
 namespace DoctorPilot.Application.Queries.PacientesQueries.SearchPacientes
 {
-    public class SearchPacientesQuery : IQuery<ResultViewModel<IEnumerable<PacienteItemViewModel>>>
+    public class SearchPacientesQuery : IQuery<ResultViewModel<IEnumerable<PacienteItemDto>>>
     {
         public SearchPacientesQuery(string termo, int page = 1, int pageSize = 20)
         {

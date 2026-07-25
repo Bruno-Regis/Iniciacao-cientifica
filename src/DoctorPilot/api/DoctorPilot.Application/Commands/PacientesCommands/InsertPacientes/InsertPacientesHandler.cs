@@ -1,6 +1,7 @@
-﻿using DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
 {
@@ -18,7 +19,7 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
         {
             var cpfJaCadastrado = await _pacienteRepository.GetByCpfAsync(command.Cpf);
             if (cpfJaCadastrado is not null)
-                return ResultViewModel<Guid>.Error("Já existe um paciente cadastrado com este CPF.");
+                return ResultViewModel<Guid>.Error("J� existe um paciente cadastrado com este CPF.");
 
             var paciente = command.ToEntity();
 

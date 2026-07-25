@@ -1,11 +1,12 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Profissionais;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Profissionais;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
  
 namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalById
 {
-    public class GetProfissionalByIdHandler : IQueryHandler<GetProfissionalByIdQuery, ResultViewModel<ProfissionalDetailsViewModel>>
+    public class GetProfissionalByIdHandler : IQueryHandler<GetProfissionalByIdQuery, ResultViewModel<ProfissionalDetailsDto>>
     {
         private readonly IProfissionalRepository _profissionalRepository;
 
@@ -14,14 +15,14 @@ namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalBy
             _profissionalRepository = profissionalRepository;
         }
 
-        public async ValueTask<ResultViewModel<ProfissionalDetailsViewModel>> Handle(GetProfissionalByIdQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<ProfissionalDetailsDto>> Handle(GetProfissionalByIdQuery query, CancellationToken cancellationToken)
         {
             var profissional = await _profissionalRepository.GetByUsuarioIdAsync(query.Id);
 
             if (profissional is null)
-                return ResultViewModel<ProfissionalDetailsViewModel>.Error("Profissional não encontrado.");
+                return ResultViewModel<ProfissionalDetailsDto>.Error("Profissional n�o encontrado.");
 
-            return ResultViewModel<ProfissionalDetailsViewModel>.Success(ProfissionalDetailsViewModel.FromEntity(profissional));
+            return ResultViewModel<ProfissionalDetailsDto>.Success(profissional.ToDetailsDto());
         }
     }
 }

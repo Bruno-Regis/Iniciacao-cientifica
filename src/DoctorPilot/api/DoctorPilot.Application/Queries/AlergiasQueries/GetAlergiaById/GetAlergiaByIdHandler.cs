@@ -1,12 +1,13 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Alergias;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Queries.AlergiasQueries.GetAlergiaById
 {
-    public class GetAlergiaByIdHandler : IQueryHandler<GetAlergiaByIdQuery, ResultViewModel<AlergiaViewModel>>
+    public class GetAlergiaByIdHandler : IQueryHandler<GetAlergiaByIdQuery, ResultViewModel<AlergiaDto>>
     {
         private readonly IRepository<Alergia> _alergiaRepository;
 
@@ -14,14 +15,14 @@ namespace DoctorPilot.Application.Queries.AlergiasQueries.GetAlergiaById
         {
             _alergiaRepository = alergiaRepository;
         }
-        public async ValueTask<ResultViewModel<AlergiaViewModel>> Handle(GetAlergiaByIdQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<AlergiaDto>> Handle(GetAlergiaByIdQuery query, CancellationToken cancellationToken)
         {
             var alergia = await _alergiaRepository.GetByIdAsync(query.Id);
 
             if (alergia is null)
-                return ResultViewModel<AlergiaViewModel>.Error("Alergia não encontrada.");
+                return ResultViewModel<AlergiaDto>.Error("Alergia n�o encontrada.");
 
-            return ResultViewModel<AlergiaViewModel>.Success(AlergiaViewModel.FromEntity(alergia));
+            return ResultViewModel<AlergiaDto>.Success(alergia.ToDto());
         }
     }
 }

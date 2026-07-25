@@ -1,11 +1,12 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Pacientes;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Pacientes;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Queries.PacientesQueries.SearchPacientes
 {
-    public class SearchPacientesHandler : IQueryHandler<SearchPacientesQuery, ResultViewModel<IEnumerable<PacienteItemViewModel>>>
+    public class SearchPacientesHandler : IQueryHandler<SearchPacientesQuery, ResultViewModel<IEnumerable<PacienteItemDto>>>
     {
         private readonly IPacienteRepository _pacienteRepository;
 
@@ -14,11 +15,11 @@ namespace DoctorPilot.Application.Queries.PacientesQueries.SearchPacientes
             _pacienteRepository = pacienteRepository;
         }
 
-        public async ValueTask<ResultViewModel<IEnumerable<PacienteItemViewModel>>> Handle(SearchPacientesQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<IEnumerable<PacienteItemDto>>> Handle(SearchPacientesQuery query, CancellationToken cancellationToken)
         {
             var pacientes = await _pacienteRepository.SearchAsync(query.Termo, query.Page, query.PageSize);
-            var viewModels = pacientes.Select(PacienteItemViewModel.FromEntity);
-            return ResultViewModel<IEnumerable<PacienteItemViewModel>>.Success(viewModels);
+            var viewModels = pacientes.Select(p => p.ToItemDto());
+            return ResultViewModel<IEnumerable<PacienteItemDto>>.Success(viewModels);
         }
     }
 }

@@ -1,7 +1,8 @@
-Ôªø
-using DoctorPilot.Application.Models;
+
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissionais
 {
@@ -19,7 +20,7 @@ namespace DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissio
         {
             var usuarioJaEhProfissional = await _profissionalRepository.GetByUsuarioIdAsync(command.UsuarioId);
             if (usuarioJaEhProfissional is not null)
-                return ResultViewModel<Guid>.Error("Este usu√°rio j√° est√° cadastrado como profissional.");
+                return ResultViewModel<Guid>.Error("Este usu·rio j· est· cadastrado como profissional.");
 
             var profissional = command.ToEntity();
 

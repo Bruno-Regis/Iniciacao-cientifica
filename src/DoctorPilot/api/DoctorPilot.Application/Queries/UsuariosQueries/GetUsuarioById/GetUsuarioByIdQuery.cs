@@ -1,11 +1,11 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Usuarios;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Usuarios;
 using Mediator;
 
 
 namespace DoctorPilot.Application.Queries.UsuariosQueries.GetUsuarioById
 {
-    public class GetUsuarioByIdQuery :IQuery<ResultViewModel<UsuarioDetailsViewModel>>
+    public class GetUsuarioByIdQuery :IQuery<ResultViewModel<UsuarioDetailsDto>>
     {
         public GetUsuarioByIdQuery(Guid id)
         {

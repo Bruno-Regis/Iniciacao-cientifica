@@ -1,6 +1,7 @@
-﻿using DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.AnamneseCommands.InsertAnamneseCommands
 {
@@ -20,7 +21,7 @@ namespace DoctorPilot.Application.Commands.AnamneseCommands.InsertAnamneseComman
         {
             var pacienteExiste = await _pacienteRepository.ExistsAsync(command.PacienteId);
             if (!pacienteExiste)
-                return ResultViewModel<Guid>.Error("Paciente não encontrado.");
+                return ResultViewModel<Guid>.Error("Paciente n�o encontrado.");
 
             var anamnese = command.ToEntity();
 

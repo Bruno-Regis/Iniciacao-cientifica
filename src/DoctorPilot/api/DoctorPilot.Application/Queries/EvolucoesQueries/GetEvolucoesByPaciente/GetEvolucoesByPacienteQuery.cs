@@ -1,10 +1,10 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Evolucoes;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Evolucoes;
 using Mediator;
 
 namespace DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucoesByPaciente
 {
-    public class GetEvolucoesByPacienteQuery : IQuery<ResultViewModel<IEnumerable<EvolucaoViewModel>>>
+    public class GetEvolucoesByPacienteQuery : IQuery<ResultViewModel<IEnumerable<EvolucaoDto>>>
     {
         public GetEvolucoesByPacienteQuery(Guid pacienteId, int page = 1, int pageSize = 20)
         {

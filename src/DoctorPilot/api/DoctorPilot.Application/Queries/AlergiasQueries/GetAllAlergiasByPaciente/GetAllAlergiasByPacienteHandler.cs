@@ -1,11 +1,12 @@
-﻿using DoctorPilot.Application.Models;
-using DoctorPilot.Application.Models.Alergias;
+using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Queries.AlergiasQueries.GetAllAlergiasByPaciente
 {
-    public class GetAllAlergiasByPacienteHandler : IQueryHandler<GetAllAlergiasByPacienteQuery, ResultViewModel<IEnumerable<AlergiaViewModel>>>
+    public class GetAllAlergiasByPacienteHandler : IQueryHandler<GetAllAlergiasByPacienteQuery, ResultViewModel<IEnumerable<AlergiaDto>>>
     {
         private readonly IPacienteRepository _pacienteRepository;
 
@@ -13,15 +14,15 @@ namespace DoctorPilot.Application.Queries.AlergiasQueries.GetAllAlergiasByPacien
         {
             _pacienteRepository = pacienteRepository;
         }
-        public async ValueTask<ResultViewModel<IEnumerable<AlergiaViewModel>>> Handle(GetAllAlergiasByPacienteQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<IEnumerable<AlergiaDto>>> Handle(GetAllAlergiasByPacienteQuery query, CancellationToken cancellationToken)
         {
             var paciente = await _pacienteRepository.GetByIdComAlergias(query.PacienteId);
 
             if (paciente is null)
-                return ResultViewModel<IEnumerable<AlergiaViewModel>>.Error("Paciente não encontrado.");
+                return ResultViewModel<IEnumerable<AlergiaDto>>.Error("Paciente n�o encontrado.");
 
-            var viewModels = paciente.Alergias?.Select(AlergiaViewModel.FromEntity) ?? [];
-            return ResultViewModel<IEnumerable<AlergiaViewModel>>.Success(viewModels);
+            var viewModels = paciente.Alergias?.Select(a => a.ToDto()) ?? [];
+            return ResultViewModel<IEnumerable<AlergiaDto>>.Success(viewModels);
         }
     }
 }

@@ -1,7 +1,8 @@
-Ôªøusing DoctorPilot.Application.Models;
+using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes
 {
@@ -19,7 +20,7 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes
         {
             var evolucao = await _evolucaoRepository.GetByIdAsync(command.Id);
             if (evolucao is null)
-                return ResultViewModel<Guid>.Error("Evolu√ß√£o n√£o encontrada.");
+                return ResultViewModel<Guid>.Error("EvoluÁ„o n„o encontrada.");
 
             evolucao.Conteudo = command.Conteudo;
 

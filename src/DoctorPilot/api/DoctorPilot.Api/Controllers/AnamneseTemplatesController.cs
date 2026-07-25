@@ -1,4 +1,4 @@
-﻿using DoctorPilot.Application.Commands.AnamneseTemplatesCommands.InsertAnamneseTemplate;
+﻿using DoctorPilot.Application.Commands.InsertAnamneseTemplatesCommands.InsertAnamneseTemplate;
 using DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamneseTemplatesByClinica;
 using DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAnamneseTemplateById;
 using Mediator;
