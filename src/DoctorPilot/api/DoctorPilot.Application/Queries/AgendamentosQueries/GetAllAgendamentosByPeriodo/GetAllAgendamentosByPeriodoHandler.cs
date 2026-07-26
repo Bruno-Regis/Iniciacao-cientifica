@@ -16,7 +16,9 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentos
         }
         public async ValueTask<ResultViewModel<IEnumerable<AgendamentoItemDto>>> Handle(GetAllAgendamentosByPeriodoQuery query, CancellationToken cancellationToken)
         {
-            var agendamentos = await _agendamentoRepository.GetByPeriodoAsync(query.Inicio, query.Fim);
+            var agendamentos = await _agendamentoRepository
+                .GetByPeriodoAsync(query.ClinicaId, query.Inicio, query.Fim, query.ProfissionalId);
+
             var viewModels = agendamentos.Select(a => a.ToItemDto());
             return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Success(viewModels);
         }

@@ -17,7 +17,7 @@ namespace DoctorPilot.Application.Queries.PacientesQueries.SearchPacientes
 
         public async ValueTask<ResultViewModel<IEnumerable<PacienteItemDto>>> Handle(SearchPacientesQuery query, CancellationToken cancellationToken)
         {
-            var pacientes = await _pacienteRepository.SearchAsync(query.Termo, query.Page, query.PageSize);
+            var pacientes = await _pacienteRepository.SearchAsync(query.ClinicaId,query.Termo, query.Page, query.PageSize);
             var viewModels = pacientes.Select(p => p.ToItemDto());
             return ResultViewModel<IEnumerable<PacienteItemDto>>.Success(viewModels);
         }

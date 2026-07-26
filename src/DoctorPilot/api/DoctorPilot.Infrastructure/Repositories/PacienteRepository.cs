@@ -34,9 +34,10 @@ namespace DoctorPilot.Infrastructure.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<IEnumerable<Paciente>> SearchAsync(string termo, int page = 1, int pageSize = 20)
+        public async Task<IEnumerable<Paciente>> SearchAsync(Guid clinicaId, string termo, int page = 1, int pageSize = 20)
         {
             return await _dbSet
+                .Where(p => p.ClinicaId == clinicaId)
                 .Where(p => p.Nome.Contains(termo)
                          || p.Email.Contains(termo)
                          || p.Celular.Contains(termo)

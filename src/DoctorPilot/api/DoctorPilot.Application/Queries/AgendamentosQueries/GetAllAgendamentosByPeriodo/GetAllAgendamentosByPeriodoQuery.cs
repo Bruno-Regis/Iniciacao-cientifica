@@ -6,13 +6,18 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentos
 {
     public class GetAllAgendamentosByPeriodoQuery : IQuery<ResultViewModel<IEnumerable<AgendamentoItemDto>>>
     {
-        public GetAllAgendamentosByPeriodoQuery(DateTime inicio, DateTime fim)
+        public GetAllAgendamentosByPeriodoQuery(Guid clinicaId, DateTime inicio, DateTime fim, Guid? profissionalId = null)
         {
+            ClinicaId = clinicaId;
             Inicio = inicio;
             Fim = fim;
+            ProfissionalId = profissionalId;
         }
 
+        public Guid ClinicaId { get; set; }
         public DateTime Inicio { get; set; }
         public DateTime Fim { get; set; }
+        public Guid? ProfissionalId { get; set; }
+
     }
 }

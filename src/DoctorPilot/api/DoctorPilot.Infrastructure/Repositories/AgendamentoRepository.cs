@@ -21,10 +21,18 @@ namespace DoctorPilot.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Agendamento>> GetByPeriodoAsync(DateTime inicio, DateTime fim)
+
+        public async Task<IEnumerable<Agendamento>> GetByPeriodoAsync(Guid clinicaId, DateTime inicio, DateTime fim, Guid? profissionalId = null)
         {
-            return await _dbSet
-                .Where(a => a.DataHoraInicial >= inicio && a.DataHoraFinal <= fim)
+            var query = _dbSet
+                 .Where(a => a.ClinicaId == clinicaId
+                          && a.DataHoraInicial >= inicio
+                          && a.DataHoraFinal <= fim);
+
+            if (profissionalId.HasValue)
+                query = query.Where(a => a.ProfissionalId == profissionalId.Value);
+
+            return await query
                 .OrderBy(a => a.DataHoraInicial)
                 .ToListAsync();
         }

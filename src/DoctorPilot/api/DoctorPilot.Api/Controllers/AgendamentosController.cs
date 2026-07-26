@@ -35,9 +35,9 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("periodo")]
-        public async Task<IActionResult> GetByPeriodo([FromQuery] DateTime inicio, [FromQuery] DateTime fim)
+        public async Task<IActionResult> GetByPeriodo([FromQuery] Guid clinicaId, [FromQuery] DateTime inicio, [FromQuery] DateTime fim, [FromQuery] Guid? profissionalId = null)
         {
-            var result = await _mediator.Send(new GetAllAgendamentosByPeriodoQuery(inicio, fim));
+            var result = await _mediator.Send(new GetAllAgendamentosByPeriodoQuery(clinicaId, inicio, fim, profissionalId));
             return Ok(result);
         }
 

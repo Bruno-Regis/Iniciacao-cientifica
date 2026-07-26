@@ -42,9 +42,9 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string termo, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> Search([FromQuery] Guid clinicaId, [FromQuery] string termo, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            var result = await _mediator.Send(new SearchPacientesQuery(termo, page, pageSize));
+            var result = await _mediator.Send(new SearchPacientesQuery(clinicaId, termo, page, pageSize));
             return Ok(result);
         }
     }
