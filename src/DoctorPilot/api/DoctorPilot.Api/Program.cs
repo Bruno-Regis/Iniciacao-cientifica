@@ -14,6 +14,17 @@ namespace DoctorPilot.Api
                 .AddApplication()
                 .AddInfrastructure(builder.Configuration);
 
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("DoctorPilotClient", policy =>
+                {
+                    policy.WithOrigins(allowedOrigins)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -27,6 +38,7 @@ namespace DoctorPilot.Api
             //{
             //    app.MapOpenApi();
             //}
+            app.UseCors("DoctorPilotClient");
 
             app.UseHttpsRedirection();
 
