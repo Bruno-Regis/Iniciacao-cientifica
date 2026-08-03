@@ -1,0 +1,40 @@
+﻿@page "/pacientes/cadastrar"
+@* @page "/pacientes/{id}/editar" *@
+@rendermode InteractiveAuto
+@using DoctorPilot.Web.Client.Models
+@using DoctorPilot.Web.Client.Shared
+@inject DoctorPilotApiClient DoctorPilotService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<h3>Novo/edit paciente</h3>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="IrParaListagem">
+    Voltar para lista
+</MudButton>
+
+
+<PacienteForm Model="@_model" OnValidSubmit="Salvar" />
+
+@code {
+    
+    private readonly Guid _clinicaIdTemporaria = new("14bfa2a3-3571-4f74-8848-18f98e227b10"); // TODO: substituir por ClinicaId real assim que tiver autenticação
+    private void IrParaListagem() => NavigationManager.NavigateTo($"/pacientes");
+
+    private PacienteFormModel _model = new();
+
+    private async Task Salvar(PacienteFormModel modelo)
+    {
+        modelo.ClinicaId = _clinicaIdTemporaria;
+        var result = await DoctorPilotService.CreatePacienteAsync(modelo);
+
+        if (!result.IsSuccess)
+        {
+            Snackbar.Add(result.Message ?? "Erro ao cadastrar paciente.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Paciente cadastrado com sucesso!", Severity.Success);
+        NavigationManager.NavigateTo("/pacientes");
+    }
+}

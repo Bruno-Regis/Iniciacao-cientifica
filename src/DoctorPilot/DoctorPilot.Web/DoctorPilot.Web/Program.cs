@@ -1,5 +1,7 @@
 using DoctorPilot.Web.Client.Pages;
+using DoctorPilot.Web.Client.Services;
 using DoctorPilot.Web.Components;
+using MudBlazor.Services;
 
 namespace DoctorPilot.Web
 {
@@ -13,6 +15,18 @@ namespace DoctorPilot.Web
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents()
                 .AddInteractiveWebAssemblyComponents();
+
+            builder.Services.AddMudServices();
+
+            builder.Services.AddHttpClient("DoctorPilotApi", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:7142/");
+            });
+
+            builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
+                .CreateClient("DoctorPilotApi"));
+            builder.Services.AddScoped<DoctorPilotApiClient>(sp =>
+                new DoctorPilotApiClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient("DoctorPilotApi")));
 
             var app = builder.Build();
 

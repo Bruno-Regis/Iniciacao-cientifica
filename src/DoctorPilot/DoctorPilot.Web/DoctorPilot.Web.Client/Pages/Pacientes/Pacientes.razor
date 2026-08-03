@@ -1,0 +1,70 @@
+﻿@page "/pacientes"
+@rendermode InteractiveAuto
+@inject DoctorPilotApiClient DoctorPilotService
+@inject NavigationManager NavigationManager
+
+<h3>Pacientes Registrados</h3>
+
+@if (_pacientes is null)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+}
+else
+{
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="IrParaCadastro">
+            Cadastrar Paciente
+        </MudButton>
+    </MudStack>
+
+
+    <hr />
+
+    <MudDataGrid Items="@_pacientes" Filterable="true" SortMode="@SortMode.None" Groupable="false">
+        <Columns>
+            <PropertyColumn Property="x => x.Nome" />
+            <PropertyColumn Property="x => x.Email" />
+            <PropertyColumn Property="x => x.Celular" />
+            <TemplateColumn Title="Status" Sortable="false" Context="PacienteItemDto">
+                <CellTemplate>
+                    <MudChip T="string"
+                             Color="@(PacienteItemDto.Item.Status == "Ativo" ? Color.Success : Color.Error)"
+                             Size="Size.Small">
+                        @PacienteItemDto.Item.Status
+                    </MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Visualizar" Sortable="false" Filterable="false" Context="PacienteItemDto">
+                <CellTemplate>
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => VisualizarPaciente(PacienteItemDto.Item.Id))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+
+}
+
+
+@code {
+
+    private IEnumerable<PacienteItemDto>? _pacientes;
+
+    // TODO: substituir por ClinicaId real assim que tiver autenticação
+    private readonly Guid _clinicaIdTemporaria = new("14bfa2a3-3571-4f74-8848-18f98e227b10");
+    private string _searchString;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _pacientes = await DoctorPilotService.GetAllPacientesByClinicaAsync(_clinicaIdTemporaria);
+    }
+
+    private void VisualizarPaciente(Guid id) => NavigationManager.NavigateTo($"/pacientes/{id}");
+
+    private void IrParaCadastro() => NavigationManager.NavigateTo($"/pacientes/cadastrar");
+}
