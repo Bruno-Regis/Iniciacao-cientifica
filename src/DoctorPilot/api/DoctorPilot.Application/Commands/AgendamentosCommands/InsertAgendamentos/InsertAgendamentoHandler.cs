@@ -18,7 +18,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
 
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertAgendamentoCommand command, CancellationToken cancellationToken)
         {
-            var conflitos = await _agendamentoRepository.GetByPeriodoAsync(command.DataHoraInicial, command.DataHoraFinal);
+            var conflitos = await _agendamentoRepository.GetByPeriodoAsync(command.ClinicaId, command.DataHoraInicial, command.DataHoraFinal, command.ProfissionalId);
 
             var conflitoComProfissional = conflitos.Any(a => a.ProfissionalId == command.ProfissionalId);
             if (conflitoComProfissional)
@@ -28,7 +28,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
             if (conflitoComSala)
                 return ResultViewModel<Guid>.Error("Sala já está ocupada neste período.");
 
-            var agendamento = command.ToEntity();
+            var agendamento = command.ToEntity();   
             await _agendamentoRepository.AddAsync(agendamento);
             await _unitOfWork.CommitAsync();
 
