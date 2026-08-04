@@ -1,5 +1,5 @@
 ﻿@page "/pacientes/cadastrar"
-@* @page "/pacientes/{id}/editar" *@
+@page "/pacientes/{Id:guid}/editar"
 @rendermode InteractiveAuto
 @using DoctorPilot.Web.Client.Models
 @using DoctorPilot.Web.Client.Shared
@@ -7,22 +7,74 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<h3>Novo/edit paciente</h3>
+<h3>@(_modoEdicao ? "Editar Paciente" : "Cadastrar Paciente")</h3>
 
 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="IrParaListagem">
     Voltar para lista
 </MudButton>
 
-
-<PacienteForm Model="@_model" OnValidSubmit="Salvar" />
+@if (_carregando)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PacienteForm Model="_model" OnValidSubmit="Salvar" />
+}
 
 @code {
     
+    [Parameter]
+    public Guid? Id { get; set; }
+    private bool _modoEdicao => Id.HasValue;
+    private bool _carregando = true;
+
     private readonly Guid _clinicaIdTemporaria = new("14bfa2a3-3571-4f74-8848-18f98e227b10"); // TODO: substituir por ClinicaId real assim que tiver autenticação
     private void IrParaListagem() => NavigationManager.NavigateTo($"/pacientes");
 
     private PacienteFormModel _model = new();
 
+    protected override async Task OnInitializedAsync()
+    {
+        if (_modoEdicao)
+        {
+            var paciente = await DoctorPilotService.GetPacienteByIdAsync(Id!.Value);
+            if (paciente is not null)
+            {
+                _model = MapearParaFormModel(paciente);
+            }
+        }
+
+        _carregando = false;
+    }
+    private PacienteFormModel MapearParaFormModel(PacienteDetailsDto dto)
+    {
+        return new PacienteFormModel
+        {
+            ClinicaId = dto.ClinicaId,
+            Nome = dto.Nome,
+            Email = dto.Email,
+            Celular = dto.Celular,
+            Telefone = dto.Telefone,
+            DataNascimento = dto.DataNascimento,
+            Genero = (int)Enum.Parse<GeneroEnum>(dto.Genero, ignoreCase: true),
+            EstadoCivil = (int)Enum.Parse<EstadoCivilEnum>(dto.EstadoCivil, ignoreCase: true),
+            NomeDaMae = dto.NomeDaMae,
+            NomeDoPai = dto.NomeDoPai,
+            Cpf = dto.Cpf,
+            Rg = dto.Rg,
+            OrgaoExpedidor = dto.OrgaoExpedidor,
+            CEP = dto.CEP,
+            Cidade = dto.Cidade,
+            Estado = dto.Estado,
+            Bairro = dto.Bairro,
+            Numero = dto.Numero,
+            Complemento = dto.Complemento,
+            Profissao = dto.Profissao,
+            NecessidadeEspecial = (int)Enum.Parse<NecessidadeEspecialEnum>(dto.NecessidadeEspecial, ignoreCase: true),
+            Observacoes = dto.Observacoes
+        };
+    }
     private async Task Salvar(PacienteFormModel modelo)
     {
         modelo.ClinicaId = _clinicaIdTemporaria;

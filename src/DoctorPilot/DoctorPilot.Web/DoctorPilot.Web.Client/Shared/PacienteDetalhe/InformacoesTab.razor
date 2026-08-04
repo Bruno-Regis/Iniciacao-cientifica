@@ -1,0 +1,99 @@
+﻿@using DoctorPilot.Contracts.Pacientes
+@inject NavigationManager NavigationManager
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+    <MudText Typo="Typo.subtitle1">Informações Básicas</MudText>
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+               OnClick="@(() => NavigationManager.NavigateTo($"/pacientes/{Paciente.Id}/editar"))">
+        Editar cadastro
+    </MudButton>
+</MudStack>
+
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Nome Completo" Value="@Paciente.Nome" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Email" Value="@Paciente.Email" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Celular" Value="@Paciente.Celular" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Telefone" Value="@(Paciente.Telefone ?? "-")" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Data de Nascimento" Value="@Paciente.DataNascimento.ToString("dd/MM/yyyy")" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Sexo" Value="@Paciente.Genero" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Estado Civil" Value="@Paciente.EstadoCivil" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Status" Value="@Paciente.Status" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Nome da Mãe" Value="@(Paciente.NomeDaMae ?? "-")" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Nome do Pai" Value="@(Paciente.NomeDoPai ?? "-")" ReadOnly="true" />
+    </MudItem>
+</MudGrid>
+
+<MudText Typo="Typo.subtitle1" Class="mt-6 mb-4">Documentação</MudText>
+<MudGrid>
+    <MudItem xs="12" sm="4">
+        <MudTextField Label="CPF" Value="@Paciente.Cpf" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudTextField Label="RG" Value="@(Paciente.Rg ?? "-")" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudTextField Label="Órgão Expedidor" Value="@(Paciente.OrgaoExpedidor ?? "-")" ReadOnly="true" />
+    </MudItem>
+</MudGrid>
+
+<MudText Typo="Typo.subtitle1" Class="mt-6 mb-4">Localização</MudText>
+<MudGrid>
+    <MudItem xs="12" sm="4">
+        <MudTextField Label="CEP" Value="@Paciente.CEP" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudTextField Label="Cidade" Value="@Paciente.Cidade" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudTextField Label="Estado" Value="@Paciente.Estado" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Bairro" Value="@Paciente.Bairro" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudTextField Label="Número" Value="@Paciente.Numero" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="3">
+        <MudTextField Label="Complemento" Value="@(Paciente.Complemento ?? "-")" ReadOnly="true" />
+    </MudItem>
+</MudGrid>
+
+<MudText Typo="Typo.subtitle1" Class="mt-6 mb-4">Informações Adicionais</MudText>
+<MudGrid>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Profissão" Value="@Paciente.Profissao" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Necessidade Especial" Value="@Paciente.NecessidadeEspecial" ReadOnly="true" />
+    </MudItem>
+    <MudItem xs="12">
+        <MudTextField Label="Observações" Value="@(Paciente.Observacoes ?? "-")" ReadOnly="true" Lines="3" />
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudTextField Label="Cadastrado em" Value="@Paciente.CreatedAt.ToString("dd/MM/yyyy HH:mm")" ReadOnly="true" />
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter, EditorRequired]
+    public PacienteDetailsDto Paciente { get; set; } = default!;
+}

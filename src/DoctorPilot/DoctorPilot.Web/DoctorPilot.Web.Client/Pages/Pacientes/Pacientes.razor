@@ -58,7 +58,6 @@ else
     private readonly Guid _clinicaIdTemporaria = new("14bfa2a3-3571-4f74-8848-18f98e227b10");
     private string _searchString;
 
-
     protected override async Task OnInitializedAsync()
     {
         _pacientes = await DoctorPilotService.GetAllPacientesByClinicaAsync(_clinicaIdTemporaria);

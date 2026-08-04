@@ -1,6 +1,14 @@
 ﻿@page "/pacientes/{Id:guid}"
+@using DoctorPilot.Web.Client.Shared.PacienteDetalhe
 @inject DoctorPilotApiClient DoctorPilotService
+@inject NavigationManager NavigationManager
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="IrParaListagem">
+    Voltar para lista
+</MudButton>
+
 <h3>PacienteDetails</h3>
+
 
 @if (_paciente is null)
 {
@@ -11,20 +19,32 @@ else
     <MudText Typo="Typo.h5">@_paciente.Nome</MudText>
     <MudText>@_paciente.Celular</MudText>
 
-    @* aqui entram os botões "Iniciar Atendimento"/"Agendar Consulta" e depois o MudTabs *@
-
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary">
+            Iniciar Atendimento
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary">
+            Agendar Consulta
+        </MudButton>
+    </MudStack>
 
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" TabPanelsClass="pa-6">
-        <MudTabPanel Text="Tab One">
-            <MudText>Content One</MudText>
+        <MudTabPanel Text="Informações">
+            <InformacoesTab Paciente="_paciente" />
         </MudTabPanel>
-        <MudTabPanel Text="Tab Two">
-            <MudText>Content Two</MudText>
+        <MudTabPanel Text="Alergias">
+            <MudText>Alergia</MudText>
         </MudTabPanel>
-        <MudTabPanel Text="Tab Three">
+        <MudTabPanel Text="Anamnese">
+            <MudText>Alergia</MudText>
+        </MudTabPanel>
+        <MudTabPanel Text="Evoluções">
             <MudText>Content Three</MudText>
         </MudTabPanel>
-        <MudTabPanel Text="Tab Disabled" Disabled="true">
+        <MudTabPanel Text="Transcrições">
+            <MudText>Content Disabled</MudText>
+        </MudTabPanel>
+        <MudTabPanel Text="Histórico">
             <MudText>Content Disabled</MudText>
         </MudTabPanel>
     </MudTabs>
@@ -33,6 +53,11 @@ else
     [Parameter]
     public Guid Id { get; set; }
     private PacienteDetailsDto? _paciente;
+
+    // TODO: substituir por ClinicaId real assim que tiver autenticação
+    // private readonly Guid _clinicaIdTemporaria = new("14bfa2a3-3571-4f74-8848-18f98e227b10");
+
+    private void IrParaListagem() => NavigationManager.NavigateTo($"/pacientes");
 
     protected override async Task OnInitializedAsync()
     {
