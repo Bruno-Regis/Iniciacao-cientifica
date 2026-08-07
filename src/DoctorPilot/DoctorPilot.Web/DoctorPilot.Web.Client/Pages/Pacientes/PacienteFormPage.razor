@@ -19,11 +19,11 @@
 }
 else
 {
-    <PacienteForm Model="_model" OnValidSubmit="Salvar" />
+    <PacienteForm Model="_model" OnValidSubmit= "@( _modoEdicao ? Atualizar : Salvar )" />
 }
 
 @code {
-    
+
     [Parameter]
     public Guid? Id { get; set; }
     private bool _modoEdicao => Id.HasValue;
@@ -43,8 +43,13 @@ else
             {
                 _model = MapearParaFormModel(paciente);
             }
+            else
+            {
+                Snackbar.Add("Paciente não encontrado.", Severity.Error);
+                NavigationManager.NavigateTo("/pacientes");
+                return;
+            }
         }
-
         _carregando = false;
     }
     private PacienteFormModel MapearParaFormModel(PacienteDetailsDto dto)
@@ -87,6 +92,19 @@ else
         }
 
         Snackbar.Add("Paciente cadastrado com sucesso!", Severity.Success);
+        NavigationManager.NavigateTo("/pacientes");
+    }
+
+    private async Task Atualizar(PacienteFormModel modelo)
+    {
+        var result = await DoctorPilotService.UpdatePacienteAsync(Id!.Value, modelo);
+        if (!result.IsSuccess)
+        {
+            Snackbar.Add(result.Message ?? "Erro ao atualizar paciente.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Paciente atualizado com sucesso!", Severity.Success);
         NavigationManager.NavigateTo("/pacientes");
     }
 }
