@@ -1,4 +1,5 @@
 ﻿using DoctorPilot.Application.Commands.AlergiasCommands.InsertAlergias;
+using DoctorPilot.Application.Commands.AlergiasCommands.UpdateAlergias;
 using DoctorPilot.Application.Queries.AlergiasQueries.GetAlergiaById;
 using DoctorPilot.Application.Queries.AlergiasQueries.GetAllAlergiasByPaciente;
 using Mediator;
@@ -41,5 +42,13 @@ namespace DoctorPilot.Api.Controllers
             return Ok(result);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateAlergiaCommand command)
+        {
+            command.AlergiaId = id;
+            var result = await _mediator.Send(command);
+            if (!result.IsSuccess) return BadRequest(result);
+            return Ok(result);
+        }
     }
 }
