@@ -6,9 +6,9 @@ namespace DoctorPilot.Core.Enums
 {
     public enum GravidadeEnum
     {
-        baixa = 0,
-        media = 1,
-        alta = 2,
-        extrema = 3,
+        Baixa = 0,
+        Media = 1,
+        Alta = 2,
+        Extrema = 3,
     }
 }

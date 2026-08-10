@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Pacientes;
 using DoctorPilot.Web.Client.Models;
@@ -13,7 +14,7 @@ namespace DoctorPilot.Web.Client.Services
             _httpClient = httpClient;
         }
 
-        //Paciente
+        // PACIENTES
 
         public async Task<IEnumerable<PacienteItemDto>> GetAllPacientesByClinicaAsync(Guid clinicaId, int page = 1, int pageSize = 20)
         {
@@ -75,6 +76,60 @@ namespace DoctorPilot.Web.Client.Services
             try
             {
                 var response = await _httpClient.PutAsJsonAsync($"api/pacientes/{id}", request);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>();
+                return result ?? ResultViewModel<Guid>.Error("Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error("Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        // ALERGIAS
+
+        public async Task<IEnumerable<AlergiaDto>> GetAllAlergiasByPacienteAsync (Guid pacienteId)
+        {
+            var response = await _httpClient.GetFromJsonAsync<ResultViewModel<IEnumerable<AlergiaDto>>>(
+                $"api/alergias/paciente/{pacienteId}");
+            return response?.Data ?? [];
+        }
+
+        public async Task<ResultViewModel<Guid>> CreateAlergiaAsync(Guid pacienteId, AlergiaFormModel modelo)
+        {
+            var request = new
+            {
+                PacienteId = pacienteId,
+                modelo.NomeAlergia,
+                Gravidade = modelo.Gravidade,
+                modelo.DataIdentificacao,
+                modelo.Observacoes
+            };
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/alergias", request);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>();
+                return result ?? ResultViewModel<Guid>.Error("Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error("Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+        public async Task<ResultViewModel<Guid>> UpdateAlergiaAsync(Guid id, AlergiaFormModel modelo)
+        {
+            var request = new
+            {
+                AlergiaId = id,
+                modelo.NomeAlergia,
+                Gravidade = modelo.Gravidade,
+                modelo.DataIdentificacao,
+                modelo.Observacoes
+            };
+
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"api/alergias/{id}", request);
                 var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>();
                 return result ?? ResultViewModel<Guid>.Error("Erro inesperado ao processar a resposta.");
             }
