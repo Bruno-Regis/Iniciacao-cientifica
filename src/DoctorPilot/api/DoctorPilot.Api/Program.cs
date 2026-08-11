@@ -41,7 +41,7 @@ namespace DoctorPilot.Api
             app.UseCors("DoctorPilotClient");
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

@@ -3,9 +3,12 @@ using DoctorPilot.Core.Repositories;
 using DoctorPilot.Infrastructure.Persistence;
 using DoctorPilot.Infrastructure.Repositories;
 using DoctorPilot.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace DoctorPilot.Infrastructure
 {
@@ -15,7 +18,8 @@ namespace DoctorPilot.Infrastructure
         {
             services
                 .AddData(configuration)
-                .AddRepositories();
+                .AddRepositories()
+                .AddAuth(configuration);
 
             return services;
         }
@@ -39,9 +43,34 @@ namespace DoctorPilot.Infrastructure
             services.AddScoped<IProfissionalRepository, ProfissionalRepository>();
             services.AddScoped<IAnamneseTemplateRepository, AnamneseTemplateRepository>();
             services.AddScoped<IEvolucaoRepository, EvolucaoRepository>();
-            services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             return services;
         }
 
+        private static IServiceCollection AddAuth(this IServiceCollection services, IConfiguration configuration)
+        {
+            services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = configuration["Jwt:Issuer"],
+                        ValidAudience = configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"])
+                        )
+                    };
+                });
+
+            services.AddAuthorization();
+            services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
+            services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+            return services;
+        }
     }
 }
+
