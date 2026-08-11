@@ -1,5 +1,7 @@
-using DoctorPilot.Infrastructure;
 using DoctorPilot.Application;
+using DoctorPilot.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 namespace DoctorPilot.Api
 {
@@ -27,7 +29,14 @@ namespace DoctorPilot.Api
             });
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             // builder.Services.AddOpenApi();
 
