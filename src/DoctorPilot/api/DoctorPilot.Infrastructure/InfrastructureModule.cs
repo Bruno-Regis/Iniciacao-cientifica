@@ -1,6 +1,8 @@
-﻿using DoctorPilot.Core.Repositories;
+﻿using DoctorPilot.Application.Services;
+using DoctorPilot.Core.Repositories;
 using DoctorPilot.Infrastructure.Persistence;
 using DoctorPilot.Infrastructure.Repositories;
+using DoctorPilot.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +39,7 @@ namespace DoctorPilot.Infrastructure
             services.AddScoped<IProfissionalRepository, ProfissionalRepository>();
             services.AddScoped<IAnamneseTemplateRepository, AnamneseTemplateRepository>();
             services.AddScoped<IEvolucaoRepository, EvolucaoRepository>();
+            services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             return services;
         }
 

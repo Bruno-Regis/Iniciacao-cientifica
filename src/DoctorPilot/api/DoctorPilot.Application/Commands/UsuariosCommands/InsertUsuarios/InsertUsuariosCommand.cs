@@ -12,7 +12,7 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
         public string Senha { get; set; }
         public RoleEnum Role { get; set; }
 
-        public Usuario ToEntity()
-            => new(ClinicaId, Email, Senha, Role);
+        public Usuario ToEntity(string senhaHash)
+            => new(ClinicaId, Email, senhaHash, Role);
     }
 }

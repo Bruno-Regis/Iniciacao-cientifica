@@ -1,7 +1,7 @@
+using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
-using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
 {
@@ -9,11 +9,13 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
     {
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public InsertUsuariosHandler(IUsuarioRepository usuarioRepository, IUnitOfWork unitOfWork)
+        public InsertUsuariosHandler(IUsuarioRepository usuarioRepository, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
         {
             _usuarioRepository = usuarioRepository;
             _unitOfWork = unitOfWork;
+            _passwordHasher = passwordHasher;
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertUsuariosCommand command, CancellationToken cancellationToken)
         {
@@ -22,7 +24,9 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
             if (usuarioJaExiste)
                 return ResultViewModel<Guid>.Error("Já existe um usuário com este e-mail.");
             
-            var usuario = command.ToEntity();
+            var senhaHash = _passwordHasher.Hash(command.Senha);
+
+            var usuario = command.ToEntity(senhaHash);
 
             await _usuarioRepository.AddAsync(usuario);
             await _unitOfWork.CommitAsync();

@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DoctorPilot.Application\DoctorPilot.Application.csproj" />
     <ProjectReference Include="..\DoctorPilot.Core\DoctorPilot.Core.csproj" />
   </ItemGroup>
 
