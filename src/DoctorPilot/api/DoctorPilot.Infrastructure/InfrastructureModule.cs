@@ -69,6 +69,8 @@ namespace DoctorPilot.Infrastructure
             services.AddAuthorization();
             services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+            services.AddHttpContextAccessor();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             return services;
         }
     }

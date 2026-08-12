@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace DoctorPilot.Core.Enums
 {
     public enum RoleEnum
     {
-        Administrador = 0,
-        Medico = 1,
-        Admnistrativo = 2,
+        SuperAdmin = 0,
+        TenantAdmnin = 1,
+        Medico = 2,
+        Admnistrativo = 3,
     }
 }

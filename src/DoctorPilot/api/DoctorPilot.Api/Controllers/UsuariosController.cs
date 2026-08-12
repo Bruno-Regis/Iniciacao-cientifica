@@ -2,6 +2,7 @@
 using DoctorPilot.Application.Queries.UsuariosQueries.GetAllUsuarios;
 using DoctorPilot.Application.Queries.UsuariosQueries.GetUsuarioById;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -19,6 +20,7 @@ namespace DoctorPilot.Api.Controllers
 
         // POST api/usuarios
         [HttpPost]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Post([FromBody] InsertUsuariosCommand command)
         {
             var result = await _mediator.Send(command);
