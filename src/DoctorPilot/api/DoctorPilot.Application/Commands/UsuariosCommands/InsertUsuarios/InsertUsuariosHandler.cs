@@ -10,12 +10,14 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
         private readonly IUsuarioRepository _usuarioRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly ICurrentUserService _currentUser;
 
-        public InsertUsuariosHandler(IUsuarioRepository usuarioRepository, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
+        public InsertUsuariosHandler(IUsuarioRepository usuarioRepository, IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, ICurrentUserService currentUser)
         {
             _usuarioRepository = usuarioRepository;
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
+            _currentUser = currentUser;
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertUsuariosCommand command, CancellationToken cancellationToken)
         {
@@ -26,7 +28,7 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
             
             var senhaHash = _passwordHasher.Hash(command.Senha);
 
-            var usuario = command.ToEntity(senhaHash);
+            var usuario = command.ToEntity(_currentUser.ClinicaId, senhaHash);
 
             await _usuarioRepository.AddAsync(usuario);
             await _unitOfWork.CommitAsync();

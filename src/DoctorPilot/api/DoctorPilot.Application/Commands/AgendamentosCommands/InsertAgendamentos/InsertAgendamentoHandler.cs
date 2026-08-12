@@ -1,7 +1,8 @@
+using DoctorPilot.Application.Mappings;
+using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
-using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendamentos
 {
@@ -9,16 +10,18 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
     {
         private readonly IAgendamentoRepository _agendamentoRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUser;
 
-        public InsertAgendamentoHandler(IAgendamentoRepository agendamentoRepository, IUnitOfWork unitOfWork)
+        public InsertAgendamentoHandler(IAgendamentoRepository agendamentoRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUser)
         {
             _agendamentoRepository = agendamentoRepository;
             _unitOfWork = unitOfWork;
+            _currentUser = currentUser;
         }
 
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertAgendamentoCommand command, CancellationToken cancellationToken)
         {
-            var conflitos = await _agendamentoRepository.GetByPeriodoAsync(command.ClinicaId, command.DataHoraInicial, command.DataHoraFinal, command.ProfissionalId);
+            var conflitos = await _agendamentoRepository.GetByPeriodoAsync(_currentUser.ClinicaId, command.DataHoraInicial, command.DataHoraFinal, command.ProfissionalId);
 
             var conflitoComProfissional = conflitos.Any(a => a.ProfissionalId == command.ProfissionalId);
             if (conflitoComProfissional)
@@ -28,7 +31,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
             if (conflitoComSala)
                 return ResultViewModel<Guid>.Error("Sala já está ocupada neste período.");
 
-            var agendamento = command.ToEntity();   
+            var agendamento = command.ToEntity(_currentUser.ClinicaId);   
             await _agendamentoRepository.AddAsync(agendamento);
             await _unitOfWork.CommitAsync();
 

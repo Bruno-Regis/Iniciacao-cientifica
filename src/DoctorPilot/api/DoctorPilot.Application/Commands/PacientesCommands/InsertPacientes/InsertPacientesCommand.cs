@@ -7,7 +7,7 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
 {
     public class InsertPacientesCommand : ICommand<ResultViewModel<Guid>>
     {
-        public Guid ClinicaId { get; set; }
+        //public Guid ClinicaId { get; set; }
         public string Nome { get; set; }
         public DateTime DataNascimento { get; set; }
         public GeneroEnum Genero { get; set; }
@@ -30,8 +30,8 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
         public NecessidadeEspecialEnum NecessidadeEspecial { get; set; }
         public string? Observacoes { get; set; }
 
-        public Paciente ToEntity()
-            => new(ClinicaId, Nome, DataNascimento, Genero, EstadoCivil, NomeDaMae, NomeDoPai,
+        public Paciente ToEntity(Guid clinicaId)
+            => new(clinicaId, Nome, DataNascimento, Genero, EstadoCivil, NomeDaMae, NomeDoPai,
                    Cpf, Rg, OrgaoExpedidor, Telefone, Celular, Email, CEP, Cidade, Estado,
                    Bairro, Numero, Complemento, Profissao, NecessidadeEspecial, Observacoes);
     }

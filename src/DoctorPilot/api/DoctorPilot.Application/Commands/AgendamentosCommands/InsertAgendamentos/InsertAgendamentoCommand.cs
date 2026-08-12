@@ -9,7 +9,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
     {
         public Guid PacienteId { get; set; }
         public Guid ProfissionalId { get; set; }
-        public Guid ClinicaId { get; set; }
+        //public Guid ClinicaId { get; set; }
         public TipoAgendamentoEnum Tipo { get; set; }
         public string Procedimento { get; set; }
         public DateTime DataHoraInicial { get; set; }
@@ -18,8 +18,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
         public bool Confirmacao { get; set; }
         public string? Descricao { get; set; }
 
-
-        public Agendamento ToEntity()
-            => new(PacienteId, ProfissionalId, ClinicaId, Tipo, Procedimento, DataHoraInicial, DataHoraFinal, Sala, Confirmacao, Descricao);
+        public Agendamento ToEntity(Guid clinicaId)
+            => new(PacienteId, ProfissionalId, clinicaId, Tipo, Procedimento, DataHoraInicial, DataHoraFinal, Sala, Confirmacao, Descricao);
     }
 }

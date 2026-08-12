@@ -1,7 +1,8 @@
+using DoctorPilot.Application.Mappings;
+using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
-using DoctorPilot.Application.Mappings;
 
 namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
 {
@@ -9,11 +10,13 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
     {
         private readonly IPacienteRepository _pacienteRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUser;
 
-        public InsertPacientesHandler(IPacienteRepository pacienteRepository, IUnitOfWork unitOfWork)
+        public InsertPacientesHandler(IPacienteRepository pacienteRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUser)
         {
             _pacienteRepository = pacienteRepository;
             _unitOfWork = unitOfWork;
+            _currentUser = currentUser;
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertPacientesCommand command, CancellationToken cancellationToken)
         {
@@ -21,7 +24,7 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
             if (cpfJaCadastrado is not null)
                 return ResultViewModel<Guid>.Error("Já existe um paciente cadastrado com este CPF.");
 
-            var paciente = command.ToEntity();
+            var paciente = command.ToEntity(_currentUser.ClinicaId);
 
             await _pacienteRepository.AddAsync(paciente);
             await _unitOfWork.CommitAsync();
