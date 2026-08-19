@@ -1,0 +1,110 @@
+﻿@page "/pacientes/cadastrar"
+@page "/pacientes/{Id:guid}/editar"
+@rendermode InteractiveServer
+@using DoctorPilot.Web.Migration.Models
+@using DoctorPilot.Web.Migration.Components.Shared.PacienteDetalhe
+@inject DoctorPilotApiClient DoctorPilotService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<h3>@(_modoEdicao ? "Editar Paciente" : "Cadastrar Paciente")</h3>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="IrParaListagem">
+    Voltar para lista
+</MudButton>
+
+@if (_carregando)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PacienteForm Model="_model" OnValidSubmit= "@( _modoEdicao ? Atualizar : Salvar )" />
+}
+
+@code {
+
+    [Parameter]
+    public Guid? Id { get; set; }
+    private bool _modoEdicao => Id.HasValue;
+    private bool _carregando = true;
+
+    private readonly Guid _clinicaIdTemporaria = new("14bfa2a3-3571-4f74-8848-18f98e227b10"); // TODO: substituir por ClinicaId real assim que tiver autenticação
+    private void IrParaListagem() => NavigationManager.NavigateTo($"/pacientes");
+
+    private PacienteFormModel _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_modoEdicao)
+        {
+            var paciente = await DoctorPilotService.GetPacienteByIdAsync(Id!.Value);
+            if (paciente is not null)
+            {
+                _model = MapearParaFormModel(paciente);
+            }
+            else
+            {
+                Snackbar.Add("Paciente não encontrado.", Severity.Error);
+                NavigationManager.NavigateTo("/pacientes");
+                return;
+            }
+        }
+        _carregando = false;
+    }
+    private PacienteFormModel MapearParaFormModel(PacienteDetailsDto dto)
+    {
+        return new PacienteFormModel
+        {
+            ClinicaId = dto.ClinicaId,
+            Nome = dto.Nome,
+            Email = dto.Email,
+            Celular = dto.Celular,
+            Telefone = dto.Telefone,
+            DataNascimento = dto.DataNascimento,
+            Genero = (int)Enum.Parse<GeneroEnum>(dto.Genero, ignoreCase: true),
+            EstadoCivil = (int)Enum.Parse<EstadoCivilEnum>(dto.EstadoCivil, ignoreCase: true),
+            NomeDaMae = dto.NomeDaMae,
+            NomeDoPai = dto.NomeDoPai,
+            Cpf = dto.Cpf,
+            Rg = dto.Rg,
+            OrgaoExpedidor = dto.OrgaoExpedidor,
+            CEP = dto.CEP,
+            Cidade = dto.Cidade,
+            Estado = dto.Estado,
+            Bairro = dto.Bairro,
+            Numero = dto.Numero,
+            Complemento = dto.Complemento,
+            Profissao = dto.Profissao,
+            NecessidadeEspecial = (int)Enum.Parse<NecessidadeEspecialEnum>(dto.NecessidadeEspecial, ignoreCase: true),
+            Observacoes = dto.Observacoes
+        };
+    }
+    private async Task Salvar(PacienteFormModel modelo)
+    {
+        modelo.ClinicaId = _clinicaIdTemporaria;
+        var result = await DoctorPilotService.CreatePacienteAsync(modelo);
+
+        if (!result.IsSuccess)
+        {
+            Snackbar.Add(result.Message ?? "Erro ao cadastrar paciente.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Paciente cadastrado com sucesso!", Severity.Success);
+        NavigationManager.NavigateTo("/pacientes");
+    }
+
+    private async Task Atualizar(PacienteFormModel modelo)
+    {
+        var result = await DoctorPilotService.UpdatePacienteAsync(Id!.Value, modelo);
+        if (!result.IsSuccess)
+        {
+            Snackbar.Add(result.Message ?? "Erro ao atualizar paciente.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Paciente atualizado com sucesso!", Severity.Success);
+        NavigationManager.NavigateTo("/pacientes");
+    }
+}

@@ -27,10 +27,10 @@ namespace DoctorPilot.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Data }, result);
         }
 
-        [HttpGet("clinica/{clinicaId}")]
-        public async Task<IActionResult> GetAllByClinica(Guid clinicaId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        [HttpGet]
+        public async Task<IActionResult> GetAllByClinica([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            var result = await _mediator.Send(new GetAllPacientesByClinicaQuery(clinicaId, page, pageSize));
+            var result = await _mediator.Send(new GetAllPacientesByClinicaQuery(page, pageSize));
             return Ok(result);
         }
 

@@ -4,6 +4,5 @@
   <Project Path="api/DoctorPilot.Core/DoctorPilot.Core.csproj" />
   <Project Path="Api/DoctorPilot.Infrastructure/DoctorPilot.Infrastructure.csproj" />
   <Project Path="DoctorPilot.Contracts/DoctorPilot.Contracts.csproj" Id="50345278-24f7-4c46-aa98-d49364c44c7a" />
-  <Project Path="DoctorPilot.Web/DoctorPilot.Web.Client/DoctorPilot.Web.Client.csproj" Id="fe8720f5-64be-40e2-81f2-b8318ca7441f" />
-  <Project Path="DoctorPilot.Web/DoctorPilot.Web/DoctorPilot.Web.csproj" Id="6d7df604-3113-499d-a1c2-7f70f21520cf" />
+  <Project Path="DoctorPilot.Web.Migration/DoctorPilot.Web.Migration.csproj" Id="166ef7e6-c704-4e59-8f30-d9cc8c7b99f4" />
 </Solution>

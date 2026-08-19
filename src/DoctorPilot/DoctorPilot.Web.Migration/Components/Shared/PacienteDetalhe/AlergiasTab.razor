@@ -1,0 +1,124 @@
+﻿@rendermode InteractiveServer
+@using DoctorPilot.Contracts.Alergias
+@using DoctorPilot.Web.Migration.Models
+@inject DoctorPilotApiClient DoctorPilotService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="AbrirParaCriar" Class="mb-4">
+    + Adicionar Alergia
+</MudButton>
+
+@if (_alergias is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (!_alergias.Any())
+{
+    <MudText>Nenhuma alergia registrada.</MudText>
+}
+else
+{
+    @foreach (var alergia in _alergias)
+    {
+        <MudPaper Class="pa-4 mb-2" Outlined="true">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <div>
+                    <MudText Typo="Typo.subtitle1">@alergia.NomeAlergia</MudText>
+                    <MudText Typo="Typo.caption">
+                        Identificada: @(alergia.DataIdentificacao?.ToString("dd/MM/yyyy") ?? "-")
+                    </MudText>
+                </div>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudChip T="string"
+                             Color="@CorPorGravidade(alergia.Gravidade)"
+                             Size="Size.Small">
+                        @alergia.Gravidade
+                    </MudChip>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Size="Size.Small"
+                                   OnClick="@(() => AbrirParaEditar(alergia))" />
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+    }
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid PacienteId { get; set; }
+
+    private IEnumerable<AlergiaDto>? _alergias;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarAlergias();
+    }
+
+    private async Task CarregarAlergias()
+    {
+        _alergias = await DoctorPilotService.GetAllAlergiasByPacienteAsync(PacienteId);
+    }
+
+    private Color CorPorGravidade(string gravidade)
+    {
+        if (gravidade.Contains("Alta")) return Color.Error;
+        if (gravidade.Contains("Média") || gravidade.Contains("Media")) return Color.Warning;
+        return Color.Success;
+    }
+
+    private async Task AbrirParaCriar()
+    {
+        var parameters = new DialogParameters<AlergiaFormDialog>
+        {
+            { x => x.Model, new AlergiaFormModel() }
+        };
+
+        var dialog = await DialogService.ShowAsync<AlergiaFormDialog>("Nova Alergia", parameters);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled && result.Data is AlergiaFormModel modelo)
+        {
+            var response = await DoctorPilotService.CreateAlergiaAsync(PacienteId, modelo);
+            await TratarResultado(response, "Alergia cadastrada com sucesso!");
+        }
+    }
+
+    private async Task AbrirParaEditar(AlergiaDto alergia)
+    {
+        var modelo = new AlergiaFormModel
+        {
+            AlergiaId = alergia.Id,
+            NomeAlergia = alergia.NomeAlergia,
+            Gravidade = (int)Enum.Parse<GravidadeEnum>(alergia.Gravidade.Replace(" Risco", ""), ignoreCase: true),
+            DataIdentificacao = alergia.DataIdentificacao,
+            Observacoes = alergia.Observacoes
+        };
+
+        var parameters = new DialogParameters<AlergiaFormDialog>
+        {
+            { x => x.Model, modelo }
+        };
+
+        var dialog = await DialogService.ShowAsync<AlergiaFormDialog>("Editar Alergia", parameters);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled && result.Data is AlergiaFormModel modeloEditado)
+        {
+            var response = await DoctorPilotService.UpdateAlergiaAsync(alergia.Id, modeloEditado);
+            await TratarResultado(response, "Alergia atualizada com sucesso!");
+        }
+    }
+
+    private async Task TratarResultado(DoctorPilot.Contracts.Common.ResultViewModel<Guid> response, string mensagemSucesso)
+    {
+        if (!response.IsSuccess)
+        {
+            Snackbar.Add(response.Message ?? "Erro ao salvar alergia.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add(mensagemSucesso, Severity.Success);
+        await CarregarAlergias();
+    }
+}

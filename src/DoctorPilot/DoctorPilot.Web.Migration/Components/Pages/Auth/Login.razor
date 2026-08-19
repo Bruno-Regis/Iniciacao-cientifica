@@ -1,0 +1,51 @@
+@page "/login"
+@attribute [ExcludeFromInteractiveRouting]
+
+<PageTitle>Entrar</PageTitle>
+
+<MudPaper Class="pa-8" MaxWidth="400px" Style="margin: 100px auto;">
+    <MudText Typo="Typo.h5" Class="mb-4">Login - CliniAI</MudText>
+
+    @if (Error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">
+            @(Error == "unavailable"
+                ? "Não foi possível conectar ao servidor. Tente novamente."
+                : "Email ou senha inválidos.")
+        </MudAlert>
+    }
+
+    <form method="post" action="/account/login" data-enhance="false">
+        <AntiforgeryToken />
+        <input type="hidden" name="ReturnUrl" value="@LocalReturnUrl" />
+
+        <div class="mb-3">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control" id="email" name="Email" type="email" autocomplete="username" required />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="senha">Senha</label>
+            <input class="form-control" id="senha" name="Senha" type="password" autocomplete="current-password" required />
+        </div>
+
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">
+            Entrar
+        </MudButton>
+    </form>
+</MudPaper>
+
+@code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    private string LocalReturnUrl =>
+        !string.IsNullOrWhiteSpace(ReturnUrl) &&
+        ReturnUrl.StartsWith('/') &&
+        !ReturnUrl.StartsWith("//") &&
+        !ReturnUrl.StartsWith("/\\")
+            ? ReturnUrl
+            : "/";
+}

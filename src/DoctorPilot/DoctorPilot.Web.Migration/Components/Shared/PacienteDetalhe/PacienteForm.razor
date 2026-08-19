@@ -1,0 +1,126 @@
+﻿@using DoctorPilot.Web.Migration.Models
+@rendermode InteractiveServer
+@inject ISnackbar Snackbar
+
+<EditForm Model="@Model" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+
+<MudText Typo="Typo.subtitle1" Class="mb-2">Informações Básicas</MudText>
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.Nome" Label="Nome Completo" For="@(() => Model.Nome)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.Email" Label="Email" For="@(() => Model.Email)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.Celular" Label="Celular" For="@(() => Model.Celular)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.Telefone" Label="Telefone (opcional)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudDatePicker @bind-Date="Model.DataNascimento" Label="Data de Nascimento" />
+        </MudItem>
+         <MudItem xs="12" sm="6">
+        <MudSelect T="int" @bind-Value="Model.Genero" Label="Sexo" Required="true">
+            @foreach (var t in Enum.GetValues<GeneroEnum>())
+            {
+                    <MudSelectItem T="int" Value="(int)t">@t.GetDisplayName()</MudSelectItem>
+            }
+        </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudSelect T="int" @bind-Value="Model.EstadoCivil" Label="Estado Civil" Required="true">
+                @foreach (var t in Enum.GetValues<EstadoCivilEnum>())
+                {
+                    <MudSelectItem T="int" Value="(int)t">@t.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.NomeDaMae" Label="Nome da Mãe (opcional)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.NomeDoPai" Label="Nome do Pai (opcional)" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.subtitle1" Class="mt-6 mb-2">Documentação</MudText>
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.Cpf" Label="CPF" For="@(() => Model.Cpf)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.Rg" Label="RG (opcional)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.OrgaoExpedidor" Label="Órgão Expedidor (opcional)" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.subtitle1" Class="mt-6 mb-2">Localização</MudText>
+    <MudGrid>
+        <MudItem xs="12" sm="4">
+            <MudTextField @bind-Value="Model.CEP" Label="CEP" For="@(() => Model.CEP)" />
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudTextField @bind-Value="Model.Cidade" Label="Cidade" For="@(() => Model.Cidade)" />
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudTextField @bind-Value="Model.Estado" Label="Estado" For="@(() => Model.Estado)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.Bairro" Label="Bairro" For="@(() => Model.Bairro)" />
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudTextField @bind-Value="Model.Numero" Label="Número" For="@(() => Model.Numero)" />
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudTextField @bind-Value="Model.Complemento" Label="Complemento (opcional)" />
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.subtitle1" Class="mt-6 mb-2">Informações Adicionais</MudText>
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudTextField @bind-Value="Model.Profissao" Label="Profissão" For="@(() => Model.Profissao)" />
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudSelect T="int" @bind-Value="Model.NecessidadeEspecial" Label="Necessidade Especial" Required="true">
+                @foreach (var t in Enum.GetValues<NecessidadeEspecialEnum>())
+                {
+                    <MudSelectItem T="int" Value="(int)t">@t.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
+
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Model.Observacoes" Label="Observações (opcional)" Lines="3" />
+        </MudItem>
+    </MudGrid>
+
+    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">
+        Salvar
+    </MudButton>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired]
+    public PacienteFormModel Model { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<PacienteFormModel> OnValidSubmit { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        await OnValidSubmit.InvokeAsync(Model);
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        Snackbar.Add("Preencha todos os campos obrigatórios antes de salvar.", Severity.Warning);
+    }
+}
