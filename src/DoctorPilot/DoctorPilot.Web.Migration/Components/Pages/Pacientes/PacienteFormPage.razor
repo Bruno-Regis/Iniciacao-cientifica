@@ -1,5 +1,6 @@
 ﻿@page "/pacientes/cadastrar"
 @page "/pacientes/{Id:guid}/editar"
+@attribute [Authorize]
 @rendermode InteractiveServer
 @using DoctorPilot.Web.Migration.Models
 @using DoctorPilot.Web.Migration.Components.Shared.PacienteDetalhe
