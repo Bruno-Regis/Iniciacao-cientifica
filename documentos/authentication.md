@@ -115,6 +115,23 @@ Antes de criar o cookie, o Web valida os mesmos elementos com `JwtSecurityTokenH
 
 Essa validação local impede que o Web crie uma sessão a partir de um token expirado, mal assinado ou destinado a issuer/audience diferentes.
 
+### 3.5 Configuração de secrets
+
+Em ambiente de desenvolvimento, valores sensíveis não são armazenados nos arquivos `appsettings`.
+
+Os seguintes valores são fornecidos por .NET User Secrets:
+
+- `DoctorPilot.Api`
+  - `Jwt:SecretKey`
+  - `ConnectionStrings:DoctorPilotCs`
+
+- `DoctorPilot.Web.Migration`
+  - `Jwt:SecretKey`
+
+API e Web devem utilizar o mesmo `Jwt:SecretKey`.
+
+Configurações não sensíveis, como `Jwt:Issuer`, `Jwt:Audience`, `Cors:AllowedOrigins` e URLs locais, permanecem nos arquivos `appsettings`.
+
 ## 4. Cookie do Web
 
 O esquema padrão do Web é `CookieAuthenticationDefaults.AuthenticationScheme`. Suas opções atuais são:
@@ -247,7 +264,7 @@ O logout é local ao Web. O JWT é stateless e continua criptograficamente váli
 
 As condições abaixo descrevem limitações atuais. Elas não representam requisitos de implementação imediata definidos por este documento:
 
-- A chave JWT de desenvolvimento ainda está em configuração versionada nos dois projetos e deve ser migrada para .NET User Secrets ou outro mecanismo de secrets adequado.
+- Em desenvolvimento local, `Jwt:SecretKey` é fornecido por .NET User Secrets nos projetos API e Web. A connection string local da API também é fornecida por User Secrets. API e Web devem receber o mesmo valor de `Jwt:SecretKey`.
 - O endpoint de login não possui rate limiting, lockout ou proteção equivalente contra tentativas repetidas.
 - Não existe revogação ou blacklist de JWT. Um token copiado para fora da sessão Web permanece válido até expirar.
 - Não existe refresh token.
