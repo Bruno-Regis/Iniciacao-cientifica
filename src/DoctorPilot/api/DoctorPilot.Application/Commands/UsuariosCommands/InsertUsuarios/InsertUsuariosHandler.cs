@@ -1,5 +1,6 @@
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
+using DoctorPilot.Core.Enums;
 using DoctorPilot.Core.Repositories;
 using Mediator;
 
@@ -21,6 +22,16 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertUsuariosCommand command, CancellationToken cancellationToken)
         {
+            if (!Enum.IsDefined(command.Role))
+                return ResultViewModel<Guid>.Error("A role informada e invalida.");
+
+            if (!_currentUser.IsSuperAdmin &&
+                command.Role is not RoleEnum.Medico and not RoleEnum.Admnistrativo)
+            {
+                return ResultViewModel<Guid>.Error(
+                    "A role informada nao pode ser atribuida por um administrador de clinica.");
+            }
+
             var usuarioJaExiste = await _usuarioRepository.ExistsEmailAsync(command.Email);
 
             if (usuarioJaExiste)
