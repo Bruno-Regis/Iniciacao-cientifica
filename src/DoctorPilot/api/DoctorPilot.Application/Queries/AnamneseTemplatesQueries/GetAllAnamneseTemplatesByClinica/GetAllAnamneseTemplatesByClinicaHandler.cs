@@ -19,10 +19,9 @@ namespace DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamnes
 
         public async ValueTask<ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>> Handle(GetAllAnamneseTemplatesByClinicaQuery query, CancellationToken cancellationToken)
         {
-            var clinicaId = _currentUser.IsSuperAdmin ? query.ClinicaId : _currentUser.ClinicaId; // If the user is a super admin, use the provided ClinicaId; otherwise, use the ClinicaId from the current user context.
-
+            var clinicaId =  _currentUser.ClinicaId; 
             var templates = await _templateRepository
-                .GetByClinicaIdAsync(query.ClinicaId, query.Page, query.PageSize);
+                .GetByClinicaIdAsync(clinicaId, query.Page, query.PageSize);
 
             var viewModels = templates
                 .Select(t => t.ToItemDto());

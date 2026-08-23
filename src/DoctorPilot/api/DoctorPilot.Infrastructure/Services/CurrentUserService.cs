@@ -1,5 +1,6 @@
 ﻿using DoctorPilot.Application.Services;
 using Microsoft.AspNetCore.Http;
+using DoctorPilot.Core.Enums;
 using System.Security.Claims;
 
 namespace DoctorPilot.Infrastructure.Services
@@ -24,6 +25,6 @@ namespace DoctorPilot.Infrastructure.Services
             _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Role)
                 ?? throw new UnauthorizedAccessException("Role não identificada no token.");
 
-        public bool IsSuperAdmin => Role == "SuperAdmin";
+        public bool IsSuperAdmin => Role == nameof(RoleEnum.SuperAdmin);
     }
 }

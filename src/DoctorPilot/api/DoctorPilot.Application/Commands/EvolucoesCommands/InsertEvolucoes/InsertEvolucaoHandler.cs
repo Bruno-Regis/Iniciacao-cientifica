@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
 using DoctorPilot.Application.Mappings;
+using DoctorPilot.Application.Services;
 
 namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
 {
@@ -10,17 +11,19 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
         private readonly IEvolucaoRepository _evolucaoRepository;
         private readonly IAgendamentoRepository _agendamentoRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUser;
 
-        public InsertEvolucaoHandler(IEvolucaoRepository evolucaoRepository,IAgendamentoRepository agendamentoRepository,IUnitOfWork unitOfWork)
+        public InsertEvolucaoHandler(IEvolucaoRepository evolucaoRepository, IAgendamentoRepository agendamentoRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUser)
         {
             _evolucaoRepository = evolucaoRepository;
             _agendamentoRepository = agendamentoRepository;
             _unitOfWork = unitOfWork;
+            _currentUser = currentUser;
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertEvolucaoCommand command, CancellationToken cancellationToken)
         {
-            var agendamentoExiste = await _agendamentoRepository.ExistsAsync(command.AgendamentoId);
-            if (!agendamentoExiste)
+            var agendamento = await _agendamentoRepository.GetByIdAsync(command.AgendamentoId);
+            if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
                 return ResultViewModel<Guid>.Error("Agendamento não encontrado.");
 
             var evolucaoExistente = await _evolucaoRepository.GetByAgendamentoIdAsync(command.AgendamentoId);

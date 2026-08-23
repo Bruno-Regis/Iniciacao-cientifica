@@ -1,6 +1,7 @@
 ﻿using DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios;
 using DoctorPilot.Application.Queries.UsuariosQueries.GetAllUsuarios;
 using DoctorPilot.Application.Queries.UsuariosQueries.GetUsuarioById;
+using DoctorPilot.Core.Enums;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,7 @@ namespace DoctorPilot.Api.Controllers
 
         // POST api/usuarios
         [HttpPost]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = nameof(RoleEnum.TenantAdmnin))]
         public async Task<IActionResult> Post([FromBody] InsertUsuariosCommand command)
         {
             var result = await _mediator.Send(command);

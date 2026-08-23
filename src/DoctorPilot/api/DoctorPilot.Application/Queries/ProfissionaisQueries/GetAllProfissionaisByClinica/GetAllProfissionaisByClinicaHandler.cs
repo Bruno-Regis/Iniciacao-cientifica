@@ -20,9 +20,8 @@ namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissiona
 
         public async ValueTask<ResultViewModel<IEnumerable<ProfissionalItemDto>>> Handle(GetAllProfissionaisByClinicaQuery query, CancellationToken cancellationToken)
         {
-            var clinicaId = _currentUser.IsSuperAdmin ? query.ClinicaId : _currentUser.ClinicaId; // If the user is a super admin, use the provided ClinicaId; otherwise, use the ClinicaId from the current user context.
-
-            var profissionais = await _profissionalRepository.GetByClinicaIdAsync(query.ClinicaId, query.Page, query.PageSize);
+            var clinicaId = _currentUser.ClinicaId; 
+            var profissionais = await _profissionalRepository.GetByClinicaIdAsync(clinicaId, query.Page, query.PageSize);
             var viewModels = profissionais.Select(p => p.ToItemDto());
             return ResultViewModel<IEnumerable<ProfissionalItemDto>>.Success(viewModels);
         }

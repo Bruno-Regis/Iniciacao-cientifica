@@ -20,5 +20,15 @@ namespace DoctorPilot.Infrastructure.Repositories
         {
             return await _dbSet.FirstOrDefaultAsync(u => u.Email == email);
         }
+
+        public async Task<IEnumerable<Usuario>> GetByClinicaIdAsync(Guid clinicaId, int page = 1, int pageSize = 20)
+        {
+            return await _dbSet
+                .Where(u => u.ClinicaId == clinicaId)
+                .OrderBy(u => u.Email)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
     }
 }

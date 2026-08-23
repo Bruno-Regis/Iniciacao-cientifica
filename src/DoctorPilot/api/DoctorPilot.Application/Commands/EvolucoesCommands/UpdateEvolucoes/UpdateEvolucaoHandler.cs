@@ -3,6 +3,7 @@ using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
 using DoctorPilot.Application.Mappings;
+using DoctorPilot.Application.Services;
 
 namespace DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes
 {
@@ -10,16 +11,24 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes
     {
         private readonly IEvolucaoRepository _evolucaoRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAgendamentoRepository _agendamentoRepository;
+        private readonly ICurrentUserService _currentUser;
 
-        public UpdateEvolucaoHandler(IEvolucaoRepository evolucaoRepository, IUnitOfWork unitOfWork)
+        public UpdateEvolucaoHandler(IEvolucaoRepository evolucaoRepository, IUnitOfWork unitOfWork, IAgendamentoRepository agendamentoRepository, ICurrentUserService currentUser)
         {
             _evolucaoRepository = evolucaoRepository;
             _unitOfWork = unitOfWork;
+            _agendamentoRepository = agendamentoRepository;
+            _currentUser = currentUser;
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(UpdateEvolucaoCommand command, CancellationToken cancellationToken)
         {
             var evolucao = await _evolucaoRepository.GetByIdAsync(command.Id);
             if (evolucao is null)
+                return ResultViewModel<Guid>.Error("Evolução não encontrada.");
+
+            var agendamento = await _agendamentoRepository.GetByIdAsync(evolucao.AgendamentoId);
+            if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
                 return ResultViewModel<Guid>.Error("Evolução não encontrada.");
 
             evolucao.Conteudo = command.Conteudo;

@@ -1,5 +1,6 @@
 ﻿using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
+using DoctorPilot.Application.Services;
 using Mediator;
 
 namespace DoctorPilot.Application.Commands.PacientesCommands.UpdatePcientes
@@ -8,17 +9,19 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.UpdatePcientes
     {
         private readonly IPacienteRepository _pacienteRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICurrentUserService _currentUser;
 
-        public UpdatePacientesHandler(IPacienteRepository pacienteRepository, IUnitOfWork unitOfWork)
+        public UpdatePacientesHandler(IPacienteRepository pacienteRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUser)
         {
             _pacienteRepository = pacienteRepository;
             _unitOfWork = unitOfWork;
+            _currentUser = currentUser;
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(UpdatePacientesCommand command, CancellationToken cancellationToken)
         {
             var paciente = await _pacienteRepository.GetByIdAsync(command.PacienteId);
 
-            if (paciente == null) 
+            if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
                 return ResultViewModel<Guid>.Error("Paciente não encontrado.");
 
             paciente.Nome = command.Nome;
