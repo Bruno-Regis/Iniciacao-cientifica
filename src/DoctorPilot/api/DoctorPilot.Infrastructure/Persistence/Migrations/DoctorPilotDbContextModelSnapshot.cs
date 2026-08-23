@@ -718,6 +718,9 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ClinicaId");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.ToTable("Usuarios");
                 });
 
