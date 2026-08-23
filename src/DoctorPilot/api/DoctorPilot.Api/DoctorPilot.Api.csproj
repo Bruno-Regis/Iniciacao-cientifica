@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>doctorpilot-api-7e177432-970a-4b09-b883-1bd0f6109e20</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

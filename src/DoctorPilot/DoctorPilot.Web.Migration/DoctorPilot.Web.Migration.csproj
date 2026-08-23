@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <UserSecretsId>doctorpilot-web-migration-e48c9bc5-bccc-4a99-a7cf-e2b35f90fa4f</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
