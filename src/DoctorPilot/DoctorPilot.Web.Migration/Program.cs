@@ -2,6 +2,7 @@ using DoctorPilot.Web.Migration.Components;
 using DoctorPilot.Contracts.Auth;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Web.Migration.Services;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -131,6 +132,14 @@ namespace DoctorPilot.Web.Migration
                 await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), properties);
                 return Results.LocalRedirect(returnUrl);
             }).AllowAnonymous();
+
+            app.MapPost("/account/logout", async (HttpContext context, IAntiforgery antiforgery) =>
+            {
+                await antiforgery.ValidateRequestAsync(context);
+                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return Results.LocalRedirect("/login");
+            })
+                .RequireAuthorization();
 
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
