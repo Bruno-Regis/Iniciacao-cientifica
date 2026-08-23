@@ -27,6 +27,10 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                 .HasMaxLength(4000);
 
             builder
+                .HasIndex(e => e.AgendamentoId)
+                .IsUnique();
+
+            builder
                 .HasOne<Agendamento>()
                 .WithMany()
                 .HasForeignKey(e => e.AgendamentoId)

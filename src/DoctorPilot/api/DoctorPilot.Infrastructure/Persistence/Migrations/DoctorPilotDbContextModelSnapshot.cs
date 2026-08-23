@@ -451,7 +451,8 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AgendamentoId");
+                    b.HasIndex("AgendamentoId")
+                        .IsUnique();
 
                     b.ToTable("Evolucoes");
                 });
