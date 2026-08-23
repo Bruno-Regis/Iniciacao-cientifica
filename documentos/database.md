@@ -44,21 +44,21 @@ Não há configuração explícita de schema SQL, command timeout, retry de cone
 
 O `DoctorPilotDbContext` declara 14 `DbSet`s:
 
-| DbSet | Entidade |
-|---|---|
-| `Usuarios` | `Usuario` |
-| `Agendamentos` | `Agendamento` |
-| `Alergias` | `Alergia` |
-| `Anamneses` | `Anamnese` |
-| `AnamneseSessoes` | `AnamneseSessao` |
-| `Clinicas` | `Clinica` |
-| `Evolucoes` | `Evolucao` |
-| `Pacientes` | `Paciente` |
-| `Profissionais` | `Profissional` |
-| `Transcricoes` | `Transcricao` |
-| `Chats` | `Chat` |
-| `ChatMensagens` | `ChatMensagem` |
-| `AnamneseTemplates` | `AnamneseTemplate` |
+| DbSet                     | Entidade                 |
+| ------------------------- | ------------------------ |
+| `Usuarios`                | `Usuario`                |
+| `Agendamentos`            | `Agendamento`            |
+| `Alergias`                | `Alergia`                |
+| `Anamneses`               | `Anamnese`               |
+| `AnamneseSessoes`         | `AnamneseSessao`         |
+| `Clinicas`                | `Clinica`                |
+| `Evolucoes`               | `Evolucao`               |
+| `Pacientes`               | `Paciente`               |
+| `Profissionais`           | `Profissional`           |
+| `Transcricoes`            | `Transcricao`            |
+| `Chats`                   | `Chat`                   |
+| `ChatMensagens`           | `ChatMensagem`           |
+| `AnamneseTemplates`       | `AnamneseTemplate`       |
 | `AnamneseTemplateSessoes` | `AnamneseTemplateSessao` |
 
 As 14 configurations são aplicadas individualmente em `OnModelCreating` por chamadas a `ApplyConfiguration`. Não é utilizada descoberta automática por assembly.
@@ -78,21 +78,21 @@ Depois de aplicar as configurations, o contexto registra centralmente um Global 
 
 Todas as entidades persistidas possuem uma implementation própria de `IEntityTypeConfiguration<T>`, e todas são aplicadas pelo contexto:
 
-| Configuration | Entidade configurada |
-|---|---|
-| `UsuariosConfiguration` | `Usuario` |
-| `AgendamentosConfiguration` | `Agendamento` |
-| `AlergiasConfiguration` | `Alergia` |
-| `AnamnesesConfiguration` | `Anamnese` |
-| `AnamneseSessoesConfiguration` | `AnamneseSessao` |
-| `ClinicasConfiguration` | `Clinica` |
-| `EvolucoesConfiguration` | `Evolucao` |
-| `PacientesConfiguration` | `Paciente` |
-| `ProfissionaisConfiguration` | `Profissional` |
-| `TranscricoesConfiguration` | `Transcricao` |
-| `ChatsConfiguration` | `Chat` |
-| `ChatMensagensConfiguration` | `ChatMensagem` |
-| `AnamneseTemplateConfiguration` | `AnamneseTemplate` |
+| Configuration                         | Entidade configurada     |
+| ------------------------------------- | ------------------------ |
+| `UsuariosConfiguration`               | `Usuario`                |
+| `AgendamentosConfiguration`           | `Agendamento`            |
+| `AlergiasConfiguration`               | `Alergia`                |
+| `AnamnesesConfiguration`              | `Anamnese`               |
+| `AnamneseSessoesConfiguration`        | `AnamneseSessao`         |
+| `ClinicasConfiguration`               | `Clinica`                |
+| `EvolucoesConfiguration`              | `Evolucao`               |
+| `PacientesConfiguration`              | `Paciente`               |
+| `ProfissionaisConfiguration`          | `Profissional`           |
+| `TranscricoesConfiguration`           | `Transcricao`            |
+| `ChatsConfiguration`                  | `Chat`                   |
+| `ChatMensagensConfiguration`          | `ChatMensagem`           |
+| `AnamneseTemplateConfiguration`       | `AnamneseTemplate`       |
 | `AnamneseTemplateSessaoConfiguration` | `AnamneseTemplateSessao` |
 
 A Fluent API é a fonte principal para configurações explícitas, incluindo PKs, relacionamentos, delete behaviors, índices, unicidade, limites, conversões e defaults. Quando uma característica não aparece na Fluent API, ela pode resultar de convenção do EF Core ou da nulabilidade do tipo C#.
@@ -109,22 +109,22 @@ As 14 entidades persistidas herdam de `BaseEntity`.
 - `bool IsDeleted`: inicializado no CLR e no banco com `false`;
 - `MarkAsDeleted()`: define `IsDeleted = true` e atualiza `UpdatedAt` com UTC.
 
-| Entidade | Tabela | PK | Clínica direta? | Relacionamentos principais |
-|---|---|---|---|---|
-| `Clinica` | `Clinicas` | `Id` | É o tenant | Principal de usuários, profissionais, pacientes, agendamentos e templates |
-| `Usuario` | `Usuarios` | `Id` | Sim, `ClinicaId` | N:1 clínica; 1:0..1 profissional; 1:N chats |
-| `Profissional` | `Profissionais` | `Id` | Sim, `ClinicaId` | N:1 clínica; N:1 usuário com FK única; 1:N agendamentos e anamneses |
-| `Paciente` | `Pacientes` | `Id` | Sim, `ClinicaId` | N:1 clínica; 1:N alergias, agendamentos e anamneses |
-| `Agendamento` | `Agendamentos` | `Id` | Sim, `ClinicaId` | N:1 clínica, paciente e profissional; 1:0..1 evolução; 1:N transcrições |
-| `Alergia` | `Alergias` | `Id` | Indireta, via paciente | N:1 paciente |
-| `Anamnese` | `Anamneses` | `Id` | Indireta, via paciente/profissional | N:1 paciente e profissional; 1:N sessões |
-| `AnamneseSessao` | `AnamneseSessoes` | `Id` | Indireta, via anamnese | N:1 anamnese |
-| `AnamneseTemplate` | `AnamneseTemplates` | `Id` | Sim, `ClinicaId` | N:1 clínica; 1:N sessões |
-| `AnamneseTemplateSessao` | `AnamneseTemplateSessoes` | `Id` | Indireta, via template | N:1 template |
-| `Evolucao` | `Evolucoes` | `Id` | Indireta, via agendamento | N:1 agendamento com FK única |
-| `Transcricao` | `Transcricoes` | `Id` | Indireta, via agendamento | N:1 agendamento |
-| `Chat` | `Chats` | `Id` | Indireta, via usuário | N:1 usuário; 1:N mensagens |
-| `ChatMensagem` | `ChatMensagens` | `Id` | Indireta, via chat/usuário | N:1 chat |
+| Entidade                 | Tabela                    | PK   | Clínica direta?                     | Relacionamentos principais                                                |
+| ------------------------ | ------------------------- | ---- | ----------------------------------- | ------------------------------------------------------------------------- |
+| `Clinica`                | `Clinicas`                | `Id` | É o tenant                          | Principal de usuários, profissionais, pacientes, agendamentos e templates |
+| `Usuario`                | `Usuarios`                | `Id` | Sim, `ClinicaId`                    | N:1 clínica; 1:0..1 profissional; 1:N chats                               |
+| `Profissional`           | `Profissionais`           | `Id` | Sim, `ClinicaId`                    | N:1 clínica; N:1 usuário com FK única; 1:N agendamentos e anamneses       |
+| `Paciente`               | `Pacientes`               | `Id` | Sim, `ClinicaId`                    | N:1 clínica; 1:N alergias, agendamentos e anamneses                       |
+| `Agendamento`            | `Agendamentos`            | `Id` | Sim, `ClinicaId`                    | N:1 clínica, paciente e profissional; 1:0..1 evolução; 1:N transcrições   |
+| `Alergia`                | `Alergias`                | `Id` | Indireta, via paciente              | N:1 paciente                                                              |
+| `Anamnese`               | `Anamneses`               | `Id` | Indireta, via paciente/profissional | N:1 paciente e profissional; 1:N sessões                                  |
+| `AnamneseSessao`         | `AnamneseSessoes`         | `Id` | Indireta, via anamnese              | N:1 anamnese                                                              |
+| `AnamneseTemplate`       | `AnamneseTemplates`       | `Id` | Sim, `ClinicaId`                    | N:1 clínica; 1:N sessões                                                  |
+| `AnamneseTemplateSessao` | `AnamneseTemplateSessoes` | `Id` | Indireta, via template              | N:1 template                                                              |
+| `Evolucao`               | `Evolucoes`               | `Id` | Indireta, via agendamento           | N:1 agendamento com FK única                                              |
+| `Transcricao`            | `Transcricoes`            | `Id` | Indireta, via agendamento           | N:1 agendamento                                                           |
+| `Chat`                   | `Chats`                   | `Id` | Indireta, via usuário               | N:1 usuário; 1:N mensagens                                                |
+| `ChatMensagem`           | `ChatMensagens`           | `Id` | Indireta, via chat/usuário          | N:1 chat                                                                  |
 
 Resumo dos campos específicos:
 
@@ -147,25 +147,25 @@ Resumo dos campos específicos:
 
 Não há relacionamento N:N no modelo atual.
 
-| Principal | Dependente | Cardinalidade | FK | Navigations | Delete behavior |
-|---|---|---|---|---|---|
-| `Clinica` | `Usuario` | 1:N | `Usuario.ClinicaId` | `Usuario.Clinica` | `Restrict` |
-| `Clinica` | `Profissional` | 1:N | `Profissional.ClinicaId` | `Profissional.Clinica` | `Restrict` |
-| `Clinica` | `Paciente` | 1:N | `Paciente.ClinicaId` | `Paciente.Clinica` | `Restrict` |
-| `Clinica` | `Agendamento` | 1:N | `Agendamento.ClinicaId` | Nenhuma | `Restrict` |
-| `Clinica` | `AnamneseTemplate` | 1:N | `AnamneseTemplate.ClinicaId` | `AnamneseTemplate.Clinica` | `Restrict` |
-| `Usuario` | `Profissional` | 1:0..1 | `Profissional.UsuarioId`, única | `Profissional.Usuario` | `Restrict` |
-| `Usuario` | `Chat` | 1:N | `Chat.UsuarioId` | Nenhuma | `Restrict` |
-| `Paciente` | `Agendamento` | 1:N | `Agendamento.PacienteId` | Nenhuma | `Restrict` |
-| `Profissional` | `Agendamento` | 1:N | `Agendamento.ProfissionalId` | Nenhuma | `Restrict` |
-| `Paciente` | `Alergia` | 1:N | `Alergia.PacienteId` | `Paciente.Alergias`, `Alergia.Paciente` | `Restrict` |
-| `Paciente` | `Anamnese` | 1:N | `Anamnese.PacienteId` | Nenhuma | `Restrict` |
-| `Profissional` | `Anamnese` | 1:N | `Anamnese.ProfissionalId` | Nenhuma | `Restrict` |
-| `Anamnese` | `AnamneseSessao` | 1:N | `AnamneseSessao.AnamneseId` | `Anamnese.Sessoes`, `AnamneseSessao.Anamnese` | `Cascade` |
-| `AnamneseTemplate` | `AnamneseTemplateSessao` | 1:N | `AnamneseTemplateSessao.AnamneseTemplateId` | `AnamneseTemplate.Sessoes` | `Cascade` |
-| `Chat` | `ChatMensagem` | 1:N | `ChatMensagem.ChatId` | `Chat.Mensagens`, `ChatMensagem.Chat` | `Cascade` |
-| `Agendamento` | `Evolucao` | 1:0..1 | `Evolucao.AgendamentoId`, única | Nenhuma | `Restrict` |
-| `Agendamento` | `Transcricao` | 1:N | `Transcricao.AgendamentoId` | Nenhuma | `Restrict` |
+| Principal          | Dependente               | Cardinalidade | FK                                          | Navigations                                   | Delete behavior |
+| ------------------ | ------------------------ | ------------- | ------------------------------------------- | --------------------------------------------- | --------------- |
+| `Clinica`          | `Usuario`                | 1:N           | `Usuario.ClinicaId`                         | `Usuario.Clinica`                             | `Restrict`      |
+| `Clinica`          | `Profissional`           | 1:N           | `Profissional.ClinicaId`                    | `Profissional.Clinica`                        | `Restrict`      |
+| `Clinica`          | `Paciente`               | 1:N           | `Paciente.ClinicaId`                        | `Paciente.Clinica`                            | `Restrict`      |
+| `Clinica`          | `Agendamento`            | 1:N           | `Agendamento.ClinicaId`                     | Nenhuma                                       | `Restrict`      |
+| `Clinica`          | `AnamneseTemplate`       | 1:N           | `AnamneseTemplate.ClinicaId`                | `AnamneseTemplate.Clinica`                    | `Restrict`      |
+| `Usuario`          | `Profissional`           | 1:0..1        | `Profissional.UsuarioId`, única             | `Profissional.Usuario`                        | `Restrict`      |
+| `Usuario`          | `Chat`                   | 1:N           | `Chat.UsuarioId`                            | Nenhuma                                       | `Restrict`      |
+| `Paciente`         | `Agendamento`            | 1:N           | `Agendamento.PacienteId`                    | Nenhuma                                       | `Restrict`      |
+| `Profissional`     | `Agendamento`            | 1:N           | `Agendamento.ProfissionalId`                | Nenhuma                                       | `Restrict`      |
+| `Paciente`         | `Alergia`                | 1:N           | `Alergia.PacienteId`                        | `Paciente.Alergias`, `Alergia.Paciente`       | `Restrict`      |
+| `Paciente`         | `Anamnese`               | 1:N           | `Anamnese.PacienteId`                       | Nenhuma                                       | `Restrict`      |
+| `Profissional`     | `Anamnese`               | 1:N           | `Anamnese.ProfissionalId`                   | Nenhuma                                       | `Restrict`      |
+| `Anamnese`         | `AnamneseSessao`         | 1:N           | `AnamneseSessao.AnamneseId`                 | `Anamnese.Sessoes`, `AnamneseSessao.Anamnese` | `Cascade`       |
+| `AnamneseTemplate` | `AnamneseTemplateSessao` | 1:N           | `AnamneseTemplateSessao.AnamneseTemplateId` | `AnamneseTemplate.Sessoes`                    | `Cascade`       |
+| `Chat`             | `ChatMensagem`           | 1:N           | `ChatMensagem.ChatId`                       | `Chat.Mensagens`, `ChatMensagem.Chat`         | `Cascade`       |
+| `Agendamento`      | `Evolucao`               | 1:0..1        | `Evolucao.AgendamentoId`, única             | Nenhuma                                       | `Restrict`      |
+| `Agendamento`      | `Transcricao`            | 1:N           | `Transcricao.AgendamentoId`                 | Nenhuma                                       | `Restrict`      |
 
 A cardinalidade `Agendamento 1 -> 0..1 Evolucao` é garantida pelo índice único em `Evolucoes.AgendamentoId`. A FK continua obrigatória no lado de `Evolucao`: uma evolução sempre pertence a um agendamento, enquanto um agendamento pode não possuir evolução.
 
@@ -174,6 +174,12 @@ A cardinalidade atual de transcrição é `Agendamento 1 -> N Transcricoes`. `Tr
 ## 7. Diagrama ER
 
 ### Diagrama ER atual
+
+```md
+> Este diagrama representa o modelo relacional atual confirmado pelo código,
+> configurations e migrations. Ele pode divergir do diagrama histórico presente
+> em `Especificação do Projeto.md`.
+```
 
 ```mermaid
 erDiagram
@@ -358,16 +364,16 @@ Não há `DbSet.Remove`, `EntityState.Deleted` ou exclusão física no repositor
 
 Repositories especializados:
 
-| Repository | Consultas específicas |
-|---|---|
-| `AgendamentoRepository` | período por clínica, paciente e último agendamento do paciente |
-| `AnamneseRepository` | por paciente e por ID com sessões |
-| `AnamneseTemplateRepository` | por clínica e por ID com sessões |
-| `ChatRepository` | por usuário e por ID com mensagens |
-| `EvolucaoRepository` | por agendamento e por paciente |
-| `PacienteRepository` | por clínica, CPF, busca textual e paciente com alergias |
-| `ProfissionalRepository` | por usuário com clínica/usuário e por clínica |
-| `UsuarioRepository` | existência por e-mail, busca por e-mail e por clínica |
+| Repository                   | Consultas específicas                                          |
+| ---------------------------- | -------------------------------------------------------------- |
+| `AgendamentoRepository`      | período por clínica, paciente e último agendamento do paciente |
+| `AnamneseRepository`         | por paciente e por ID com sessões                              |
+| `AnamneseTemplateRepository` | por clínica e por ID com sessões                               |
+| `ChatRepository`             | por usuário e por ID com mensagens                             |
+| `EvolucaoRepository`         | por agendamento e por paciente                                 |
+| `PacienteRepository`         | por clínica, CPF, busca textual e paciente com alergias        |
+| `ProfissionalRepository`     | por usuário com clínica/usuário e por clínica                  |
+| `UsuarioRepository`          | existência por e-mail, busca por e-mail e por clínica          |
 
 Entidades sem repository especializado usam `IRepository<T>` quando necessário.
 
