@@ -26,7 +26,7 @@ namespace DoctorPilot.Infrastructure.Repositories
 
             if (entity is null) return;
 
-            entity.IsDeleted = true;
+            entity.MarkAsDeleted();
             _dbSet.Update(entity);
         }
 

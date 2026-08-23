@@ -43,6 +43,18 @@ namespace DoctorPilot.Infrastructure.Persistence
             builder.ApplyConfiguration(new ChatMensagensConfiguration());
             builder.ApplyConfiguration(new AnamneseTemplateConfiguration());
             builder.ApplyConfiguration(new AnamneseTemplateSessaoConfiguration());
+
+            foreach (var entityType in builder.Model.GetEntityTypes()
+                         .Where(entityType => typeof(BaseEntity).IsAssignableFrom(entityType.ClrType)))
+            {
+                var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "entity");
+                var isDeleted = System.Linq.Expressions.Expression.Property(parameter, nameof(BaseEntity.IsDeleted));
+                var filter = System.Linq.Expressions.Expression.Lambda(
+                    System.Linq.Expressions.Expression.Not(isDeleted),
+                    parameter);
+
+                builder.Entity(entityType.ClrType).HasQueryFilter(filter);
+            }
         }
     }
 }
