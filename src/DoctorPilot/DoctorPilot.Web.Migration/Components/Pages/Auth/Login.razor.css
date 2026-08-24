@@ -1,0 +1,44 @@
+.login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin-bottom: 1rem;
+}
+
+.login-label {
+    color: var(--mud-palette-text-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.login-input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 0.875rem;
+    color: var(--mud-palette-text-primary);
+    font: inherit;
+    background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-lines-inputs);
+    border-radius: var(--mud-default-borderradius);
+    outline: none;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.login-input:hover {
+    border-color: var(--mud-palette-action-default);
+}
+
+.login-input:focus-visible {
+    border-color: var(--mud-palette-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--mud-palette-primary) 18%, transparent);
+}
+
+.login-input:user-invalid {
+    border-color: var(--mud-palette-error);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-input {
+        transition: none;
+    }
+}

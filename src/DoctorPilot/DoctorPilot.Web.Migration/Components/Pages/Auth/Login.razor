@@ -19,13 +19,13 @@
         <AntiforgeryToken />
         <input type="hidden" name="ReturnUrl" value="@LocalReturnUrl" />
 
-        <div class="mb-3">
-            <label class="form-label" for="email">Email</label>
-            <input class="form-control" id="email" name="Email" type="email" autocomplete="username" required />
+        <div class="login-field">
+            <label class="login-label" for="email">Email</label>
+            <input class="login-input" id="email" name="Email" type="email" autocomplete="username" required />
         </div>
-        <div class="mb-3">
-            <label class="form-label" for="senha">Senha</label>
-            <input class="form-control" id="senha" name="Senha" type="password" autocomplete="current-password" required />
+        <div class="login-field">
+            <label class="login-label" for="senha">Senha</label>
+            <input class="login-input" id="senha" name="Senha" type="password" autocomplete="current-password" required />
         </div>
 
         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">
