@@ -1,105 +1,201 @@
-.navbar-toggler {
-    appearance: none;
-    cursor: pointer;
-    width: 3.5rem;
+.nav-header {
+    display: flex;
+    align-items: center;
+    min-height: var(--mud-appbar-height, 64px);
+    padding: 0.75rem 1rem;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    color: var(--mud-palette-drawer-text);
+    text-decoration: none;
+}
+
+.brand:hover {
+    color: var(--mud-palette-drawer-text);
+}
+
+.brand-symbol {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
     height: 2.5rem;
-    color: white;
+    color: var(--mud-palette-secondary-text);
+    background: linear-gradient(135deg, var(--mud-palette-primary), var(--mud-palette-secondary));
+    border-radius: var(--mud-default-borderradius);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--mud-palette-primary) 26%, transparent);
+}
+
+.brand-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.brand-copy ::deep .mud-typography-h6 {
+    color: var(--mud-palette-drawer-text);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.brand-copy ::deep .mud-typography-caption {
+    color: var(--mud-palette-drawer-icon);
+}
+
+.nav-toggle-input {
     position: absolute;
-    top: 0.5rem;
-    right: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") no-repeat center/1.75rem rgba(255, 255, 255, 0.1);
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
-.navbar-toggler:checked {
-    background-color: rgba(255, 255, 255, 0.5);
-}
-
-.top-row {
-    min-height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
-}
-
-.navbar-brand {
-    font-size: 1.1rem;
-}
-
-.bi {
-    display: inline-block;
-    position: relative;
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-right: 0.75rem;
-    top: -1px;
-    background-size: cover;
-}
-
-.bi-house-door-fill-nav-menu {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-house-door-fill' viewBox='0 0 16 16'%3E%3Cpath d='M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5Z'/%3E%3C/svg%3E");
-}
-
-.bi-plus-square-fill-nav-menu {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-plus-square-fill' viewBox='0 0 16 16'%3E%3Cpath d='M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0z'/%3E%3C/svg%3E");
-}
-
-.bi-list-nested-nav-menu {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-list-nested' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M4.5 11.5A.5.5 0 0 1 5 11h10a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm-2-4A.5.5 0 0 1 1 3h10a.5.5 0 0 1 0 1H1a.5.5 0 0 1-.5-.5z'/%3E%3C/svg%3E");
-}
-
-.nav-item {
-    font-size: 0.9rem;
-    padding-bottom: 0.5rem;
-}
-
-    .nav-item:first-of-type {
-        padding-top: 1rem;
-    }
-
-    .nav-item:last-of-type {
-        padding-bottom: 1rem;
-    }
-
-    .nav-item ::deep .nav-link {
-        color: #d7d7d7;
-        background: none;
-        border: none;
-        border-radius: 4px;
-        height: 3rem;
-        display: flex;
-        align-items: center;
-        line-height: 3rem;
-        width: 100%;
-    }
-
-.nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
-    color: white;
-}
-
-.nav-item ::deep .nav-link:hover {
-    background-color: rgba(255,255,255,0.1);
-    color: white;
-}
-
-.nav-scrollable {
+.nav-toggle {
     display: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-left: auto;
+    color: var(--mud-palette-drawer-text);
+    cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-drawer-text) 14%, transparent);
+    border-radius: var(--mud-default-borderradius);
 }
 
-.navbar-toggler:checked ~ .nav-scrollable {
+.nav-toggle:hover {
+    background: color-mix(in srgb, var(--mud-palette-drawer-text) 8%, transparent);
+}
+
+.nav-toggle-input:focus-visible + .nav-panel,
+.nav-header:has(+ .nav-toggle-input:focus-visible) .nav-toggle {
+    outline: 2px solid var(--mud-palette-secondary);
+    outline-offset: 2px;
+}
+
+.nav-panel {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--mud-appbar-height, 64px));
+    padding: 1rem 0.75rem 1.25rem;
+    overflow-y: auto;
+}
+
+.nav-primary {
+    flex: 1;
+}
+
+.nav-section-label {
     display: block;
+    padding: 0 0.75rem 0.5rem;
+    color: var(--mud-palette-drawer-icon);
+    letter-spacing: 0.08em;
 }
 
-@media (min-width: 641px) {
-    .navbar-toggler {
-        display: none;
+.doctorpilot-nav ::deep .mud-nav-link {
+    min-height: 2.875rem;
+    margin-bottom: 0.25rem;
+    padding: 0.65rem 0.75rem;
+    color: var(--mud-palette-drawer-text);
+    border-radius: var(--mud-default-borderradius);
+    transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.doctorpilot-nav ::deep .mud-nav-link-icon {
+    color: var(--mud-palette-drawer-icon);
+    transition: color 140ms ease;
+}
+
+.doctorpilot-nav ::deep .mud-nav-link:hover {
+    color: var(--mud-palette-drawer-text);
+    background: color-mix(in srgb, var(--mud-palette-drawer-text) 8%, transparent);
+    transform: translateX(2px);
+}
+
+.doctorpilot-nav ::deep .mud-nav-link.active {
+    color: var(--mud-palette-drawer-text);
+    background: color-mix(in srgb, var(--mud-palette-primary) 28%, transparent);
+    box-shadow: inset 3px 0 0 var(--mud-palette-secondary);
+}
+
+.doctorpilot-nav ::deep .mud-nav-link.active .mud-nav-link-icon {
+    color: var(--mud-palette-secondary);
+}
+
+.doctorpilot-nav ::deep .mud-nav-link:focus-visible,
+.logout-action:focus-visible {
+    outline: 2px solid var(--mud-palette-secondary);
+    outline-offset: 2px;
+}
+
+.nav-footer {
+    padding-top: 1rem;
+}
+
+.nav-footer ::deep .mud-divider {
+    margin-bottom: 0.75rem;
+    border-color: color-mix(in srgb, var(--mud-palette-drawer-text) 14%, transparent);
+}
+
+.logout-action {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 2.875rem;
+    padding: 0.65rem 0.75rem;
+    color: var(--mud-palette-drawer-text);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: var(--mud-default-borderradius);
+    transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.logout-action ::deep .mud-icon-root {
+    color: var(--mud-palette-drawer-icon);
+}
+
+.logout-action:hover {
+    background: color-mix(in srgb, var(--mud-palette-drawer-text) 8%, transparent);
+    transform: translateX(2px);
+}
+
+@media (max-width: 767.98px) {
+    .nav-header {
+        min-height: 64px;
     }
 
-    .nav-scrollable {
-        /* Never collapse the sidebar for wide screens */
-        display: block;
+    .nav-toggle {
+        display: inline-flex;
+    }
 
-        /* Allow sidebar to scroll for tall menus */
-        height: calc(100vh - 3.5rem);
-        overflow-y: auto;
+    .nav-panel {
+        display: none;
+        height: auto;
+        max-height: calc(100vh - 64px);
+        padding-top: 0.5rem;
+    }
+
+    .nav-toggle-input:checked + .nav-panel {
+        display: flex;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .doctorpilot-nav ::deep .mud-nav-link,
+    .doctorpilot-nav ::deep .mud-nav-link-icon,
+    .logout-action {
+        transition: none;
     }
 }

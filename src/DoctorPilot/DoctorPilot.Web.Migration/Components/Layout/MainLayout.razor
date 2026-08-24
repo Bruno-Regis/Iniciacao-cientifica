@@ -1,24 +1,46 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
 <MudThemeProvider Theme="@DoctorPilot.Web.Migration.Themes.DoctorPilotTheme.Default" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<div class="page">
-    <div class="sidebar">
+<div class="app-shell">
+    <aside class="app-sidebar">
         <NavMenu />
+    </aside>
+
+    <div class="app-workspace">
+        <header class="app-topbar">
+            <div class="topbar-context">
+                <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Size="Size.Small" />
+                <MudText Typo="Typo.subtitle2">Área clínica</MudText>
+            </div>
+
+            <AuthorizeView>
+                <Authorized Context="authenticationState">
+                    <div class="topbar-user" title="Usuário autenticado">
+                        <span class="user-icon">
+                            <MudIcon Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Small" />
+                        </span>
+                        <div class="user-copy">
+                            <MudText Typo="Typo.caption">Sessão ativa</MudText>
+                            @if (!string.IsNullOrWhiteSpace(authenticationState.User.Identity?.Name))
+                            {
+                                <MudText Typo="Typo.body2">@authenticationState.User.Identity.Name</MudText>
+                            }
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </header>
+
+        <main class="app-main">
+            <article class="app-content">
+                @Body
+            </article>
+        </main>
     </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
