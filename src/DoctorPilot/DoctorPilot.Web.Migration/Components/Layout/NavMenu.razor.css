@@ -81,6 +81,31 @@
 }
 
 .nav-panel {
+    --sidebar-soft-surface: var(--mud-palette-drawer-background);
+    --sidebar-soft-shadow-dark: color-mix(in srgb, #000 30%, transparent);
+    --sidebar-soft-shadow-light: color-mix(in srgb, var(--mud-palette-drawer-text) 13%, transparent);
+    --sidebar-soft-extruded:
+        3px 4px 7px var(--sidebar-soft-shadow-dark),
+        -3px -3px 7px var(--sidebar-soft-shadow-light);
+    --sidebar-soft-lifted:
+        5px 6px 9px color-mix(in srgb, #000 34%, transparent),
+        -4px -4px 9px color-mix(in srgb, var(--mud-palette-drawer-text) 16%, transparent);
+    --sidebar-soft-inset:
+        inset 4px 4px 7px var(--sidebar-soft-shadow-dark),
+        inset -4px -4px 7px var(--sidebar-soft-shadow-light);
+    --sidebar-nav-surface: var(--mud-palette-drawer-background);
+    --sidebar-nav-active-surface: color-mix(in srgb, var(--mud-palette-drawer-background) 90%, #000);
+    --sidebar-nav-resting:
+        3px 4px 7px var(--sidebar-soft-shadow-dark),
+        -3px -3px 7px var(--sidebar-soft-shadow-light);
+    --sidebar-nav-hover:
+        5px 6px 9px color-mix(in srgb, #000 34%, transparent),
+        -4px -4px 9px color-mix(in srgb, var(--mud-palette-drawer-text) 16%, transparent);
+    --sidebar-nav-active:
+        inset 2px 2px 3px color-mix(in srgb, #000 58%, transparent),
+        inset 7px 7px 12px color-mix(in srgb, #000 34%, transparent),
+        inset -2px -2px 3px color-mix(in srgb, var(--mud-palette-drawer-text) 25%, transparent),
+        inset -6px -6px 11px color-mix(in srgb, var(--mud-palette-drawer-text) 10%, transparent);
     display: flex;
     flex-direction: column;
     height: calc(100vh - var(--mud-appbar-height, 64px));
@@ -99,37 +124,55 @@
     letter-spacing: 0.08em;
 }
 
-.doctorpilot-nav ::deep .mud-nav-link {
+.nav-primary ::deep .doctorpilot-nav .mud-nav-link {
     min-height: 2.875rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.625rem;
     padding: 0.65rem 0.75rem;
     color: var(--mud-palette-drawer-text);
-    border-radius: var(--mud-default-borderradius);
-    transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+    background: var(--sidebar-nav-surface);
+    border: 0;
+    border-radius: 17px;
+    box-shadow: var(--sidebar-nav-resting);
+    transition: box-shadow 150ms ease, color 150ms ease, transform 150ms ease;
 }
 
-.doctorpilot-nav ::deep .mud-nav-link-icon {
-    color: var(--mud-palette-drawer-icon);
+.nav-primary ::deep .doctorpilot-nav .mud-nav-link-icon {
+    color: color-mix(in srgb, var(--mud-palette-drawer-icon) 78%, #fff);
     transition: color 140ms ease;
 }
 
-.doctorpilot-nav ::deep .mud-nav-link:hover {
+.nav-primary ::deep .doctorpilot-nav .mud-nav-link:not(.active) .mud-nav-link-text {
+    color: color-mix(in srgb, var(--mud-palette-drawer-text) 88%, #fff);
+}
+
+.nav-primary ::deep .doctorpilot-nav .mud-nav-link:hover {
     color: var(--mud-palette-drawer-text);
-    background: color-mix(in srgb, var(--mud-palette-drawer-text) 8%, transparent);
-    transform: translateX(2px);
+    background: var(--sidebar-nav-surface);
+    box-shadow: var(--sidebar-nav-hover);
+    transform: translateY(-1px);
 }
 
-.doctorpilot-nav ::deep .mud-nav-link.active {
-    color: var(--mud-palette-drawer-text);
-    background: color-mix(in srgb, var(--mud-palette-primary) 28%, transparent);
-    box-shadow: inset 3px 0 0 var(--mud-palette-secondary);
+.nav-primary ::deep .doctorpilot-nav.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    color: var(--mud-palette-drawer-text) !important;
+    background: var(--sidebar-nav-active-surface) !important;
+    box-shadow: var(--sidebar-nav-active) !important;
+    transform: none;
 }
 
-.doctorpilot-nav ::deep .mud-nav-link.active .mud-nav-link-icon {
-    color: var(--mud-palette-secondary);
+.nav-primary ::deep .doctorpilot-nav.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-icon,
+.nav-primary ::deep .doctorpilot-nav.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled) .mud-nav-link-text {
+    color: var(--mud-palette-drawer-text) !important;
 }
 
-.doctorpilot-nav ::deep .mud-nav-link:focus-visible,
+.nav-primary ::deep .doctorpilot-nav.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled):hover,
+.nav-primary ::deep .doctorpilot-nav.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled):focus-visible,
+.nav-primary ::deep .doctorpilot-nav.mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled):active {
+    background: var(--sidebar-nav-active-surface) !important;
+    box-shadow: var(--sidebar-nav-active) !important;
+    transform: none;
+}
+
+.nav-primary ::deep .doctorpilot-nav .mud-nav-link:focus-visible,
 .logout-action:focus-visible {
     outline: 2px solid var(--mud-palette-secondary);
     outline-offset: 2px;
@@ -156,10 +199,11 @@
     font-weight: 600;
     text-align: left;
     cursor: pointer;
-    background: transparent;
+    background: var(--sidebar-soft-surface);
     border: 0;
-    border-radius: var(--mud-default-borderradius);
-    transition: background-color 140ms ease, transform 140ms ease;
+    border-radius: 17px;
+    box-shadow: var(--sidebar-soft-extruded);
+    transition: box-shadow 150ms ease, transform 150ms ease;
 }
 
 .logout-action ::deep .mud-icon-root {
@@ -167,8 +211,14 @@
 }
 
 .logout-action:hover {
-    background: color-mix(in srgb, var(--mud-palette-drawer-text) 8%, transparent);
-    transform: translateX(2px);
+    background: var(--sidebar-soft-surface);
+    box-shadow: var(--sidebar-soft-lifted);
+    transform: translateY(-1px);
+}
+
+.logout-action:active {
+    box-shadow: var(--sidebar-soft-inset);
+    transform: translateY(0);
 }
 
 @media (max-width: 767.98px) {
@@ -193,9 +243,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .doctorpilot-nav ::deep .mud-nav-link,
-    .doctorpilot-nav ::deep .mud-nav-link-icon,
+    .nav-primary ::deep .doctorpilot-nav .mud-nav-link,
+    .nav-primary ::deep .doctorpilot-nav .mud-nav-link-icon,
     .logout-action {
         transition: none;
+    }
+
+    .nav-primary ::deep .doctorpilot-nav .mud-nav-link:hover,
+    .logout-action:hover,
+    .logout-action:active {
+        transform: none;
     }
 }
