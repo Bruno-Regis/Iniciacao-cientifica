@@ -1,99 +1,166 @@
-﻿@using DoctorPilot.Contracts.Pacientes
+@using DoctorPilot.Contracts.Pacientes
 @inject NavigationManager NavigationManager
 
-<MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
-    <MudText Typo="Typo.subtitle1">Informações Básicas</MudText>
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
-               OnClick="@(() => NavigationManager.NavigateTo($"/pacientes/{Paciente.Id}/editar"))">
-        Editar cadastro
-    </MudButton>
-</MudStack>
+<div class="patient-information">
+    <section class="information-section" aria-labelledby="basic-information-title">
+        <header class="section-header">
+            <div class="section-title">
+                <span class="section-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.h6" id="basic-information-title">Informações Básicas</MudText>
+                    <MudText Typo="Typo.caption">Dados pessoais e informações de contato</MudText>
+                </div>
+            </div>
 
-<MudGrid>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Nome Completo" Value="@Paciente.Nome" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Email" Value="@Paciente.Email" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Celular" Value="@Paciente.Celular" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Telefone" Value="@(Paciente.Telefone ?? "-")" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Data de Nascimento" Value="@Paciente.DataNascimento.ToString("dd/MM/yyyy")" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Sexo" Value="@Paciente.Genero" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Estado Civil" Value="@Paciente.EstadoCivil" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Status" Value="@Paciente.Status" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Nome da Mãe" Value="@(Paciente.NomeDaMae ?? "-")" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Nome do Pai" Value="@(Paciente.NomeDoPai ?? "-")" ReadOnly="true" />
-    </MudItem>
-</MudGrid>
+            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                       OnClick="@(() => NavigationManager.NavigateTo($"/pacientes/{Paciente.Id}/editar"))"
+                       Class="edit-registration-action">
+                Editar cadastro
+            </MudButton>
+        </header>
 
-<MudText Typo="Typo.subtitle1" Class="mt-6 mb-4">Documentação</MudText>
-<MudGrid>
-    <MudItem xs="12" sm="4">
-        <MudTextField Label="CPF" Value="@Paciente.Cpf" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="4">
-        <MudTextField Label="RG" Value="@(Paciente.Rg ?? "-")" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="4">
-        <MudTextField Label="Órgão Expedidor" Value="@(Paciente.OrgaoExpedidor ?? "-")" ReadOnly="true" />
-    </MudItem>
-</MudGrid>
+        <div class="data-grid basic-data-grid">
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Nome completo</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Nome)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">E-mail</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Email)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Celular</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Celular)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Telefone</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Telefone)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Data de nascimento</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Paciente.DataNascimento.ToString("dd/MM/yyyy")</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Sexo</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Genero)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Estado civil</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.EstadoCivil)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Status</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Status)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Nome da mãe</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.NomeDaMae)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Nome do pai</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.NomeDoPai)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Profissão</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Profissao)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Necessidade especial</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.NecessidadeEspecial)</MudText>
+            </div>
+            <div class="data-display data-span-full">
+                <MudText Typo="Typo.caption" Class="data-label">Observações</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Observacoes)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Cadastrado em</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Paciente.CreatedAt.ToString("dd/MM/yyyy HH:mm")</MudText>
+            </div>
+        </div>
+    </section>
 
-<MudText Typo="Typo.subtitle1" Class="mt-6 mb-4">Localização</MudText>
-<MudGrid>
-    <MudItem xs="12" sm="4">
-        <MudTextField Label="CEP" Value="@Paciente.CEP" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="4">
-        <MudTextField Label="Cidade" Value="@Paciente.Cidade" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="4">
-        <MudTextField Label="Estado" Value="@Paciente.Estado" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Bairro" Value="@Paciente.Bairro" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="3">
-        <MudTextField Label="Número" Value="@Paciente.Numero" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="3">
-        <MudTextField Label="Complemento" Value="@(Paciente.Complemento ?? "-")" ReadOnly="true" />
-    </MudItem>
-</MudGrid>
+    <MudDivider Class="section-divider" />
 
-<MudText Typo="Typo.subtitle1" Class="mt-6 mb-4">Informações Adicionais</MudText>
-<MudGrid>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Profissão" Value="@Paciente.Profissao" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Necessidade Especial" Value="@Paciente.NecessidadeEspecial" ReadOnly="true" />
-    </MudItem>
-    <MudItem xs="12">
-        <MudTextField Label="Observações" Value="@(Paciente.Observacoes ?? "-")" ReadOnly="true" Lines="3" />
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <MudTextField Label="Cadastrado em" Value="@Paciente.CreatedAt.ToString("dd/MM/yyyy HH:mm")" ReadOnly="true" />
-    </MudItem>
-</MudGrid>
+    <section class="information-section" aria-labelledby="documentation-title">
+        <header class="section-header">
+            <div class="section-title">
+                <span class="section-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.h6" id="documentation-title">Documentação</MudText>
+                    <MudText Typo="Typo.caption">Documentos de identificação</MudText>
+                </div>
+            </div>
+        </header>
+
+        <div class="data-grid documentation-data-grid">
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">CPF</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Cpf)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">RG</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Rg)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Órgão expedidor</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.OrgaoExpedidor)</MudText>
+            </div>
+        </div>
+    </section>
+
+    <MudDivider Class="section-divider" />
+
+    <section class="information-section" aria-labelledby="location-title">
+        <header class="section-header">
+            <div class="section-title">
+                <span class="section-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" />
+                </span>
+                <div>
+                    <MudText Typo="Typo.h6" id="location-title">Localização</MudText>
+                    <MudText Typo="Typo.caption">Endereço cadastrado</MudText>
+                </div>
+            </div>
+        </header>
+
+        <div class="data-grid location-data-grid">
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">CEP</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.CEP)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Cidade</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Cidade)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Estado</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Estado)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Bairro</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Bairro)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Número</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Numero)</MudText>
+            </div>
+            <div class="data-display">
+                <MudText Typo="Typo.caption" Class="data-label">Complemento</MudText>
+                <MudText Typo="Typo.body1" Class="data-value">@Exibir(Paciente.Complemento)</MudText>
+            </div>
+        </div>
+    </section>
+</div>
 
 @code {
     [Parameter, EditorRequired]
     public PacienteDetailsDto Paciente { get; set; } = default!;
+
+    private static string Exibir(string? valor) =>
+        string.IsNullOrWhiteSpace(valor) ? "-" : valor;
 }

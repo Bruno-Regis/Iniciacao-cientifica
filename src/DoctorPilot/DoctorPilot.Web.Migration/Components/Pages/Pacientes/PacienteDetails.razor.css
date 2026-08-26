@@ -1,0 +1,434 @@
+.patient-details-page {
+    --soft-surface: color-mix(in srgb, var(--mud-palette-background) 92%, var(--mud-palette-surface));
+    --soft-shadow-dark: color-mix(in srgb, var(--mud-palette-text-primary) 27%, transparent);
+    --soft-shadow-light: color-mix(in srgb, var(--mud-palette-primary-text) 68%, transparent);
+    --soft-shadow-extruded:
+        10px 10px 20px var(--soft-shadow-dark),
+        -10px -10px 20px var(--soft-shadow-light);
+    --soft-shadow-soft:
+        6px 6px 13px color-mix(in srgb, var(--mud-palette-text-primary) 18%, transparent),
+        -6px -6px 13px color-mix(in srgb, var(--mud-palette-primary-text) 56%, transparent);
+    --soft-shadow-lifted:
+        13px 14px 25px color-mix(in srgb, var(--mud-palette-text-primary) 30%, transparent),
+        -12px -12px 24px color-mix(in srgb, var(--mud-palette-primary-text) 74%, transparent);
+    --soft-shadow-inset:
+        inset 6px 6px 10px color-mix(in srgb, var(--mud-palette-text-primary) 25%, transparent),
+        inset -6px -6px 10px color-mix(in srgb, var(--mud-palette-primary-text) 60%, transparent);
+    --soft-shadow-well:
+        inset 4px 4px 7px color-mix(in srgb, var(--mud-palette-text-primary) 22%, transparent),
+        inset -4px -4px 7px color-mix(in srgb, var(--mud-palette-primary-text) 58%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.patient-context {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    width: fit-content;
+    color: var(--mud-palette-text-secondary);
+}
+
+.patient-context ::deep .back-link {
+    min-width: auto;
+    padding-inline: 0.25rem 0.5rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.patient-context ::deep .back-link:hover {
+    color: var(--mud-palette-primary);
+    background: transparent;
+}
+
+.patient-context ::deep .mud-icon-root {
+    color: var(--mud-palette-text-secondary);
+}
+
+.patient-page-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 18rem;
+    color: var(--mud-palette-text-secondary);
+    background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-divider);
+    border-radius: var(--mud-default-borderradius);
+}
+
+.patient-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.125rem 1.25rem;
+    background: var(--soft-surface);
+    border: 0;
+    border-radius: 20px;
+    box-shadow: var(--soft-shadow-soft);
+}
+
+.patient-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    min-width: 0;
+}
+
+.patient-avatar {
+    flex: 0 0 auto;
+    width: 3.25rem;
+    height: 3.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    background: linear-gradient(
+        135deg,
+        var(--mud-palette-primary),
+        color-mix(in srgb, var(--mud-palette-primary) 68%, var(--mud-palette-secondary))
+    );
+    border: 0;
+    box-shadow:
+        3px 4px 8px color-mix(in srgb, var(--soft-shadow-dark) 72%, transparent),
+        -3px -3px 8px color-mix(in srgb, var(--soft-shadow-light) 78%, transparent),
+        inset 1px 1px 0 color-mix(in srgb, var(--mud-palette-surface) 52%, transparent);
+}
+
+.patient-heading {
+    min-width: 0;
+}
+
+.patient-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+}
+
+.patient-name {
+    overflow-wrap: anywhere;
+    color: var(--mud-palette-text-primary);
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+}
+
+.patient-title-row ::deep .patient-status {
+    flex: 0 0 auto;
+    color: color-mix(in srgb, var(--mud-palette-secondary) 82%, var(--mud-palette-text-primary));
+    background: color-mix(in srgb, var(--mud-palette-secondary) 10%, var(--soft-surface));
+    border-color: color-mix(in srgb, var(--mud-palette-secondary) 22%, transparent);
+}
+
+.patient-title-row ::deep .patient-status .mud-chip-icon {
+    font-size: 0.625rem;
+    color: var(--mud-palette-secondary);
+}
+
+.patient-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin-top: 0.375rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.summary-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.summary-item span {
+    overflow-wrap: anywhere;
+}
+
+.summary-item ::deep .mud-icon-root {
+    flex: 0 0 auto;
+    color: var(--mud-palette-secondary);
+}
+
+.patient-actions {
+    --dp-soft-cta-surface: color-mix(in srgb, var(--mud-palette-background) 88%, var(--mud-palette-surface));
+    --dp-soft-shadow-light: color-mix(in srgb, var(--mud-palette-primary-text) 66%, transparent);
+    --dp-soft-shadow-dark: color-mix(in srgb, var(--mud-palette-text-primary) 25%, transparent);
+    --dp-soft-shadow-extruded:
+        7px 8px 16px var(--dp-soft-shadow-dark),
+        -7px -7px 16px var(--dp-soft-shadow-light);
+    --dp-soft-shadow-extruded-soft:
+        4px 5px 11px color-mix(in srgb, var(--mud-palette-text-primary) 17%, transparent),
+        -4px -4px 11px color-mix(in srgb, var(--mud-palette-primary-text) 50%, transparent);
+    --dp-soft-shadow-lifted:
+        10px 11px 20px color-mix(in srgb, var(--mud-palette-text-primary) 28%, transparent),
+        -9px -9px 19px color-mix(in srgb, var(--mud-palette-primary-text) 72%, transparent);
+    --dp-soft-shadow-lifted-soft:
+        6px 7px 14px color-mix(in srgb, var(--mud-palette-text-primary) 20%, transparent),
+        -6px -6px 14px color-mix(in srgb, var(--mud-palette-primary-text) 56%, transparent);
+    --dp-soft-shadow-inset:
+        inset 5px 5px 9px color-mix(in srgb, var(--mud-palette-text-primary) 24%, transparent),
+        inset -5px -5px 9px color-mix(in srgb, var(--mud-palette-primary-text) 58%, transparent);
+    --dp-soft-shadow-inset-soft:
+        inset 3px 3px 6px color-mix(in srgb, var(--mud-palette-text-primary) 18%, transparent),
+        inset -3px -3px 6px color-mix(in srgb, var(--mud-palette-primary-text) 46%, transparent);
+    --dp-soft-shadow-well:
+        inset 3px 3px 6px color-mix(in srgb, var(--mud-palette-text-primary) 20%, transparent),
+        inset -3px -3px 6px color-mix(in srgb, var(--mud-palette-primary-text) 54%, transparent);
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.primary-clinical-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 3rem;
+    padding: 0.625rem 1.375rem 0.625rem 0.75rem;
+    color: var(--mud-palette-primary);
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.25;
+    cursor: pointer;
+    background: var(--dp-soft-cta-surface);
+    border: 0;
+    border-radius: 16px;
+    box-shadow: var(--dp-soft-shadow-extruded);
+    transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.primary-clinical-cta:hover {
+    box-shadow: var(--dp-soft-shadow-lifted);
+    transform: translateY(-2px);
+}
+
+.primary-clinical-cta:active {
+    box-shadow: var(--dp-soft-shadow-inset);
+    transform: translateY(0);
+}
+
+.primary-clinical-cta:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--mud-palette-primary) 62%, var(--mud-palette-surface));
+    outline-offset: 3px;
+}
+
+.primary-clinical-cta__icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    color: var(--mud-palette-secondary);
+    background: linear-gradient(
+        145deg,
+        color-mix(in srgb, var(--mud-palette-secondary) 20%, var(--dp-soft-cta-surface)),
+        color-mix(in srgb, var(--mud-palette-tertiary) 14%, var(--dp-soft-cta-surface))
+    );
+    border: 0;
+    border-radius: 50%;
+    box-shadow: var(--dp-soft-shadow-well);
+}
+
+.primary-clinical-cta__icon ::deep .mud-icon-root {
+    font-size: 1.125rem;
+}
+
+.secondary-clinical-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem 0.5rem 0.625rem;
+    color: var(--mud-palette-primary);
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.25;
+    cursor: pointer;
+    background: var(--dp-soft-cta-surface);
+    border: 0;
+    border-radius: 14px;
+    box-shadow: var(--dp-soft-shadow-extruded-soft);
+    transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.secondary-clinical-cta:hover {
+    box-shadow: var(--dp-soft-shadow-lifted-soft);
+    transform: translateY(-1px);
+}
+
+.secondary-clinical-cta:active {
+    box-shadow: var(--dp-soft-shadow-inset-soft);
+    transform: translateY(0);
+}
+
+.secondary-clinical-cta:focus-visible,
+.patient-context ::deep .back-link:focus-visible {
+    outline: 2px solid var(--mud-palette-secondary);
+    outline-offset: 3px;
+}
+
+.secondary-clinical-cta__icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: color-mix(in srgb, var(--mud-palette-primary) 72%, var(--mud-palette-secondary));
+    background: color-mix(in srgb, var(--mud-palette-primary) 8%, var(--dp-soft-cta-surface));
+    border-radius: 50%;
+    box-shadow: var(--dp-soft-shadow-inset-soft);
+}
+
+.secondary-clinical-cta__icon ::deep .mud-icon-root {
+    font-size: 1rem;
+}
+
+.patient-tabs-surface {
+    min-width: 0;
+    overflow: hidden;
+    background: var(--soft-surface);
+    border: 0;
+    border-radius: 22px;
+    box-shadow: var(--soft-shadow-inset);
+}
+
+.patient-tabs-shell ::deep .mud-tabs-tabbar {
+    padding: 0.75rem 0.75rem 0.25rem;
+    color: var(--mud-palette-text-primary);
+    background: transparent;
+    border-bottom: 0;
+}
+
+.patient-tabs-shell ::deep .mud-tabs-tabbar-content {
+    box-sizing: border-box;
+    padding-inline: 0.25rem;
+}
+
+.patient-tabs-shell ::deep .mud-tab {
+    min-height: 3.25rem;
+    color: var(--mud-palette-text-secondary);
+    font-weight: 600;
+    text-transform: none;
+}
+
+.patient-tabs-shell ::deep .mud-tab:hover {
+    color: var(--mud-palette-text-primary);
+    background: color-mix(in srgb, var(--mud-palette-primary) 4%, transparent);
+    border-radius: calc(var(--mud-default-borderradius) + 2px);
+}
+
+.patient-tabs-shell ::deep .mud-tab.mud-tab-active {
+    color: var(--mud-palette-primary);
+    background: color-mix(in srgb, var(--mud-palette-primary) 5%, var(--soft-surface));
+    border-radius: calc(var(--mud-default-borderradius) + 2px);
+    box-shadow: var(--soft-shadow-well);
+}
+
+.patient-tabs-shell ::deep .mud-tab-slider {
+    display: none;
+}
+
+.patient-tabs-shell ::deep .patient-tab-content {
+    box-sizing: border-box;
+    width: calc(100% - 1.5rem);
+    min-width: 0;
+    margin: 0.5rem 0.75rem 0.75rem;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    background: color-mix(in srgb, var(--mud-palette-background) 88%, var(--soft-surface));
+    border: 0;
+    border-radius: 18px;
+    box-shadow:
+        inset 3px 3px 8px color-mix(in srgb, var(--soft-shadow-dark) 68%, transparent),
+        inset -4px -4px 9px color-mix(in srgb, var(--soft-shadow-light) 76%, transparent);
+}
+
+@media (max-width: 959.98px) {
+    .patient-hero {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .patient-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 599.98px) {
+    .patient-details-page {
+        gap: 1rem;
+    }
+
+    .patient-hero {
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .patient-identity,
+    .patient-title-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .patient-identity {
+        gap: 1rem;
+    }
+
+    .patient-avatar {
+        width: 3.25rem;
+        height: 3.25rem;
+    }
+
+    .patient-title-row {
+        gap: 0.625rem;
+    }
+
+    .patient-summary {
+        flex-direction: column;
+    }
+
+    .patient-actions {
+        flex-direction: column;
+        padding-left: 0;
+    }
+
+    .primary-clinical-cta,
+    .secondary-clinical-cta {
+        width: 100%;
+    }
+
+    .patient-tabs-shell ::deep .mud-tabs-tabbar {
+        padding: 0.5rem 0.25rem 0;
+    }
+
+    .patient-tabs-shell ::deep .mud-tabs-tabbar-content {
+        padding-inline: 0;
+    }
+
+    .patient-tabs-shell ::deep .patient-tab-content {
+        width: calc(100% - 1rem);
+        margin: 0.5rem;
+        padding: 1rem;
+        border-radius: 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .primary-clinical-cta,
+    .secondary-clinical-cta {
+        transition: none;
+    }
+
+    .primary-clinical-cta:hover,
+    .primary-clinical-cta:active,
+    .secondary-clinical-cta:hover,
+    .secondary-clinical-cta:active {
+        transform: none;
+    }
+}

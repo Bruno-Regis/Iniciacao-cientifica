@@ -1,0 +1,124 @@
+.patient-information {
+    display: flex;
+    flex-direction: column;
+}
+
+.information-section {
+    min-width: 0;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.section-title ::deep .mud-typography-h6 {
+    color: var(--mud-palette-text-primary);
+}
+
+.section-title ::deep .mud-typography-caption {
+    color: var(--mud-palette-text-secondary);
+}
+
+.section-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--mud-palette-primary);
+    background: color-mix(in srgb, var(--mud-palette-primary) 7%, var(--soft-surface));
+    border: 0;
+    border-radius: var(--mud-default-borderradius);
+    box-shadow: var(--soft-shadow-well);
+}
+
+.edit-registration-action {
+    flex: 0 0 auto;
+}
+
+.edit-registration-action:focus-visible {
+    outline: 2px solid var(--mud-palette-secondary);
+    outline-offset: 2px;
+}
+
+.data-grid {
+    display: grid;
+    gap: 1rem 1.5rem;
+}
+
+.basic-data-grid,
+.documentation-data-grid,
+.location-data-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.data-display {
+    min-width: 0;
+}
+
+.data-span-full {
+    grid-column: 1 / -1;
+}
+
+.data-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--mud-palette-text-secondary);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.data-value {
+    overflow-wrap: anywhere;
+    color: var(--mud-palette-text-primary);
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.patient-information ::deep .section-divider {
+    height: 0;
+    margin: 1.75rem 0;
+    border: 0;
+    opacity: 0;
+}
+
+@media (max-width: 899.98px) {
+    .basic-data-grid,
+    .documentation-data-grid,
+    .location-data-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 599.98px) {
+    .section-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .basic-data-grid,
+    .documentation-data-grid,
+    .location-data-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .data-grid {
+        gap: 1rem;
+    }
+
+    .patient-information ::deep .section-divider {
+        margin: 1.5rem 0;
+    }
+}
