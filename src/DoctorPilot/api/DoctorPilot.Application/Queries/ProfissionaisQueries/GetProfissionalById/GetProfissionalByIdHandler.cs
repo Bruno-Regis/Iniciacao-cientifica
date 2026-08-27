@@ -20,10 +20,10 @@ namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalBy
 
         public async ValueTask<ResultViewModel<ProfissionalDetailsDto>> Handle(GetProfissionalByIdQuery query, CancellationToken cancellationToken)
         {
-            var profissional = await _profissionalRepository.GetByUsuarioIdAsync(query.Id);
+            var profissional = await _profissionalRepository.GetByIdComRelacionamentosAsync(query.Id, cancellationToken);
 
             if (profissional is null || (!_currentUser.IsSuperAdmin && profissional.ClinicaId != _currentUser.ClinicaId))
-                return ResultViewModel<ProfissionalDetailsDto>.Error("Profissional n�o encontrado.");
+                return ResultViewModel<ProfissionalDetailsDto>.Error("Profissional não encontrado.");
 
             return ResultViewModel<ProfissionalDetailsDto>.Success(profissional.ToDetailsDto());
         }

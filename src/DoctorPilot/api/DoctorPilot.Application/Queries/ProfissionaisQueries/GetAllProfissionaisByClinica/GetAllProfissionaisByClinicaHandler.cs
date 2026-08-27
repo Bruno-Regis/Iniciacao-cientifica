@@ -20,8 +20,11 @@ namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissiona
 
         public async ValueTask<ResultViewModel<IEnumerable<ProfissionalItemDto>>> Handle(GetAllProfissionaisByClinicaQuery query, CancellationToken cancellationToken)
         {
-            var clinicaId = _currentUser.ClinicaId; 
-            var profissionais = await _profissionalRepository.GetByClinicaIdAsync(clinicaId, query.Page, query.PageSize);
+            var profissionais = await _profissionalRepository.GetByClinicaIdAsync(
+                _currentUser.ClinicaId,
+                query.Page,
+                query.PageSize,
+                cancellationToken);
             var viewModels = profissionais.Select(p => p.ToItemDto());
             return ResultViewModel<IEnumerable<ProfissionalItemDto>>.Success(viewModels);
         }

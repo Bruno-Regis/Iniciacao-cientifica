@@ -6,14 +6,12 @@ namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissiona
 {
     public class GetAllProfissionaisByClinicaQuery : IQuery<ResultViewModel<IEnumerable<ProfissionalItemDto>>>
     {
-        public GetAllProfissionaisByClinicaQuery(Guid clinicaId, int page = 1, int pageSize = 20)
+        public GetAllProfissionaisByClinicaQuery(int page = 1, int pageSize = 20)
         {
-            ClinicaId = clinicaId;
             Page = page;
             PageSize = pageSize;
         }
 
-        public Guid ClinicaId { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
     }
