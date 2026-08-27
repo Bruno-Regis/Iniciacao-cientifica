@@ -25,7 +25,7 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentos
             if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
                 return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Error("Paciente não encontrado.");
 
-            var agendamentos = await _agendamentoRepository.GetByPacienteIdAsync(query.PacienteId, query.Page, query.PageSize);
+            var agendamentos = await _agendamentoRepository.GetByPacienteIdAsync(query.PacienteId, query.Page, query.PageSize, cancellationToken);
             var viewModels = agendamentos.Select(a => a.ToItemDto());
             return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Success(viewModels);
         }

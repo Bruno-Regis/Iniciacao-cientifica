@@ -1,5 +1,6 @@
 using DoctorPilot.Contracts.Agendamentos;
 using DoctorPilot.Core.Entities;
+using DoctorPilot.Core.ReadModels;
 
 namespace DoctorPilot.Application.Mappings
 {
@@ -38,5 +39,13 @@ namespace DoctorPilot.Application.Mappings
                 Sala = agendamento.Sala,
                 Confirmacao = agendamento.Confirmacao
             };
+
+        public static AgendamentoItemDto ToItemDto(this AgendamentoComNomes resultado)
+        {
+            var dto = resultado.Agendamento.ToItemDto();
+            dto.PacienteNome = resultado.PacienteNome;
+            dto.ProfissionalNome = resultado.ProfissionalNome;
+            return dto;
+        }
     }
 }

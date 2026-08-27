@@ -18,10 +18,11 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentos
         }
         public async ValueTask<ResultViewModel<IEnumerable<AgendamentoItemDto>>> Handle(GetAllAgendamentosByPeriodoQuery query, CancellationToken cancellationToken)
         {
+            if (query.Fim <= query.Inicio)
+                return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Error("A data/hora final deve ser posterior à data/hora inicial.");
 
-            var clinicaId =  _currentUser.ClinicaId; 
             var agendamentos = await _agendamentoRepository
-                .GetByPeriodoAsync(clinicaId, query.Inicio, query.Fim, query.ProfissionalId);
+                .GetByPeriodoAsync(_currentUser.ClinicaId, query.Inicio, query.Fim, query.ProfissionalId, cancellationToken);
 
             var viewModels = agendamentos.Select(a => a.ToItemDto());
             return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Success(viewModels);
