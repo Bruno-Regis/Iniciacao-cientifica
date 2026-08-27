@@ -1,13 +1,16 @@
-﻿using DoctorPilot.Contracts.Alergias;
+using DoctorPilot.Contracts.Agendamentos;
+using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Contracts.Auth;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Pacientes;
+using DoctorPilot.Contracts.Profissionais;
 using DoctorPilot.Web.Migration.Models;
+using System.Globalization;
 using System.Net.Http.Json;
 
 namespace DoctorPilot.Web.Migration.Services
 {
-    public class DoctorPilotApiClient
+    public class DoctorPilotApiClient 
     {
         private readonly HttpClient _httpClient;
         public DoctorPilotApiClient(HttpClient httpClient)
@@ -34,7 +37,7 @@ namespace DoctorPilot.Web.Migration.Services
         }
 
         // PACIENTES
-
+        
         public async Task<IEnumerable<PacienteItemDto>> GetAllPacientesByClinicaAsync(int page = 1, int pageSize = 20)
         {
             var response = await _httpClient.GetFromJsonAsync<ResultViewModel<IEnumerable<PacienteItemDto>>>(
@@ -154,6 +157,110 @@ namespace DoctorPilot.Web.Migration.Services
             catch (HttpRequestException)
             {
                 return ResultViewModel<Guid>.Error("Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        // AGENDAMENTOS
+
+        public async Task<ResultViewModel<IEnumerable<AgendamentoItemDto>>> GetAgendamentosByPeriodoAsync(
+            DateTime inicio,
+            DateTime fim,
+            Guid? profissionalId = null)
+        {
+            var parametros = new Dictionary<string, string?>
+            {
+                ["inicio"] = inicio.ToString("O", CultureInfo.InvariantCulture),
+                ["fim"] = fim.ToString("O", CultureInfo.InvariantCulture)
+            };
+
+            if (profissionalId.HasValue)
+                parametros["profissionalId"] = profissionalId.Value.ToString();
+
+            var queryString = Microsoft.AspNetCore.Http.QueryString.Create(parametros);
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"api/agendamentos/periodo{queryString}");
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<IEnumerable<AgendamentoItemDto>>>();
+                return result ?? ResultViewModel<IEnumerable<AgendamentoItemDto>>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<AgendamentoDetailsDto>> GetAgendamentoByIdAsync(Guid agendamentoId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"api/agendamentos/{agendamentoId}");
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<AgendamentoDetailsDto>>();
+                return result ?? ResultViewModel<AgendamentoDetailsDto>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<AgendamentoDetailsDto>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<Guid>> CreateAgendamentoAsync(AgendamentoFormModel modelo)
+        {
+            if (!modelo.DataHoraInicial.HasValue || !modelo.DataHoraFinal.HasValue)
+                return ResultViewModel<Guid>.Error("Informe as datas/horas inicial e final.");
+
+            var request = new
+            {
+                modelo.PacienteId,
+                modelo.ProfissionalId,
+                Tipo = (int)modelo.Tipo,
+                modelo.Procedimento,
+                DataHoraInicial = modelo.DataHoraInicial.Value,
+                DataHoraFinal = modelo.DataHoraFinal.Value,
+                modelo.Sala,
+                modelo.Confirmacao,
+                modelo.Descricao
+            };
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/agendamentos", request);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>();
+                return result ?? ResultViewModel<Guid>.Error("Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error("Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        // PROFISSIONAIS
+
+        public async Task<ResultViewModel<IEnumerable<ProfissionalItemDto>>> GetProfissionaisAsync(
+            int page = 1,
+            int pageSize = 20)
+        {
+            var queryString = Microsoft.AspNetCore.Http.QueryString.Create(new Dictionary<string, string?>
+            {
+                ["page"] = page.ToString(CultureInfo.InvariantCulture),
+                ["pageSize"] = pageSize.ToString(CultureInfo.InvariantCulture)
+            });
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"api/profissionais{queryString}");
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<IEnumerable<ProfissionalItemDto>>>();
+                return result ?? ResultViewModel<IEnumerable<ProfissionalItemDto>>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<IEnumerable<ProfissionalItemDto>>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
             }
         }
     }
