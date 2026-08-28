@@ -79,6 +79,7 @@
                          EndProperty="Fim"
                          TextProperty="Titulo"
                          LoadData="OnSchedulerLoadDataAsync"
+                         AppointmentSelect="OnAppointmentSelectAsync"
                          AppointmentRender="OnAppointmentRender"
                          SelectedIndex="1"
                          Culture="@_culture"
@@ -116,6 +117,7 @@
     private bool _carregandoProfissionais;
     private bool _carregandoAgendamentos;
     private bool _carregamentoConcluido;
+    private bool _abrindoDetalhes;
     private int _versaoCarregamento;
 
     protected override async Task OnInitializedAsync()
@@ -184,6 +186,33 @@
             await _scheduler.Reload();
         else if (_inicioVisivel < _fimVisivel)
             await CarregarAgendamentosAsync(_inicioVisivel, _fimVisivel);
+    }
+
+    private async Task OnAppointmentSelectAsync(
+        Radzen.SchedulerAppointmentSelectEventArgs<AgendaEventModel> args)
+    {
+        if (_abrindoDetalhes || args.Data is null)
+            return;
+
+        _abrindoDetalhes = true;
+
+        try
+        {
+            var parameters = new DialogParameters<AgendamentoDetailsDialog>
+            {
+                { x => x.AgendamentoId, args.Data.Id },
+                { x => x.PacienteNome, args.Data.PacienteNome },
+                { x => x.ProfissionalNome, args.Data.ProfissionalNome }
+            };
+            var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+            var dialog = await DialogService.ShowAsync<AgendamentoDetailsDialog>(
+                "Detalhes do Agendamento", parameters, options);
+            await dialog.Result;
+        }
+        finally
+        {
+            _abrindoDetalhes = false;
+        }
     }
 
     private static DateTime ProximoHorarioPadrao()
