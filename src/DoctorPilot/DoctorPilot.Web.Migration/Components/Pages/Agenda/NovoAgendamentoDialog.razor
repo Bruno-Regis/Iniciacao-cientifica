@@ -33,7 +33,7 @@
                 <MudSelect T="Guid" @bind-Value="Model.PacienteId" ToStringFunc="PacienteToString"
                            Label="Paciente" Placeholder="Selecione um paciente" Required="true"
                            RequiredError="Selecione um paciente." For="@(() => Model.PacienteId)"
-                           Disabled="_carregandoOpcoes || _salvando" Variant="Variant.Outlined">
+                           Disabled="_carregandoOpcoes || _salvando || TemPacienteInicial" Variant="Variant.Outlined">
                     @foreach (var paciente in _pacientes)
                     {
                         <MudSelectItem T="Guid" Value="@paciente.Id">@paciente.Nome</MudSelectItem>
@@ -132,8 +132,21 @@
     [Parameter]
     public AgendamentoFormModel Model { get; set; } = new();
 
+    [Parameter]
+    public Guid? PacienteIdInicial { get; set; }
+
+    [Parameter]
+    public string? PacienteNomeInicial { get; set; }
+
+    private bool TemPacienteInicial
+        => PacienteIdInicial.HasValue && PacienteIdInicial.Value != Guid.Empty;
+
+    private bool TemPacienteInicialCompleto
+        => TemPacienteInicial && !string.IsNullOrWhiteSpace(PacienteNomeInicial);
+
     protected override void OnInitialized()
     {
+        AplicarValoresIniciais();
         _editContext = new EditContext(Model);
         _validationMessages = new ValidationMessageStore(_editContext);
         _dataInicial = Model.DataHoraInicial?.Date;
@@ -146,7 +159,9 @@
     {
         _carregandoOpcoes = true;
 
-        var pacientesTask = CarregarPacientesAsync();
+        var pacientesTask = TemPacienteInicialCompleto
+            ? Task.FromResult<string?>(null)
+            : CarregarPacientesAsync();
         var profissionaisTask = CarregarProfissionaisAsync();
         var erros = await Task.WhenAll(pacientesTask, profissionaisTask);
 
@@ -238,7 +253,8 @@
             if (pacientes.Count == 0)
                 return "Nenhum paciente disponível para agendamento.";
 
-            _pacientes.AddRange(pacientes);
+            _pacientes.AddRange(pacientes.Where(paciente =>
+                _pacientes.All(existente => existente.Id != paciente.Id)));
             _pacientesCarregados = true;
             return null;
         }
@@ -273,7 +289,8 @@
     private string? PacienteToString(Guid pacienteId)
         => pacienteId == Guid.Empty
             ? string.Empty
-            : _pacientes.FirstOrDefault(paciente => paciente.Id == pacienteId)?.Nome ?? string.Empty;
+            : _pacientes.FirstOrDefault(paciente => paciente.Id == pacienteId)?.Nome
+                ?? (pacienteId == PacienteIdInicial ? PacienteNomeInicial : string.Empty);
 
     private string? ProfissionalToString(Guid profissionalId)
         => profissionalId == Guid.Empty
@@ -285,6 +302,38 @@
 
     private static bool EhFalhaDeComunicacao(Exception exception)
         => exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException;
+
+    private void AplicarValoresIniciais()
+    {
+        if (TemPacienteInicial)
+            Model.PacienteId = PacienteIdInicial!.Value;
+
+        if (TemPacienteInicialCompleto)
+        {
+            _pacientes.Add(new PacienteItemDto
+            {
+                Id = PacienteIdInicial!.Value,
+                Nome = PacienteNomeInicial!,
+                Email = string.Empty,
+                Celular = string.Empty,
+                Status = string.Empty
+            });
+            _pacientesCarregados = true;
+        }
+
+        if (!Model.DataHoraInicial.HasValue)
+            Model.DataHoraInicial = ProximoHorarioPadrao();
+
+        if (!Model.DataHoraFinal.HasValue)
+            Model.DataHoraFinal = Model.DataHoraInicial.Value.AddMinutes(30);
+    }
+
+    private static DateTime ProximoHorarioPadrao()
+    {
+        var agora = DateTime.Now;
+        var minutos = agora.Minute < 30 ? 30 : 60;
+        return new DateTime(agora.Year, agora.Month, agora.Day, agora.Hour, 0, 0).AddMinutes(minutos);
+    }
 
     private void AdicionarErro(Expression<Func<object>> campo, string mensagem)
         => _validationMessages.Add(FieldIdentifier.Create(campo), mensagem);

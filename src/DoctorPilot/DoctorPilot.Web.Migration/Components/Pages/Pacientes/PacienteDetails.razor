@@ -1,8 +1,11 @@
 @page "/pacientes/{Id:guid}"
 @attribute [Authorize]
 @using DoctorPilot.Web.Migration.Components.Shared.PacienteDetalhe
+@using DoctorPilot.Web.Migration.Components.Pages.Agenda
 @inject DoctorPilotApiClient DoctorPilotService
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 @rendermode InteractiveServer
 
 <div class="patient-details-page">
@@ -62,7 +65,7 @@
                     </span>
                     Iniciar Atendimento
                 </button>
-                <button type="button" class="secondary-clinical-cta">
+                <button type="button" class="secondary-clinical-cta" @onclick="AbrirAgendamentoAsync">
                     <span class="secondary-clinical-cta__icon" aria-hidden="true">
                         <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" />
                     </span>
@@ -111,6 +114,24 @@
     protected override async Task OnInitializedAsync()
     {
         _paciente = await DoctorPilotService.GetPacienteByIdAsync(Id);
+    }
+
+    private async Task AbrirAgendamentoAsync()
+    {
+        if (_paciente is null)
+            return;
+
+        var parameters = new DialogParameters<NovoAgendamentoDialog>
+        {
+            { x => x.PacienteIdInicial, _paciente.Id },
+            { x => x.PacienteNomeInicial, _paciente.Nome }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<NovoAgendamentoDialog>("Novo Agendamento", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is not null && !result.Canceled)
+            Snackbar.Add("Agendamento criado com sucesso.", Severity.Success);
     }
 
     private static string ObterIniciais(string nome)
