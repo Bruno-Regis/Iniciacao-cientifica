@@ -40,9 +40,26 @@ namespace DoctorPilot.Web.Migration.Services
         
         public async Task<IEnumerable<PacienteItemDto>> GetAllPacientesByClinicaAsync(int page = 1, int pageSize = 20)
         {
-            var response = await _httpClient.GetFromJsonAsync<ResultViewModel<IEnumerable<PacienteItemDto>>>(
-        $"api/pacientes?page={page}&pageSize={pageSize}");
-            return response?.Data ?? [];
+            var result = await GetPacientesAsync(page, pageSize);
+            return result.Data ?? [];
+        }
+
+        public async Task<ResultViewModel<IEnumerable<PacienteItemDto>>> GetPacientesAsync(
+            int page = 1,
+            int pageSize = 20)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ResultViewModel<IEnumerable<PacienteItemDto>>>(
+                    $"api/pacientes?page={page}&pageSize={pageSize}");
+                return response ?? ResultViewModel<IEnumerable<PacienteItemDto>>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<IEnumerable<PacienteItemDto>>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
         }
 
         public async Task<PacienteDetailsDto?> GetPacienteByIdAsync(Guid pacienteId)

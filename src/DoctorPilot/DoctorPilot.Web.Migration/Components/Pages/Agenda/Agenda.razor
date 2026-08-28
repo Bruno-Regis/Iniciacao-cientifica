@@ -1,6 +1,8 @@
 @page "/agenda"
 @attribute [Authorize]
 @inject DoctorPilotApiClient ApiClient
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Agenda</PageTitle>
 
@@ -13,19 +15,25 @@
             </MudText>
         </div>
 
-        <MudSelect T="Guid?"
-                   Label="Profissional"
-                   Value="_profissionalId"
-                   ValueChanged="OnProfissionalAlteradoAsync"
-                   Disabled="_carregandoProfissionais"
-                   Variant="Variant.Outlined"
-                   Class="agenda-filter">
-            <MudSelectItem T="Guid?" Value="@((Guid?)null)">Todos os profissionais</MudSelectItem>
-            @foreach (var profissional in _profissionais)
-            {
-                <MudSelectItem T="Guid?" Value="@((Guid?)profissional.Id)">@profissional.Nome</MudSelectItem>
-            }
-        </MudSelect>
+        <div class="agenda-actions">
+            <MudSelect T="Guid?"
+                       Label="Profissional"
+                       Value="_profissionalId"
+                       ValueChanged="OnProfissionalAlteradoAsync"
+                       Disabled="_carregandoProfissionais"
+                       Variant="Variant.Outlined"
+                       Class="agenda-filter">
+                <MudSelectItem T="Guid?" Value="@((Guid?)null)">Todos os profissionais</MudSelectItem>
+                @foreach (var profissional in _profissionais)
+                {
+                    <MudSelectItem T="Guid?" Value="@((Guid?)profissional.Id)">@profissional.Nome</MudSelectItem>
+                }
+            </MudSelect>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="AbrirNovoAgendamentoAsync">
+                Novo Agendamento
+            </MudButton>
+        </div>
     </header>
 
     @if (_carregandoProfissionais)
@@ -147,6 +155,42 @@
             if (_scheduler is not null)
                 await _scheduler.Reload();
         }
+    }
+
+    private async Task AbrirNovoAgendamentoAsync()
+    {
+        var inicio = ProximoHorarioPadrao();
+        var modelo = new AgendamentoFormModel
+        {
+            ProfissionalId = _profissionalId ?? Guid.Empty,
+            DataHoraInicial = inicio,
+            DataHoraFinal = inicio.AddMinutes(30)
+        };
+
+        var parameters = new DialogParameters<NovoAgendamentoDialog>
+        {
+            { x => x.Model, modelo }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<NovoAgendamentoDialog>("Novo Agendamento", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+            return;
+
+        Snackbar.Add("Agendamento criado com sucesso.", Severity.Success);
+
+        if (_scheduler is not null)
+            await _scheduler.Reload();
+        else if (_inicioVisivel < _fimVisivel)
+            await CarregarAgendamentosAsync(_inicioVisivel, _fimVisivel);
+    }
+
+    private static DateTime ProximoHorarioPadrao()
+    {
+        var agora = DateTime.Now;
+        var minutos = agora.Minute < 30 ? 30 : 60;
+        return new DateTime(agora.Year, agora.Month, agora.Day, agora.Hour, 0, 0).AddMinutes(minutos);
     }
 
     private async Task CarregarAgendamentosAsync(DateTime inicio, DateTime fim)

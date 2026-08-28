@@ -15,6 +15,13 @@
     width: min(100%, 22rem);
 }
 
+.agenda-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
 .agenda-filter-loading {
     display: flex;
     align-items: center;
@@ -87,6 +94,11 @@
 
     .agenda-filter {
         width: 100%;
+    }
+
+    .agenda-actions {
+        align-items: stretch;
+        flex-direction: column;
     }
 
     .agenda-scheduler {

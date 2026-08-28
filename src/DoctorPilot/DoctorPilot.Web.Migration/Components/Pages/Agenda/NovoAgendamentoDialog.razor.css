@@ -1,0 +1,24 @@
+.novo-agendamento-form {
+    min-width: 0;
+}
+
+.novo-agendamento-content {
+    min-width: 0;
+}
+
+.novo-agendamento-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    margin: 1rem -1.5rem -1rem;
+    padding: 1rem 1.5rem;
+    background: var(--mud-palette-surface);
+    border-top: 1px solid var(--mud-palette-divider);
+}
+
+@media (max-width: 600px) {
+    .novo-agendamento-actions {
+        margin-inline: -1rem;
+        padding-inline: 1rem;
+    }
+}

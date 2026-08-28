@@ -1,0 +1,293 @@
+@using System.Linq.Expressions
+
+@inject DoctorPilotApiClient ApiClient
+
+<MudDialog>
+    <DialogContent>
+        <EditForm EditContext="_editContext" OnSubmit="SalvarAsync" class="novo-agendamento-form">
+            <DataAnnotationsValidator />
+
+            <MudStack Spacing="3" Class="novo-agendamento-content">
+                @if (_carregandoOpcoes)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                        <MudText Typo="Typo.body2">Carregando pacientes e profissionais...</MudText>
+                    </MudStack>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(_erroCarregamento))
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+                        @_erroCarregamento
+                    </MudAlert>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(_erroApi))
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+                        @_erroApi
+                    </MudAlert>
+                }
+
+                <MudSelect T="Guid" @bind-Value="Model.PacienteId" ToStringFunc="PacienteToString"
+                           Label="Paciente" Placeholder="Selecione um paciente" Required="true"
+                           RequiredError="Selecione um paciente." For="@(() => Model.PacienteId)"
+                           Disabled="_carregandoOpcoes || _salvando" Variant="Variant.Outlined">
+                    @foreach (var paciente in _pacientes)
+                    {
+                        <MudSelectItem T="Guid" Value="@paciente.Id">@paciente.Nome</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSelect T="Guid" @bind-Value="Model.ProfissionalId" ToStringFunc="ProfissionalToString"
+                           Label="Profissional" Placeholder="Selecione um profissional" Required="true"
+                           RequiredError="Selecione um profissional." For="@(() => Model.ProfissionalId)"
+                           Disabled="_carregandoOpcoes || _salvando" Variant="Variant.Outlined">
+                    @foreach (var profissional in _profissionais)
+                    {
+                        <MudSelectItem T="Guid" Value="@profissional.Id">@profissional.Nome</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudSelect T="TipoAgendamentoFormEnum" @bind-Value="Model.Tipo" Label="Tipo"
+                           Disabled="_salvando" Variant="Variant.Outlined">
+                    @foreach (var tipo in Enum.GetValues<TipoAgendamentoFormEnum>())
+                    {
+                        <MudSelectItem T="TipoAgendamentoFormEnum" Value="@tipo">@tipo.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudTextField @bind-Value="Model.Procedimento" Label="Procedimento" Required="true"
+                              For="@(() => Model.Procedimento)" MaxLength="200" Counter="200"
+                              Disabled="_salvando" Variant="Variant.Outlined" />
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker @bind-Date="_dataInicial" Label="Data inicial" Required="true"
+                                       Disabled="_salvando" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTimePicker @bind-Time="_horaInicial" Label="Hora inicial" Required="true"
+                                       Disabled="_salvando" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker @bind-Date="_dataFinal" Label="Data final" Required="true"
+                                       Disabled="_salvando" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTimePicker @bind-Time="_horaFinal" Label="Hora final" Required="true"
+                                       Disabled="_salvando" Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+
+                <ValidationMessage For="@(() => Model.DataHoraInicial)" />
+                <ValidationMessage For="@(() => Model.DataHoraFinal)" />
+
+                <MudTextField @bind-Value="Model.Sala" Label="Sala (opcional)" MaxLength="50" Counter="50"
+                              For="@(() => Model.Sala)" Disabled="_salvando" Variant="Variant.Outlined" />
+
+                <MudCheckBox @bind-Value="Model.Confirmacao" Label="Consulta confirmada" Disabled="_salvando" />
+
+                <MudTextField @bind-Value="Model.Descricao" Label="Descrição (opcional)" Lines="4"
+                              MaxLength="1000" Counter="1000" For="@(() => Model.Descricao)"
+                              Disabled="_salvando" Variant="Variant.Outlined" />
+            </MudStack>
+
+            <MudStack Row="true" Justify="Justify.FlexEnd" Class="novo-agendamento-actions" Spacing="2">
+                <MudButton Variant="Variant.Text" OnClick="Cancelar" Disabled="_salvando">Cancelar</MudButton>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_salvando || _carregandoOpcoes || !_pacientesCarregados || !_profissionaisCarregados">
+                    @if (_salvando)
+                    {
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" />
+                    }
+                    Salvar
+                </MudButton>
+            </MudStack>
+        </EditForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private const int OpcoesPageSize = 500;
+    private readonly List<PacienteItemDto> _pacientes = [];
+    private readonly List<ProfissionalItemDto> _profissionais = [];
+    private EditContext _editContext = default!;
+    private ValidationMessageStore _validationMessages = default!;
+    private DateTime? _dataInicial;
+    private DateTime? _dataFinal;
+    private TimeSpan? _horaInicial;
+    private TimeSpan? _horaFinal;
+    private string? _erroCarregamento;
+    private string? _erroApi;
+    private bool _carregandoOpcoes;
+    private bool _pacientesCarregados;
+    private bool _profissionaisCarregados;
+    private bool _salvando;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public AgendamentoFormModel Model { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(Model);
+        _validationMessages = new ValidationMessageStore(_editContext);
+        _dataInicial = Model.DataHoraInicial?.Date;
+        _horaInicial = Model.DataHoraInicial?.TimeOfDay;
+        _dataFinal = Model.DataHoraFinal?.Date;
+        _horaFinal = Model.DataHoraFinal?.TimeOfDay;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _carregandoOpcoes = true;
+
+        var pacientesTask = CarregarPacientesAsync();
+        var profissionaisTask = CarregarProfissionaisAsync();
+        var erros = await Task.WhenAll(pacientesTask, profissionaisTask);
+
+        _erroCarregamento = string.Join(" ", erros.Where(erro => !string.IsNullOrWhiteSpace(erro)));
+        _carregandoOpcoes = false;
+    }
+
+    private async Task SalvarAsync(EditContext _)
+    {
+        if (_salvando)
+            return;
+
+        AtualizarDatasDoModelo();
+        NormalizarCamposTextuais();
+        _validationMessages.Clear();
+
+        if (Model.PacienteId == Guid.Empty)
+            AdicionarErro(() => Model.PacienteId, "Selecione um paciente.");
+
+        if (Model.ProfissionalId == Guid.Empty)
+            AdicionarErro(() => Model.ProfissionalId, "Selecione um profissional.");
+
+        if (Model.DataHoraInicial.HasValue && Model.DataHoraFinal.HasValue &&
+            Model.DataHoraFinal <= Model.DataHoraInicial)
+        {
+            AdicionarErro(() => Model.DataHoraFinal, "A data/hora final deve ser posterior à data/hora inicial.");
+        }
+
+        var valido = _editContext.Validate();
+        _editContext.NotifyValidationStateChanged();
+        if (!valido || _editContext.GetValidationMessages().Any() ||
+            !_pacientesCarregados || !_profissionaisCarregados)
+            return;
+
+        _salvando = true;
+        _erroApi = null;
+
+        try
+        {
+            var result = await ApiClient.CreateAgendamentoAsync(Model);
+            if (result.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(result.Data));
+                return;
+            }
+
+            _erroApi = result.Message ?? "Erro inesperado ao criar o agendamento.";
+        }
+        catch (HttpRequestException)
+        {
+            _erroApi = "Não foi possível conectar ao servidor. Tente novamente.";
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            _erroApi = "Não foi possível processar a resposta do servidor.";
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+
+    private void AtualizarDatasDoModelo()
+    {
+        Model.DataHoraInicial = _dataInicial.HasValue && _horaInicial.HasValue
+            ? _dataInicial.Value.Date.Add(_horaInicial.Value)
+            : null;
+        Model.DataHoraFinal = _dataFinal.HasValue && _horaFinal.HasValue
+            ? _dataFinal.Value.Date.Add(_horaFinal.Value)
+            : null;
+    }
+
+    private void NormalizarCamposTextuais()
+    {
+        Model.Procedimento = Model.Procedimento.Trim();
+        Model.Sala = NormalizarOpcional(Model.Sala);
+        Model.Descricao = NormalizarOpcional(Model.Descricao);
+    }
+
+    private async Task<string?> CarregarPacientesAsync()
+    {
+        try
+        {
+            var result = await ApiClient.GetPacientesAsync(page: 1, pageSize: OpcoesPageSize);
+            if (!result.IsSuccess)
+                return result.Message ?? "Não foi possível carregar os pacientes.";
+
+            var pacientes = (result.Data ?? []).ToList();
+            if (pacientes.Count == 0)
+                return "Nenhum paciente disponível para agendamento.";
+
+            _pacientes.AddRange(pacientes);
+            _pacientesCarregados = true;
+            return null;
+        }
+        catch (Exception exception) when (EhFalhaDeComunicacao(exception))
+        {
+            return "Não foi possível carregar os pacientes.";
+        }
+    }
+
+    private async Task<string?> CarregarProfissionaisAsync()
+    {
+        try
+        {
+            var result = await ApiClient.GetProfissionaisAsync(page: 1, pageSize: OpcoesPageSize);
+            if (!result.IsSuccess)
+                return result.Message ?? "Não foi possível carregar os profissionais.";
+
+            var profissionais = (result.Data ?? []).ToList();
+            if (profissionais.Count == 0)
+                return "Nenhum profissional disponível para agendamento.";
+
+            _profissionais.AddRange(profissionais);
+            _profissionaisCarregados = true;
+            return null;
+        }
+        catch (Exception exception) when (EhFalhaDeComunicacao(exception))
+        {
+            return "Não foi possível carregar os profissionais.";
+        }
+    }
+
+    private string? PacienteToString(Guid pacienteId)
+        => pacienteId == Guid.Empty
+            ? string.Empty
+            : _pacientes.FirstOrDefault(paciente => paciente.Id == pacienteId)?.Nome ?? string.Empty;
+
+    private string? ProfissionalToString(Guid profissionalId)
+        => profissionalId == Guid.Empty
+            ? string.Empty
+            : _profissionais.FirstOrDefault(profissional => profissional.Id == profissionalId)?.Nome ?? string.Empty;
+
+    private static string? NormalizarOpcional(string? valor)
+        => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
+
+    private static bool EhFalhaDeComunicacao(Exception exception)
+        => exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException;
+
+    private void AdicionarErro(Expression<Func<object>> campo, string mensagem)
+        => _validationMessages.Add(FieldIdentifier.Create(campo), mensagem);
+
+    private void Cancelar() => MudDialog.Cancel();
+}

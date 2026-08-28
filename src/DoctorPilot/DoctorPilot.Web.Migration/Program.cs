@@ -24,7 +24,10 @@ namespace DoctorPilot.Web.Migration
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
+                .AddInteractiveServerComponents(options =>
+                {
+                    options.DetailedErrors = true;
+                });
 
             builder.Services.AddMudServices();
             builder.Services.AddRadzenComponents();
