@@ -1,0 +1,207 @@
+@page "/agenda"
+@attribute [Authorize]
+@inject DoctorPilotApiClient ApiClient
+
+<PageTitle>Agenda</PageTitle>
+
+<div class="agenda-page">
+    <header class="agenda-header">
+        <div>
+            <MudText Typo="Typo.h4" HtmlTag="h1">Agenda</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Consulte os horários da clínica por dia, semana ou mês.
+            </MudText>
+        </div>
+
+        <MudSelect T="Guid?"
+                   Label="Profissional"
+                   Value="_profissionalId"
+                   ValueChanged="OnProfissionalAlteradoAsync"
+                   Disabled="_carregandoProfissionais"
+                   Variant="Variant.Outlined"
+                   Class="agenda-filter">
+            <MudSelectItem T="Guid?" Value="@((Guid?)null)">Todos os profissionais</MudSelectItem>
+            @foreach (var profissional in _profissionais)
+            {
+                <MudSelectItem T="Guid?" Value="@((Guid?)profissional.Id)">@profissional.Nome</MudSelectItem>
+            }
+        </MudSelect>
+    </header>
+
+    @if (_carregandoProfissionais)
+    {
+        <div class="agenda-filter-loading">
+            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+            <MudText Typo="Typo.caption">Carregando profissionais...</MudText>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(_erroProfissionais))
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+            @_erroProfissionais A agenda permanece disponível sem o filtro por profissional.
+        </MudAlert>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_erroAgendamentos))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+            @_erroAgendamentos
+        </MudAlert>
+    }
+    else if (_carregamentoConcluido && !_carregandoAgendamentos && _eventos.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Nenhum agendamento encontrado no período exibido.
+        </MudAlert>
+    }
+
+    <section class="agenda-scheduler" aria-busy="@_carregandoAgendamentos.ToString().ToLowerInvariant()">
+        @if (_carregandoAgendamentos)
+        {
+            <div class="agenda-loading" role="status">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                <MudText Typo="Typo.body2">Carregando agendamentos...</MudText>
+            </div>
+        }
+
+        <RadzenScheduler @ref="_scheduler"
+                         TItem="AgendaEventModel"
+                         Data="_eventos"
+                         StartProperty="Inicio"
+                         EndProperty="Fim"
+                         TextProperty="Titulo"
+                         LoadData="OnSchedulerLoadDataAsync"
+                         AppointmentRender="OnAppointmentRender"
+                         SelectedIndex="1"
+                         Culture="@_culture"
+                         TodayText="Hoje"
+                         PrevText="Anterior"
+                         NextText="Próximo">
+            <Template Context="evento">
+                <div class="agenda-event-content">
+                    <strong>@evento.PacienteNome</strong>
+                    <span>@evento.Procedimento</span>
+                    <small>@evento.ProfissionalNome</small>
+                </div>
+            </Template>
+            <ChildContent>
+                <RadzenMonthView Text="Mês" />
+                <RadzenWeekView Text="Semana" />
+                <RadzenDayView Text="Dia" />
+            </ChildContent>
+        </RadzenScheduler>
+    </section>
+</div>
+
+@code {
+    private const int ProfissionaisPageSize = 200;
+
+    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
+    private readonly List<ProfissionalItemDto> _profissionais = [];
+    private List<AgendaEventModel> _eventos = [];
+    private RadzenScheduler<AgendaEventModel>? _scheduler;
+    private Guid? _profissionalId;
+    private DateTime _inicioVisivel;
+    private DateTime _fimVisivel;
+    private string? _erroProfissionais;
+    private string? _erroAgendamentos;
+    private bool _carregandoProfissionais;
+    private bool _carregandoAgendamentos;
+    private bool _carregamentoConcluido;
+    private int _versaoCarregamento;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _carregandoProfissionais = true;
+
+        var result = await ApiClient.GetProfissionaisAsync(page: 1, pageSize: ProfissionaisPageSize);
+        if (result.IsSuccess)
+        {
+            _profissionais.AddRange(result.Data ?? []);
+        }
+        else
+        {
+            _erroProfissionais = string.IsNullOrWhiteSpace(result.Message)
+                ? "Não foi possível carregar os profissionais."
+                : result.Message;
+        }
+
+        _carregandoProfissionais = false;
+    }
+
+    private async Task OnSchedulerLoadDataAsync(Radzen.SchedulerLoadDataEventArgs args)
+    {
+        _inicioVisivel = args.Start;
+        _fimVisivel = args.End;
+        await CarregarAgendamentosAsync(args.Start, args.End);
+    }
+
+    private async Task OnProfissionalAlteradoAsync(Guid? profissionalId)
+    {
+        _profissionalId = profissionalId;
+
+        if (_inicioVisivel < _fimVisivel)
+        {
+            await CarregarAgendamentosAsync(_inicioVisivel, _fimVisivel);
+
+            if (_scheduler is not null)
+                await _scheduler.Reload();
+        }
+    }
+
+    private async Task CarregarAgendamentosAsync(DateTime inicio, DateTime fim)
+    {
+        var versaoAtual = ++_versaoCarregamento;
+        _carregandoAgendamentos = true;
+        _carregamentoConcluido = false;
+        _erroAgendamentos = null;
+        await InvokeAsync(StateHasChanged);
+
+        var result = await ApiClient.GetAgendamentosByPeriodoAsync(inicio, fim, _profissionalId);
+
+        if (versaoAtual != _versaoCarregamento)
+            return;
+
+        if (result.IsSuccess)
+        {
+            _eventos = (result.Data ?? []).Select(MapearEvento).ToList();
+        }
+        else
+        {
+            _eventos = [];
+            _erroAgendamentos = string.IsNullOrWhiteSpace(result.Message)
+                ? "Não foi possível carregar os agendamentos."
+                : result.Message;
+        }
+
+        _carregandoAgendamentos = false;
+        _carregamentoConcluido = true;
+    }
+
+    private static AgendaEventModel MapearEvento(AgendamentoItemDto agendamento)
+        => new()
+        {
+            Id = agendamento.Id,
+            Titulo = $"{agendamento.PacienteNome} — {agendamento.Procedimento}",
+            Inicio = agendamento.DataHoraInicial,
+            Fim = agendamento.DataHoraFinal,
+            PacienteId = agendamento.PacienteId,
+            PacienteNome = agendamento.PacienteNome,
+            ProfissionalId = agendamento.ProfissionalId,
+            ProfissionalNome = agendamento.ProfissionalNome,
+            Status = agendamento.Status,
+            Tipo = agendamento.Tipo,
+            Procedimento = agendamento.Procedimento
+        };
+
+    private static void OnAppointmentRender(Radzen.SchedulerAppointmentRenderEventArgs<AgendaEventModel> args)
+    {
+        if (args.Data is null)
+            return;
+
+        args.Attributes["title"] = $"{args.Data.PacienteNome} — {args.Data.Procedimento}\n{args.Data.ProfissionalNome}";
+
+        if (string.Equals(args.Data.Status, "cancelado", StringComparison.OrdinalIgnoreCase))
+            args.Attributes["style"] = "opacity: 0.62; text-decoration: line-through;";
+    }
+}

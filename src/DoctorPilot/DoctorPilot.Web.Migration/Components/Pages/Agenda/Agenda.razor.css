@@ -1,0 +1,100 @@
+.agenda-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.agenda-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.agenda-filter {
+    width: min(100%, 22rem);
+}
+
+.agenda-filter-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--mud-palette-text-secondary);
+}
+
+.agenda-scheduler {
+    position: relative;
+    min-height: 42rem;
+    padding: 0.75rem;
+    overflow: hidden;
+    background: var(--mud-palette-surface);
+    border: 1px solid var(--mud-palette-divider);
+    border-radius: var(--mud-default-borderradius);
+    box-shadow: 0 10px 28px color-mix(in srgb, var(--mud-palette-text-primary) 7%, transparent);
+}
+
+.agenda-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: var(--mud-palette-text-secondary);
+    background: color-mix(in srgb, var(--mud-palette-surface) 82%, transparent);
+    backdrop-filter: blur(2px);
+}
+
+.agenda-scheduler ::deep .rz-scheduler {
+    height: 40.5rem;
+    color: var(--mud-palette-text-primary);
+    font-family: inherit;
+    border: 0;
+    border-radius: calc(var(--mud-default-borderradius) - 3px);
+}
+
+.agenda-scheduler ::deep .rz-scheduler-nav,
+.agenda-scheduler ::deep .rz-scheduler-toolbar {
+    background: var(--mud-palette-surface);
+}
+
+.agenda-event-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.agenda-event-content strong,
+.agenda-event-content span,
+.agenda-event-content small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.agenda-event-content small {
+    opacity: 0.8;
+}
+
+@media (max-width: 767.98px) {
+    .agenda-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .agenda-filter {
+        width: 100%;
+    }
+
+    .agenda-scheduler {
+        min-height: 36rem;
+        padding: 0.4rem;
+    }
+
+    .agenda-scheduler ::deep .rz-scheduler {
+        height: 35rem;
+    }
+}

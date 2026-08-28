@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MudBlazor.Services;
+using Radzen;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using System.Security.Claims;
@@ -26,6 +27,7 @@ namespace DoctorPilot.Web.Migration
                 .AddInteractiveServerComponents();
 
             builder.Services.AddMudServices();
+            builder.Services.AddRadzenComponents();
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddTransient<TokenHandlerService>();

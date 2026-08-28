@@ -15,27 +15,32 @@ namespace DoctorPilot.Infrastructure.Repositories
 
         public async Task<IEnumerable<AgendamentoComNomes>> GetByPacienteIdAsync(Guid pacienteId, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
         {
-            return await GetAgendamentosComNomes()
-                .Where(a => a.Agendamento.PacienteId == pacienteId)
-                .OrderByDescending(a => a.Agendamento.DataHoraInicial)
+            var agendamentos = _dbSet
+                .AsNoTracking()
+                .Where(a => a.PacienteId == pacienteId)
+                .OrderByDescending(a => a.DataHoraInicial)
                 .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Take(pageSize);
+
+            return await GetAgendamentosComNomes(agendamentos)
                 .ToListAsync(cancellationToken);
         }
 
 
         public async Task<IEnumerable<AgendamentoComNomes>> GetByPeriodoAsync(Guid clinicaId, DateTime inicio, DateTime fim, Guid? profissionalId = null, CancellationToken cancellationToken = default)
         {
-            var query = GetAgendamentosComNomes()
-                .Where(a => a.Agendamento.ClinicaId == clinicaId
-                         && a.Agendamento.DataHoraInicial < fim
-                         && a.Agendamento.DataHoraFinal > inicio);
+            var agendamentos = _dbSet
+                .AsNoTracking()
+                .Where(a => a.ClinicaId == clinicaId
+                         && a.DataHoraInicial < fim
+                         && a.DataHoraFinal > inicio);
 
             if (profissionalId.HasValue)
-                query = query.Where(a => a.Agendamento.ProfissionalId == profissionalId.Value);
+                agendamentos = agendamentos.Where(a => a.ProfissionalId == profissionalId.Value);
 
-            return await query
-                .OrderBy(a => a.Agendamento.DataHoraInicial)
+            agendamentos = agendamentos.OrderBy(a => a.DataHoraInicial);
+
+            return await GetAgendamentosComNomes(agendamentos)
                 .ToListAsync(cancellationToken);
         }
 
@@ -74,9 +79,9 @@ namespace DoctorPilot.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        private IQueryable<AgendamentoComNomes> GetAgendamentosComNomes()
+        private IQueryable<AgendamentoComNomes> GetAgendamentosComNomes(IQueryable<Agendamento> agendamentos)
         {
-            return from agendamento in _dbSet.AsNoTracking()
+            return from agendamento in agendamentos
                    join paciente in _context.Pacientes.AsNoTracking()
                        on new { Id = agendamento.PacienteId, agendamento.ClinicaId }
                        equals new { paciente.Id, paciente.ClinicaId }
