@@ -269,7 +269,6 @@ namespace DoctorPilot.Web.Migration.Services
                 DataHoraInicial = modelo.DataHoraInicial.Value,
                 DataHoraFinal = modelo.DataHoraFinal.Value,
                 modelo.Sala,
-                modelo.Confirmacao,
                 modelo.Descricao
             };
 
@@ -293,6 +292,27 @@ namespace DoctorPilot.Web.Migration.Services
             {
                 var response = await _httpClient.PatchAsync(
                     $"api/agendamentos/{id}/cancelar",
+                    content: null,
+                    cancellationToken: cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<Guid>.Error("Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error("Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<Guid>> ConfirmAgendamentoAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PatchAsync(
+                    $"api/agendamentos/{id}/confirmar",
                     content: null,
                     cancellationToken: cancellationToken);
                 var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(

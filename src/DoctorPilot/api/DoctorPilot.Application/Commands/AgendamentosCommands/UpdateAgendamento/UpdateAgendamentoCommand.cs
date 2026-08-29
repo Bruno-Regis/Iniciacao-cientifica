@@ -14,7 +14,6 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendament
         public DateTime DataHoraInicial { get; set; }
         public DateTime DataHoraFinal { get; set; }
         public string? Sala { get; set; }
-        public bool Confirmacao { get; set; }
         public string? Descricao { get; set; }
     }
 }

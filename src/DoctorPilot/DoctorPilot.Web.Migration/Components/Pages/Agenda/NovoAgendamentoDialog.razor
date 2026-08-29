@@ -87,7 +87,10 @@
                 <MudTextField @bind-Value="Model.Sala" Label="Sala (opcional)" MaxLength="50" Counter="50"
                               For="@(() => Model.Sala)" Disabled="_salvando" Variant="Variant.Outlined" />
 
-                <MudCheckBox @bind-Value="Model.Confirmacao" Label="Consulta confirmada" Disabled="_salvando" />
+                @if (!EhEdicao)
+                {
+                    <MudCheckBox @bind-Value="Model.Confirmacao" Label="Consulta confirmada" Disabled="_salvando" />
+                }
 
                 <MudTextField @bind-Value="Model.Descricao" Label="Descrição (opcional)" Lines="4"
                               MaxLength="1000" Counter="1000" For="@(() => Model.Descricao)"

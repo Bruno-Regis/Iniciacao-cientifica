@@ -1,0 +1,22 @@
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body1">
+            Confirma este agendamento?
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Voltar">Voltar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Confirmar">
+            Confirmar agendamento
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private void Voltar() => MudDialog.Cancel();
+
+    private void Confirmar() => MudDialog.Close(DialogResult.Ok(true));
+}

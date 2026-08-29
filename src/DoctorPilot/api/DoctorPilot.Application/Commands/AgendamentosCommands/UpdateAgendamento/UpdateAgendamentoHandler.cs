@@ -51,7 +51,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendament
                 await _agendamentoRepository.ExisteConflitoSalaAsync(clinicaId, command.Sala, command.DataHoraInicial, command.DataHoraFinal, command.Id, cancellationToken))
                 return ResultViewModel<Guid>.Error("Sala já está ocupada neste período.");
 
-            agendamento.Atualizar(command.PacienteId, command.ProfissionalId, command.Tipo, command.Procedimento, command.DataHoraInicial, command.DataHoraFinal, command.Sala, command.Confirmacao, command.Descricao);
+            agendamento.Atualizar(command.PacienteId, command.ProfissionalId, command.Tipo, command.Procedimento, command.DataHoraInicial, command.DataHoraFinal, command.Sala, command.Descricao);
             await _agendamentoRepository.UpdateAsync(agendamento);
             await _unitOfWork.CommitAsync();
 

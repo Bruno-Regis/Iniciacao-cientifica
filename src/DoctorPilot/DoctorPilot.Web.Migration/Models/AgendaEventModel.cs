@@ -13,5 +13,6 @@ namespace DoctorPilot.Web.Migration.Models
         public string Status { get; set; } = string.Empty;
         public string Tipo { get; set; } = string.Empty;
         public string Procedimento { get; set; } = string.Empty;
+        public bool Confirmacao { get; set; }
     }
 }

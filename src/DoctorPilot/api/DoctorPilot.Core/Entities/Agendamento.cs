@@ -36,7 +36,12 @@ namespace DoctorPilot.Core.Entities
             Status = StatusAgendamentoEnum.cancelado;
         }
 
-        public void Atualizar(Guid pacienteId, Guid profissionalId, TipoAgendamentoEnum tipo, string procedimento, DateTime dataHoraInicial, DateTime dataHoraFinal, string? sala, bool confirmacao, string? descricao)
+        public void Confirmar()
+        {
+            Confirmacao = true;
+        }
+
+        public void Atualizar(Guid pacienteId, Guid profissionalId, TipoAgendamentoEnum tipo, string procedimento, DateTime dataHoraInicial, DateTime dataHoraFinal, string? sala, string? descricao)
         {
             PacienteId = pacienteId;
             ProfissionalId = profissionalId;
@@ -45,7 +50,6 @@ namespace DoctorPilot.Core.Entities
             DataHoraInicial = dataHoraInicial;
             DataHoraFinal = dataHoraFinal;
             Sala = sala;
-            Confirmacao = confirmacao;
             Descricao = descricao;
         }
     }

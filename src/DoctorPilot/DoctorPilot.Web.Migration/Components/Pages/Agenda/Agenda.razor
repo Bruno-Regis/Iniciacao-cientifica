@@ -220,6 +220,15 @@
             {
                 await AbrirEdicaoAsync(detalhes, args.Data.PacienteNome, args.Data.ProfissionalNome);
             }
+            else if (result is { Canceled: false, Data: string acao } && acao == "confirmado")
+            {
+                Snackbar.Add("Agendamento confirmado com sucesso.", Severity.Success);
+
+                if (_scheduler is not null)
+                    await _scheduler.Reload();
+                else if (_inicioVisivel < _fimVisivel)
+                    await CarregarAgendamentosAsync(_inicioVisivel, _fimVisivel);
+            }
             else if (result is { Canceled: false, Data: true })
             {
                 Snackbar.Add("Agendamento cancelado com sucesso.", Severity.Success);
@@ -329,7 +338,8 @@
             ProfissionalNome = agendamento.ProfissionalNome,
             Status = agendamento.Status,
             Tipo = agendamento.Tipo,
-            Procedimento = agendamento.Procedimento
+            Procedimento = agendamento.Procedimento,
+            Confirmacao = agendamento.Confirmacao
         };
 
     private static void OnAppointmentRender(Radzen.SchedulerAppointmentRenderEventArgs<AgendaEventModel> args)

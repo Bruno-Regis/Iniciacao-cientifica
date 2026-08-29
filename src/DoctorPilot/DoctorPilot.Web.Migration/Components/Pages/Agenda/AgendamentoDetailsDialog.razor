@@ -19,10 +19,10 @@
         else if (_agendamento is not null)
         {
             <div class="details-content">
-                @if (!string.IsNullOrWhiteSpace(_erroCancelamento))
+                @if (!string.IsNullOrWhiteSpace(_erroAcao))
                 {
                     <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
-                        @_erroCancelamento
+                        @_erroAcao
                     </MudAlert>
                 }
 
@@ -126,14 +126,29 @@
         @if (PodeEditar)
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Editar"
-                       Disabled="_cancelando" StartIcon="@Icons.Material.Filled.Edit">
+                       Disabled="_processando" StartIcon="@Icons.Material.Filled.Edit">
                 Editar
+            </MudButton>
+        }
+        @if (PodeConfirmar)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="ConfirmarAsync"
+                       Disabled="_processando" StartIcon="@Icons.Material.Filled.EventAvailable">
+                @if (_confirmando)
+                {
+                    <MudProgressCircular Class="me-2" Size="Size.Small" Indeterminate="true" />
+                    <span>Confirmando...</span>
+                }
+                else
+                {
+                    <span>Confirmar agendamento</span>
+                }
             </MudButton>
         }
         @if (PodeCancelar)
         {
             <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="CancelarAsync"
-                       Disabled="_cancelando" StartIcon="@Icons.Material.Filled.EventBusy">
+                       Disabled="_processando" StartIcon="@Icons.Material.Filled.EventBusy">
                 @if (_cancelando)
                 {
                     <MudProgressCircular Class="me-2" Size="Size.Small" Indeterminate="true" />
@@ -145,7 +160,7 @@
                 }
             </MudButton>
         }
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Fechar" Disabled="_cancelando">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Fechar" Disabled="_processando">
             Fechar
         </MudButton>
     </DialogActions>
@@ -155,9 +170,11 @@
     private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
     private AgendamentoDetailsDto? _agendamento;
     private string? _erro;
-    private string? _erroCancelamento;
+    private string? _erroAcao;
     private bool _carregando = true;
     private bool _cancelando;
+    private bool _confirmando;
+    private bool _processando => _cancelando || _confirmando;
 
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
@@ -242,6 +259,11 @@
     private bool PodeEditar
         => _agendamento is not null && Normalizar(_agendamento.Status) != "cancelado";
 
+    private bool PodeConfirmar
+        => _agendamento is not null &&
+           !_agendamento.Confirmacao &&
+           Normalizar(_agendamento.Status) != "cancelado";
+
     private void Editar()
     {
         if (PodeEditar)
@@ -250,7 +272,7 @@
 
     private async Task CancelarAsync()
     {
-        if (_cancelando || !PodeCancelar)
+        if (_processando || !PodeCancelar)
             return;
 
         var options = new DialogOptions
@@ -271,7 +293,7 @@
         }
 
         _cancelando = true;
-        _erroCancelamento = null;
+        _erroAcao = null;
 
         try
         {
@@ -282,16 +304,63 @@
                 return;
             }
 
-            _erroCancelamento = resultado.Message ?? "Não foi possível cancelar o agendamento.";
+            _erroAcao = resultado.Message ?? "Não foi possível cancelar o agendamento.";
         }
         catch (Exception exception) when (
             exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
-            _erroCancelamento = "Não foi possível cancelar o agendamento.";
+            _erroAcao = "Não foi possível cancelar o agendamento.";
         }
         finally
         {
             _cancelando = false;
+        }
+    }
+
+    private async Task ConfirmarAsync()
+    {
+        if (_processando || !PodeConfirmar)
+            return;
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            CloseButton = false
+        };
+        var confirmacao = await DialogService.ShowAsync<ConfirmarAgendamentoDialog>(
+            "Confirmar agendamento",
+            options);
+        var resultadoConfirmacao = await confirmacao.Result;
+
+        if (resultadoConfirmacao is null || resultadoConfirmacao.Canceled ||
+            resultadoConfirmacao.Data is not true)
+        {
+            return;
+        }
+
+        _confirmando = true;
+        _erroAcao = null;
+
+        try
+        {
+            var resultado = await ApiClient.ConfirmAgendamentoAsync(AgendamentoId);
+            if (resultado.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok("confirmado"));
+                return;
+            }
+
+            _erroAcao = resultado.Message ?? "Não foi possível confirmar o agendamento.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erroAcao = "Não foi possível confirmar o agendamento.";
+        }
+        finally
+        {
+            _confirmando = false;
         }
     }
 
