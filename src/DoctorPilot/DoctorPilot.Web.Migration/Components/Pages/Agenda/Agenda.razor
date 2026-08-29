@@ -204,15 +204,80 @@
                 { x => x.PacienteNome, args.Data.PacienteNome },
                 { x => x.ProfissionalNome, args.Data.ProfissionalNome }
             };
-            var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = false,
+                BackdropClick = false,
+                CloseOnEscapeKey = false
+            };
             var dialog = await DialogService.ShowAsync<AgendamentoDetailsDialog>(
                 "Detalhes do Agendamento", parameters, options);
-            await dialog.Result;
+            var result = await dialog.Result;
+
+            if (result is { Canceled: false, Data: AgendamentoDetailsDto detalhes })
+            {
+                await AbrirEdicaoAsync(detalhes, args.Data.PacienteNome, args.Data.ProfissionalNome);
+            }
+            else if (result is { Canceled: false, Data: true })
+            {
+                Snackbar.Add("Agendamento cancelado com sucesso.", Severity.Success);
+
+                if (_scheduler is not null)
+                    await _scheduler.Reload();
+                else if (_inicioVisivel < _fimVisivel)
+                    await CarregarAgendamentosAsync(_inicioVisivel, _fimVisivel);
+            }
         }
         finally
         {
             _abrindoDetalhes = false;
         }
+    }
+
+    private async Task AbrirEdicaoAsync(
+        AgendamentoDetailsDto detalhes,
+        string pacienteNome,
+        string profissionalNome)
+    {
+        if (!Enum.TryParse<TipoAgendamentoFormEnum>(detalhes.Tipo, true, out var tipo))
+            tipo = TipoAgendamentoFormEnum.Consulta;
+
+        var modelo = new AgendamentoFormModel
+        {
+            PacienteId = detalhes.PacienteId,
+            ProfissionalId = detalhes.ProfissionalId,
+            Tipo = tipo,
+            Procedimento = detalhes.Procedimento,
+            DataHoraInicial = detalhes.DataHoraInicial,
+            DataHoraFinal = detalhes.DataHoraFinal,
+            Sala = detalhes.Sala,
+            Confirmacao = detalhes.Confirmacao,
+            Descricao = detalhes.Descricao
+        };
+        var parameters = new DialogParameters<NovoAgendamentoDialog>
+        {
+            { x => x.AgendamentoId, detalhes.Id },
+            { x => x.Model, modelo },
+            { x => x.PacienteIdInicial, detalhes.PacienteId },
+            { x => x.PacienteNomeInicial, pacienteNome },
+            { x => x.ProfissionalNomeInicial, profissionalNome }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<NovoAgendamentoDialog>(
+            "Editar Agendamento", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+            return;
+
+        Snackbar.Add("Agendamento atualizado com sucesso.", Severity.Success);
+
+        if (_scheduler is not null)
+            await _scheduler.Reload();
+        else if (_inicioVisivel < _fimVisivel)
+            await CarregarAgendamentosAsync(_inicioVisivel, _fimVisivel);
     }
 
     private static DateTime ProximoHorarioPadrao()

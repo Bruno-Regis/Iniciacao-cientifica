@@ -1,4 +1,5 @@
 @inject DoctorPilotApiClient ApiClient
+@inject IDialogService DialogService
 
 <MudDialog>
     <DialogContent>
@@ -18,6 +19,13 @@
         else if (_agendamento is not null)
         {
             <div class="details-content">
+                @if (!string.IsNullOrWhiteSpace(_erroCancelamento))
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+                        @_erroCancelamento
+                    </MudAlert>
+                }
+
                 <section class="details-section" aria-labelledby="identificacao-title">
                     <div class="details-section-title">
                         <span class="details-icon" aria-hidden="true">
@@ -115,7 +123,31 @@
         }
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Fechar">Fechar</MudButton>
+        @if (PodeEditar)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Editar"
+                       Disabled="_cancelando" StartIcon="@Icons.Material.Filled.Edit">
+                Editar
+            </MudButton>
+        }
+        @if (PodeCancelar)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="CancelarAsync"
+                       Disabled="_cancelando" StartIcon="@Icons.Material.Filled.EventBusy">
+                @if (_cancelando)
+                {
+                    <MudProgressCircular Class="me-2" Size="Size.Small" Indeterminate="true" />
+                    <span>Cancelando...</span>
+                }
+                else
+                {
+                    <span>Cancelar agendamento</span>
+                }
+            </MudButton>
+        }
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Fechar" Disabled="_cancelando">
+            Fechar
+        </MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -123,7 +155,9 @@
     private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
     private AgendamentoDetailsDto? _agendamento;
     private string? _erro;
+    private string? _erroCancelamento;
     private bool _carregando = true;
+    private bool _cancelando;
 
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
@@ -200,6 +234,66 @@
         => string.IsNullOrWhiteSpace(valor)
             ? "Não informado"
             : CultureInfo.GetCultureInfo("pt-BR").TextInfo.ToTitleCase(valor.Trim().ToLowerInvariant());
+
+    private bool PodeCancelar
+        => _agendamento is not null &&
+           Normalizar(_agendamento.Status) is "agendado" or "confirmado";
+
+    private bool PodeEditar
+        => _agendamento is not null && Normalizar(_agendamento.Status) != "cancelado";
+
+    private void Editar()
+    {
+        if (PodeEditar)
+            MudDialog.Close(DialogResult.Ok(_agendamento));
+    }
+
+    private async Task CancelarAsync()
+    {
+        if (_cancelando || !PodeCancelar)
+            return;
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.ExtraSmall,
+            FullWidth = true,
+            CloseButton = false
+        };
+        var confirmacao = await DialogService.ShowAsync<ConfirmarCancelamentoDialog>(
+            "Cancelar agendamento",
+            options);
+        var resultadoConfirmacao = await confirmacao.Result;
+
+        if (resultadoConfirmacao is null || resultadoConfirmacao.Canceled ||
+            resultadoConfirmacao.Data is not true)
+        {
+            return;
+        }
+
+        _cancelando = true;
+        _erroCancelamento = null;
+
+        try
+        {
+            var resultado = await ApiClient.CancelAgendamentoAsync(AgendamentoId);
+            if (resultado.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(true));
+                return;
+            }
+
+            _erroCancelamento = resultado.Message ?? "Não foi possível cancelar o agendamento.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erroCancelamento = "Não foi possível cancelar o agendamento.";
+        }
+        finally
+        {
+            _cancelando = false;
+        }
+    }
 
     private void Fechar() => MudDialog.Close();
 }

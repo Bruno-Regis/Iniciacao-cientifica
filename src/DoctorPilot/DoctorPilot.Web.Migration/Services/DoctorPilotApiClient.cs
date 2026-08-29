@@ -255,6 +255,57 @@ namespace DoctorPilot.Web.Migration.Services
             }
         }
 
+        public async Task<ResultViewModel<Guid>> UpdateAgendamentoAsync(Guid id, AgendamentoFormModel modelo)
+        {
+            if (!modelo.DataHoraInicial.HasValue || !modelo.DataHoraFinal.HasValue)
+                return ResultViewModel<Guid>.Error("Informe as datas/horas inicial e final.");
+
+            var request = new
+            {
+                modelo.PacienteId,
+                modelo.ProfissionalId,
+                Tipo = (int)modelo.Tipo,
+                modelo.Procedimento,
+                DataHoraInicial = modelo.DataHoraInicial.Value,
+                DataHoraFinal = modelo.DataHoraFinal.Value,
+                modelo.Sala,
+                modelo.Confirmacao,
+                modelo.Descricao
+            };
+
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"api/agendamentos/{id}", request);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>();
+                return result ?? ResultViewModel<Guid>.Error("Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error("Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<Guid>> CancelAgendamentoAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PatchAsync(
+                    $"api/agendamentos/{id}/cancelar",
+                    content: null,
+                    cancellationToken: cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<Guid>.Error("Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error("Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
         // PROFISSIONAIS
 
         public async Task<ResultViewModel<IEnumerable<ProfissionalItemDto>>> GetProfissionaisAsync(

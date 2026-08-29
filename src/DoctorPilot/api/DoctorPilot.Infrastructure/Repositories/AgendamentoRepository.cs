@@ -44,19 +44,20 @@ namespace DoctorPilot.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<bool> ExisteConflitoProfissionalAsync(Guid clinicaId, Guid profissionalId, DateTime inicio, DateTime fim, CancellationToken cancellationToken = default)
+        public async Task<bool> ExisteConflitoProfissionalAsync(Guid clinicaId, Guid profissionalId, DateTime inicio, DateTime fim, Guid? agendamentoIdIgnorado = null, CancellationToken cancellationToken = default)
         {
             return await _dbSet
                 .AsNoTracking()
                 .AnyAsync(a => a.ClinicaId == clinicaId
                             && a.ProfissionalId == profissionalId
+                            && (!agendamentoIdIgnorado.HasValue || a.Id != agendamentoIdIgnorado.Value)
                             && a.Status != StatusAgendamentoEnum.cancelado
                             && a.DataHoraInicial < fim
                             && a.DataHoraFinal > inicio,
                     cancellationToken);
         }
 
-        public async Task<bool> ExisteConflitoSalaAsync(Guid clinicaId, string sala, DateTime inicio, DateTime fim, CancellationToken cancellationToken = default)
+        public async Task<bool> ExisteConflitoSalaAsync(Guid clinicaId, string sala, DateTime inicio, DateTime fim, Guid? agendamentoIdIgnorado = null, CancellationToken cancellationToken = default)
         {
             var salaNormalizada = sala.Trim().ToUpper();
 
@@ -64,6 +65,7 @@ namespace DoctorPilot.Infrastructure.Repositories
                 .AsNoTracking()
                 .AnyAsync(a => a.ClinicaId == clinicaId
                             && a.Status != StatusAgendamentoEnum.cancelado
+                            && (!agendamentoIdIgnorado.HasValue || a.Id != agendamentoIdIgnorado.Value)
                             && a.Sala != null
                             && a.Sala.Trim().ToUpper() == salaNormalizada
                             && a.DataHoraInicial < fim

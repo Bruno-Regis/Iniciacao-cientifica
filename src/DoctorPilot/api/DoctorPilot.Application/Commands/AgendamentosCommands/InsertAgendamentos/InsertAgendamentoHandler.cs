@@ -41,7 +41,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
                 command.ProfissionalId,
                 command.DataHoraInicial,
                 command.DataHoraFinal,
-                cancellationToken);
+                cancellationToken: cancellationToken);
             if (conflitoComProfissional)
                 return ResultViewModel<Guid>.Error("Profissional já possui um agendamento neste período.");
 
@@ -52,7 +52,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
                     command.Sala,
                     command.DataHoraInicial,
                     command.DataHoraFinal,
-                    cancellationToken);
+                    cancellationToken: cancellationToken);
 
                 if (conflitoComSala)
                     return ResultViewModel<Guid>.Error("Sala já está ocupada neste período.");

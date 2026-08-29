@@ -33,7 +33,7 @@
                 <MudSelect T="Guid" @bind-Value="Model.PacienteId" ToStringFunc="PacienteToString"
                            Label="Paciente" Placeholder="Selecione um paciente" Required="true"
                            RequiredError="Selecione um paciente." For="@(() => Model.PacienteId)"
-                           Disabled="_carregandoOpcoes || _salvando || TemPacienteInicial" Variant="Variant.Outlined">
+                           Disabled="_carregandoOpcoes || _salvando || (TemPacienteInicial && !EhEdicao)" Variant="Variant.Outlined">
                     @foreach (var paciente in _pacientes)
                     {
                         <MudSelectItem T="Guid" Value="@paciente.Id">@paciente.Nome</MudSelectItem>
@@ -102,7 +102,7 @@
                     {
                         <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" />
                     }
-                    Salvar
+                    @(EhEdicao ? "Salvar alterações" : "Salvar")
                 </MudButton>
             </MudStack>
         </EditForm>
@@ -133,10 +133,18 @@
     public AgendamentoFormModel Model { get; set; } = new();
 
     [Parameter]
+    public Guid? AgendamentoId { get; set; }
+
+    [Parameter]
     public Guid? PacienteIdInicial { get; set; }
 
     [Parameter]
     public string? PacienteNomeInicial { get; set; }
+
+    [Parameter]
+    public string? ProfissionalNomeInicial { get; set; }
+
+    private bool EhEdicao => AgendamentoId.HasValue && AgendamentoId.Value != Guid.Empty;
 
     private bool TemPacienteInicial
         => PacienteIdInicial.HasValue && PacienteIdInicial.Value != Guid.Empty;
@@ -159,7 +167,7 @@
     {
         _carregandoOpcoes = true;
 
-        var pacientesTask = TemPacienteInicialCompleto
+        var pacientesTask = TemPacienteInicialCompleto && !EhEdicao
             ? Task.FromResult<string?>(null)
             : CarregarPacientesAsync();
         var profissionaisTask = CarregarProfissionaisAsync();
@@ -201,14 +209,18 @@
 
         try
         {
-            var result = await ApiClient.CreateAgendamentoAsync(Model);
+            var result = EhEdicao
+                ? await ApiClient.UpdateAgendamentoAsync(AgendamentoId!.Value, Model)
+                : await ApiClient.CreateAgendamentoAsync(Model);
             if (result.IsSuccess)
             {
                 MudDialog.Close(DialogResult.Ok(result.Data));
                 return;
             }
 
-            _erroApi = result.Message ?? "Erro inesperado ao criar o agendamento.";
+            _erroApi = result.Message ?? (EhEdicao
+                ? "Erro inesperado ao atualizar o agendamento."
+                : "Erro inesperado ao criar o agendamento.");
         }
         catch (HttpRequestException)
         {
@@ -276,7 +288,8 @@
             if (profissionais.Count == 0)
                 return "Nenhum profissional disponível para agendamento.";
 
-            _profissionais.AddRange(profissionais);
+            _profissionais.AddRange(profissionais.Where(profissional =>
+                _profissionais.All(existente => existente.Id != profissional.Id)));
             _profissionaisCarregados = true;
             return null;
         }
@@ -295,7 +308,8 @@
     private string? ProfissionalToString(Guid profissionalId)
         => profissionalId == Guid.Empty
             ? string.Empty
-            : _profissionais.FirstOrDefault(profissional => profissional.Id == profissionalId)?.Nome ?? string.Empty;
+            : _profissionais.FirstOrDefault(profissional => profissional.Id == profissionalId)?.Nome
+                ?? (profissionalId == Model.ProfissionalId ? ProfissionalNomeInicial : string.Empty);
 
     private static string? NormalizarOpcional(string? valor)
         => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
@@ -319,6 +333,15 @@
                 Status = string.Empty
             });
             _pacientesCarregados = true;
+        }
+
+        if (EhEdicao && Model.ProfissionalId != Guid.Empty && !string.IsNullOrWhiteSpace(ProfissionalNomeInicial))
+        {
+            _profissionais.Add(new ProfissionalItemDto
+            {
+                Id = Model.ProfissionalId,
+                Nome = ProfissionalNomeInicial!
+            });
         }
 
         if (!Model.DataHoraInicial.HasValue)

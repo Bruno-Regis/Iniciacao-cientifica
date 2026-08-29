@@ -1,4 +1,6 @@
 ﻿using DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendamentos;
+using DoctorPilot.Application.Commands.AgendamentosCommands.CancelarAgendamento;
+using DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendamento;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentoById;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPaciente;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPeriodo;
@@ -46,6 +48,23 @@ namespace DoctorPilot.Api.Controllers
         public async Task<IActionResult> GetByPaciente(Guid pacienteId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetAllAgendamentosByPacienteQuery(pacienteId, page, pageSize));
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateAgendamentoCommand command)
+        {
+            command.Id = id;
+            var result = await _mediator.Send(command);
+            if (!result.IsSuccess) return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpPatch("{id}/cancelar")]
+        public async Task<IActionResult> Cancelar(Guid id)
+        {
+            var result = await _mediator.Send(new CancelarAgendamentoCommand(id));
+            if (!result.IsSuccess) return BadRequest(result);
             return Ok(result);
         }
 

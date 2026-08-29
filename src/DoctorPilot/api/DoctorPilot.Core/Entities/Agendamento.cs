@@ -30,5 +30,23 @@ namespace DoctorPilot.Core.Entities
         public string? Sala { get; set; }
         public bool Confirmacao { get; set; }
         public string? Descricao { get; set; }
+
+        public void Cancelar()
+        {
+            Status = StatusAgendamentoEnum.cancelado;
+        }
+
+        public void Atualizar(Guid pacienteId, Guid profissionalId, TipoAgendamentoEnum tipo, string procedimento, DateTime dataHoraInicial, DateTime dataHoraFinal, string? sala, bool confirmacao, string? descricao)
+        {
+            PacienteId = pacienteId;
+            ProfissionalId = profissionalId;
+            Tipo = tipo;
+            Procedimento = procedimento;
+            DataHoraInicial = dataHoraInicial;
+            DataHoraFinal = dataHoraFinal;
+            Sala = sala;
+            Confirmacao = confirmacao;
+            Descricao = descricao;
+        }
     }
 }
