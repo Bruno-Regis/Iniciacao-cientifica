@@ -70,17 +70,35 @@ else
     private async Task AbrirParaCriar()
     {
         var parameters = new DialogParameters<AlergiaFormDialog>
-        {
-            { x => x.Model, new AlergiaFormModel() }
-        };
+    {
+        { x => x.Model, new AlergiaFormModel() }
+    };
 
-        var dialog = await DialogService.ShowAsync<AlergiaFormDialog>("Nova Alergia", parameters);
+        var dialog = await DialogService.ShowAsync<AlergiaFormDialog>(
+            "Nova Alergia",
+            parameters);
+
         var result = await dialog.Result;
 
-        if (result is not null && !result.Canceled && result.Data is AlergiaFormModel modelo)
+        if (result is not null &&
+            !result.Canceled &&
+            result.Data is AlergiaFormModel modelo)
         {
-            var response = await DoctorPilotService.CreateAlergiaAsync(PacienteId, modelo);
-            await TratarResultado(response, "Alergia cadastrada com sucesso!");
+            var request = new CreateAlergiaRequest
+            {
+                PacienteId = PacienteId,
+                NomeAlergia = modelo.NomeAlergia,
+                Gravidade = modelo.Gravidade,
+                DataIdentificacao = modelo.DataIdentificacao,
+                Observacoes = modelo.Observacoes
+            };
+
+            var response =
+                await DoctorPilotService.CreateAlergiaAsync(request);
+
+            await TratarResultado(
+                response,
+                "Alergia cadastrada com sucesso!");
         }
     }
 

@@ -2,6 +2,8 @@
 using DoctorPilot.Application.Commands.AlergiasCommands.UpdateAlergias;
 using DoctorPilot.Application.Queries.AlergiasQueries.GetAlergiaById;
 using DoctorPilot.Application.Queries.AlergiasQueries.GetAllAlergiasByPaciente;
+using DoctorPilot.Contracts.Alergias;
+using DoctorPilot.Core.Enums;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,8 +21,16 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] InsertAlergiaCommand command)
+        public async Task<IActionResult> Post([FromBody] CreateAlergiaRequest request)
         {
+            var command = new InsertAlergiaCommand
+            {
+                PacienteId = request.PacienteId,
+                NomeAlergia = request.NomeAlergia,
+                Gravidade = (GravidadeEnum)request.Gravidade,
+                DataIdentificacao = request.DataIdentificacao,
+                Observacoes = request.Observacoes
+            };
             var result = await _mediator.Send(command);
             if (!result.IsSuccess) return BadRequest(result);
             return CreatedAtAction(nameof(GetById), new { id = result.Data }, result);
