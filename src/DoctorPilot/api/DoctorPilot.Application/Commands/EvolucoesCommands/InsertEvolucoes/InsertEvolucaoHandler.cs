@@ -3,6 +3,7 @@ using DoctorPilot.Core.Repositories;
 using Mediator;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
+using DoctorPilot.Core.Enums;
 
 namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
 {
@@ -24,11 +25,22 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
         {
             var agendamento = await _agendamentoRepository.GetByIdAsync(command.AgendamentoId);
             if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
-                return ResultViewModel<Guid>.Error("Agendamento n�o encontrado.");
+                return ResultViewModel<Guid>.Error("Agendamento não encontrado.");
 
-            var evolucaoExistente = await _evolucaoRepository.GetByAgendamentoIdAsync(command.AgendamentoId);
+            if (agendamento.Status == StatusAgendamentoEnum.cancelado)
+                return ResultViewModel<Guid>.Error("Não é possível registrar evolução para um agendamento cancelado.");
+
+            if (string.IsNullOrWhiteSpace(command.Conteudo))
+                return ResultViewModel<Guid>.Error("Conteúdo da evolução é obrigatório.");
+
+            if (command.Conteudo.Trim().Length > 4000)
+                return ResultViewModel<Guid>.Error("Conteúdo da evolução deve ter no máximo 4000 caracteres.");
+
+            var evolucaoExistente = await _evolucaoRepository.GetByAgendamentoIdAsync(
+                command.AgendamentoId,
+                cancellationToken);
             if (evolucaoExistente is not null)
-                return ResultViewModel<Guid>.Error("J� existe uma evolu��o para este agendamento.");
+                return ResultViewModel<Guid>.Error("Já existe uma evolução para este agendamento.");
 
             var evolucao = command.ToEntity();
 

@@ -1,5 +1,6 @@
 @inject DoctorPilotApiClient ApiClient
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
@@ -23,6 +24,13 @@
                 {
                     <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
                         @_erroAcao
+                    </MudAlert>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(_erroEvolucao))
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                        @_erroEvolucao
                     </MudAlert>
                 }
 
@@ -130,6 +138,13 @@
                 Editar
             </MudButton>
         }
+        @if (PodeAcessarEvolucao)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="AbrirEvolucaoAsync"
+                       Disabled="_processando" StartIcon="@Icons.Material.Filled.Description">
+                @(_evolucao is null ? "Registrar evolução" : "Ver evolução")
+            </MudButton>
+        }
         @if (PodeConfirmar)
         {
             <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="ConfirmarAsync"
@@ -169,8 +184,10 @@
 @code {
     private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
     private AgendamentoDetailsDto? _agendamento;
+    private EvolucaoDto? _evolucao;
     private string? _erro;
     private string? _erroAcao;
+    private string? _erroEvolucao;
     private bool _carregando = true;
     private bool _cancelando;
     private bool _confirmando;
@@ -196,6 +213,7 @@
             if (result.IsSuccess && result.Data is not null)
             {
                 _agendamento = result.Data;
+                await CarregarEvolucaoAsync();
             }
             else
             {
@@ -263,6 +281,11 @@
         => _agendamento is not null &&
            !_agendamento.Confirmacao &&
            Normalizar(_agendamento.Status) != "cancelado";
+
+    private bool PodeAcessarEvolucao
+        => _agendamento is not null &&
+           string.IsNullOrWhiteSpace(_erroEvolucao) &&
+           (_evolucao is not null || Normalizar(_agendamento.Status) != "cancelado");
 
     private void Editar()
     {
@@ -362,6 +385,63 @@
         {
             _confirmando = false;
         }
+    }
+
+    private async Task AbrirEvolucaoAsync()
+    {
+        if (_agendamento is null || !PodeAcessarEvolucao)
+            return;
+
+        var criando = _evolucao is null;
+        var parameters = new DialogParameters<EvolucaoDialog>
+        {
+            { x => x.Agendamento, _agendamento },
+            { x => x.PacienteNome, PacienteNome },
+            { x => x.ProfissionalNome, ProfissionalNome },
+            { x => x.Evolucao, _evolucao }
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = false,
+            BackdropClick = false,
+            CloseOnEscapeKey = false
+        };
+        var dialog = await DialogService.ShowAsync<EvolucaoDialog>(
+            criando ? "Registrar evolução" : "Evolução clínica",
+            parameters,
+            options);
+        var result = await dialog.Result;
+
+        if (!criando || result is null || result.Canceled)
+            return;
+
+        Snackbar.Add("Evolução registrada com sucesso.", Severity.Success);
+        await CarregarEvolucaoAsync();
+    }
+
+    private async Task CarregarEvolucaoAsync()
+    {
+        var result = await ApiClient.GetEvolucaoByAgendamentoIdAsync(AgendamentoId);
+        if (result.IsSuccess && result.Data is not null)
+        {
+            _evolucao = result.Data;
+            _erroEvolucao = null;
+            return;
+        }
+
+        if (string.Equals(
+            result.Message,
+            "Evolução não encontrada para este agendamento.",
+            StringComparison.Ordinal))
+        {
+            _evolucao = null;
+            _erroEvolucao = null;
+            return;
+        }
+
+        _erroEvolucao = result.Message ?? "Não foi possível verificar a evolução do agendamento.";
     }
 
     private void Fechar() => MudDialog.Close();

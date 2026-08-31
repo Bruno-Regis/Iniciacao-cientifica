@@ -2,6 +2,7 @@
 using DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes;
 using DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucaoByAgendamento;
 using DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucoesByPaciente;
+using DoctorPilot.Contracts.Evolucoes;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,11 +20,19 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] InsertEvolucaoCommand command)
+        public async Task<IActionResult> Post([FromBody] CreateEvolucaoRequest request)
         {
+            var command = new InsertEvolucaoCommand
+            {
+                AgendamentoId = request.AgendamentoId,
+                Conteudo = request.Conteudo
+            };
             var result = await _mediator.Send(command);
             if (!result.IsSuccess) return BadRequest(result);
-            return CreatedAtAction(nameof(GetByAgendamento), new { agendamentoId = result.Data }, result);
+            return CreatedAtAction(
+                nameof(GetByAgendamento),
+                new { agendamentoId = request.AgendamentoId },
+                result);
         }
 
         [HttpPut("{id}")]

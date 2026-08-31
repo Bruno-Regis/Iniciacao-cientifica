@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Agendamentos;
 using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Contracts.Auth;
 using DoctorPilot.Contracts.Common;
+using DoctorPilot.Contracts.Evolucoes;
 using DoctorPilot.Contracts.Pacientes;
 using DoctorPilot.Contracts.Profissionais;
 using DoctorPilot.Web.Migration.Models;
@@ -132,17 +133,8 @@ namespace DoctorPilot.Web.Migration.Services
             return response?.Data ?? [];
         }
 
-        public async Task<ResultViewModel<Guid>> CreateAlergiaAsync(Guid pacienteId, AlergiaFormModel modelo)
+        public async Task<ResultViewModel<Guid>> CreateAlergiaAsync(CreateAlergiaRequest request)
         {
-            var request = new
-            {
-                PacienteId = pacienteId,
-                modelo.NomeAlergia,
-                Gravidade = modelo.Gravidade,
-                modelo.DataIdentificacao,
-                modelo.Observacoes
-            };
-
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("api/alergias", request);
@@ -323,6 +315,60 @@ namespace DoctorPilot.Web.Migration.Services
             catch (HttpRequestException)
             {
                 return ResultViewModel<Guid>.Error("Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        // EVOLUÇÕES
+
+        public async Task<ResultViewModel<EvolucaoDto>> GetEvolucaoByAgendamentoIdAsync(
+            Guid agendamentoId,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(
+                    $"api/evolucoes/agendamento/{agendamentoId}",
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<EvolucaoDto>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<EvolucaoDto>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<EvolucaoDto>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<Guid>> CreateEvolucaoAsync(
+            Guid agendamentoId,
+            string conteudo,
+            CancellationToken cancellationToken = default)
+        {
+            var request = new CreateEvolucaoRequest
+            {
+                AgendamentoId = agendamentoId,
+                Conteudo = conteudo
+            };
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/evolucoes",
+                    request,
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<Guid>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
             }
         }
 

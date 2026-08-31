@@ -1,0 +1,52 @@
+.evolucao-content {
+    min-width: 0;
+}
+
+.evolucao-context {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem 1.25rem;
+    padding: 1rem;
+    background: color-mix(in srgb, var(--mud-palette-background) 45%, var(--mud-palette-surface));
+    border: 1px solid var(--mud-palette-divider);
+    border-radius: var(--mud-default-borderradius);
+}
+
+.evolucao-context-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.evolucao-context-field span {
+    color: var(--mud-palette-text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.evolucao-context-field strong,
+.evolucao-texto {
+    overflow-wrap: anywhere;
+    color: var(--mud-palette-text-primary);
+}
+
+.evolucao-context-wide {
+    grid-column: 1 / -1;
+}
+
+.evolucao-texto {
+    margin: 0.75rem 0;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 600px) {
+    .evolucao-context {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .evolucao-context-wide {
+        grid-column: auto;
+    }
+}

@@ -23,12 +23,14 @@ namespace DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucaoByAgendame
         {
             var agendamento = await _agendamentoRepository.GetByIdAsync(query.AgendamentoId);
             if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
-                return ResultViewModel<EvolucaoDto>.Error("EvoluÁ„o n„o encontrada para este agendamento.");
+                return ResultViewModel<EvolucaoDto>.Error("Agendamento n√£o encontrado.");
 
-            var evolucao = await _evolucaoRepository.GetByAgendamentoIdAsync(query.AgendamentoId);
+            var evolucao = await _evolucaoRepository.GetByAgendamentoIdAsync(
+                query.AgendamentoId,
+                cancellationToken);
 
             if (evolucao is null)
-                return ResultViewModel<EvolucaoDto>.Error("EvoluÁ„o n„o encontrada para este agendamento.");
+                return ResultViewModel<EvolucaoDto>.Error("Evolu√ß√£o n√£o encontrada para este agendamento.");
 
             return ResultViewModel<EvolucaoDto>.Success(evolucao.ToDto());
         }

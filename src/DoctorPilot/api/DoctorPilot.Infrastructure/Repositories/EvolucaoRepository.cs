@@ -11,10 +11,13 @@ namespace DoctorPilot.Infrastructure.Repositories
         {
         }
 
-        public async Task<Evolucao?> GetByAgendamentoIdAsync(Guid agendamentoId)
+        public async Task<Evolucao?> GetByAgendamentoIdAsync(
+            Guid agendamentoId,
+            CancellationToken cancellationToken = default)
         {
             return await _dbSet
-                .FirstOrDefaultAsync(e => e.AgendamentoId == agendamentoId);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.AgendamentoId == agendamentoId, cancellationToken);
         }
 
         public async Task<IEnumerable<Evolucao>> GetByPacienteIdAsync(Guid pacienteId, int page = 1, int pageSize = 20)

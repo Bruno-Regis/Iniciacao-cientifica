@@ -1,0 +1,155 @@
+@inject DoctorPilotApiClient ApiClient
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3" Class="evolucao-content">
+            <section class="evolucao-context" aria-label="Contexto do atendimento">
+                <div class="evolucao-context-field">
+                    <span>Paciente</span>
+                    <strong>@NomeOuPadrao(PacienteNome)</strong>
+                </div>
+                <div class="evolucao-context-field">
+                    <span>Profissional</span>
+                    <strong>@NomeOuPadrao(ProfissionalNome)</strong>
+                </div>
+                <div class="evolucao-context-field evolucao-context-wide">
+                    <span>Data e horário</span>
+                    <strong>@FormatarHorario()</strong>
+                </div>
+            </section>
+
+            @if (!string.IsNullOrWhiteSpace(_erro))
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+                    @_erro
+                </MudAlert>
+            }
+
+            @if (SomenteLeitura)
+            {
+                <section aria-labelledby="conteudo-evolucao-title">
+                    <MudText Typo="Typo.subtitle2" HtmlTag="h2" id="conteudo-evolucao-title">
+                        Evolução clínica
+                    </MudText>
+                    <p class="evolucao-texto">@Evolucao!.Conteudo</p>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Registrada em @Evolucao.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy 'às' HH:mm", _culture)
+                    </MudText>
+                </section>
+            }
+            else
+            {
+                <MudForm @ref="_form">
+                    <MudTextField T="string"
+                                  @bind-Value="_conteudo"
+                                  Label="Evolução clínica"
+                                  Placeholder="Registre as informações clínicas do atendimento"
+                                  Variant="Variant.Outlined"
+                                  Lines="10"
+                                  Required="true"
+                                  RequiredError="Informe o conteúdo da evolução."
+                                  MaxLength="4000"
+                                  Counter="4000"
+                                  Immediate="true"
+                                  Disabled="_salvando" />
+                </MudForm>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        @if (SomenteLeitura)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Fechar">
+                Fechar
+            </MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Text" OnClick="Cancelar" Disabled="_salvando">
+                Cancelar
+            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SalvarAsync" Disabled="_salvando">
+                @if (_salvando)
+                {
+                    <MudProgressCircular Class="me-2" Size="Size.Small" Indeterminate="true" />
+                    <span>Salvando...</span>
+                }
+                else
+                {
+                    <span>Salvar</span>
+                }
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
+    private MudForm? _form;
+    private string _conteudo = string.Empty;
+    private string? _erro;
+    private bool _salvando;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public AgendamentoDetailsDto Agendamento { get; set; } = default!;
+
+    [Parameter]
+    public string? PacienteNome { get; set; }
+
+    [Parameter]
+    public string? ProfissionalNome { get; set; }
+
+    [Parameter]
+    public EvolucaoDto? Evolucao { get; set; }
+
+    private bool SomenteLeitura => Evolucao is not null;
+
+    private async Task SalvarAsync()
+    {
+        if (_salvando || SomenteLeitura || _form is null)
+            return;
+
+        await _form.ValidateAsync();
+        if (!_form.IsValid || string.IsNullOrWhiteSpace(_conteudo))
+            return;
+
+        _salvando = true;
+        _erro = null;
+
+        try
+        {
+            var result = await ApiClient.CreateEvolucaoAsync(
+                Agendamento.Id,
+                _conteudo.Trim());
+            if (result.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(result.Data));
+                return;
+            }
+
+            _erro = result.Message ?? "Não foi possível registrar a evolução.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erro = "Não foi possível registrar a evolução.";
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+
+    private string FormatarHorario()
+        => $"{Agendamento.DataHoraInicial.ToString("dd/MM/yyyy HH:mm", _culture)}–{Agendamento.DataHoraFinal.ToString("HH:mm", _culture)}";
+
+    private static string NomeOuPadrao(string? nome)
+        => string.IsNullOrWhiteSpace(nome) ? "Não informado" : nome;
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Fechar() => MudDialog.Close();
+}
