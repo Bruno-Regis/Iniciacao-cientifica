@@ -17,15 +17,21 @@ namespace DoctorPilot.Infrastructure.Repositories
         {
             return await _dbSet
                 .AsNoTracking()
+                .Include(e => e.Agendamento)
+                .ThenInclude(a => a.Profissional)
                 .FirstOrDefaultAsync(e => e.AgendamentoId == agendamentoId, cancellationToken);
         }
 
         public async Task<IEnumerable<Evolucao>> GetByPacienteIdAsync(Guid pacienteId, int page = 1, int pageSize = 20)
         {
             return await _dbSet
+                 .AsNoTracking()
+                 .Include(e => e.Agendamento)
+                 .ThenInclude(a => a.Profissional)
                  .Where(e => _context.Agendamentos
                      .Any(a => a.Id == e.AgendamentoId && a.PacienteId == pacienteId))
-                 .OrderByDescending(e => e.CreatedAt)
+                 .OrderByDescending(e => e.Agendamento.DataHoraInicial)
+                 .ThenByDescending(e => e.Id)
                  .Skip((page - 1) * pageSize)
                  .Take(pageSize)
                  .ToListAsync();

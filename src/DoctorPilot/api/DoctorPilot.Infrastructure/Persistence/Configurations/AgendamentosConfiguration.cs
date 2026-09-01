@@ -68,7 +68,7 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder
-                .HasOne<Profissional>()
+                .HasOne(a => a.Profissional)
                 .WithMany()
                 .HasForeignKey(a => a.ProfissionalId)
                 .OnDelete(DeleteBehavior.Restrict);

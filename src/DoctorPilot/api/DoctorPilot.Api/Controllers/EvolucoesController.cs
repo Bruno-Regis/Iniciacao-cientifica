@@ -60,6 +60,7 @@ namespace DoctorPilot.Api.Controllers
         public async Task<IActionResult> GetByPaciente(Guid pacienteId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetEvolucoesByPacienteQuery(pacienteId, page, pageSize));
+            if (!result.IsSuccess) return NotFound(result);
             return Ok(result);
         }
     }

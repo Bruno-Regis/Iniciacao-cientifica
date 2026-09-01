@@ -21,6 +21,7 @@ namespace DoctorPilot.Core.Entities
 
         public Guid PacienteId { get; set; }
         public Guid ProfissionalId { get; set; }
+        public Profissional Profissional { get; set; } = null!;
         public Guid ClinicaId { get; set; }
         public StatusAgendamentoEnum Status { get; set; }
         public TipoAgendamentoEnum Tipo { get; set; }

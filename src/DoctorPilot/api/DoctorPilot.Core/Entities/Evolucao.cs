@@ -9,6 +9,7 @@
         }
 
         public Guid AgendamentoId { get; set; }
+        public Agendamento Agendamento { get; set; } = null!;
         public string Conteudo { get; set; }
     }
 }

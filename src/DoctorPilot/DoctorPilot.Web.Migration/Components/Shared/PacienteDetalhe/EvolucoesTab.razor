@@ -1,0 +1,154 @@
+@inject DoctorPilotApiClient ApiClient
+@inject IDialogService DialogService
+
+@if (_carregando)
+{
+    <div class="evolucoes-state" role="status" aria-live="polite">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+        <MudText Typo="Typo.body2">Carregando evoluções...</MudText>
+    </div>
+}
+else if (!string.IsNullOrWhiteSpace(_erro))
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">@_erro</MudAlert>
+}
+else if (_evolucoes.Count == 0)
+{
+    <div class="evolucoes-state evolucoes-empty">
+        <MudIcon Icon="@Icons.Material.Filled.HistoryEdu" Size="Size.Large" />
+        <MudText Typo="Typo.body1">Nenhuma evolução registrada para este paciente.</MudText>
+    </div>
+}
+else
+{
+    <div class="evolucoes-list" aria-label="Histórico de evoluções">
+        @foreach (var evolucao in _evolucoes)
+        {
+            <button type="button" class="evolucao-item" @onclick="() => AbrirEvolucaoAsync(evolucao)">
+                <span class="evolucao-date">
+                    <strong>@evolucao.DataHoraInicial.ToString("dd/MM/yyyy")</strong>
+                    <span>@evolucao.DataHoraInicial.ToString("HH:mm")</span>
+                </span>
+                <span class="evolucao-main">
+                    <span class="evolucao-heading">
+                        <strong>@TextoOuPadrao(evolucao.Procedimento)</strong>
+                        @if (EstaCancelado(evolucao))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Outlined">
+                                Cancelado
+                            </MudChip>
+                        }
+                    </span>
+                    <span class="evolucao-meta">
+                        @TextoOuPadrao(evolucao.ProfissionalNome) · @FormatarTipo(evolucao.Tipo)
+                    </span>
+                    <span class="evolucao-preview">@ObterTrecho(evolucao.Conteudo)</span>
+                </span>
+                <span class="evolucao-action">
+                    Ver evolução
+                    <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" />
+                </span>
+            </button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid PacienteId { get; set; }
+
+    [Parameter]
+    public string? PacienteNome { get; set; }
+
+    private readonly List<EvolucaoDto> _evolucoes = [];
+    private bool _carregando = true;
+    private string? _erro;
+
+    protected override async Task OnInitializedAsync() => await CarregarEvolucoesAsync();
+
+    private async Task CarregarEvolucoesAsync()
+    {
+        _carregando = true;
+        _erro = null;
+
+        try
+        {
+            var result = await ApiClient.GetEvolucoesByPacienteAsync(PacienteId);
+            if (result.IsSuccess)
+            {
+                _evolucoes.Clear();
+                _evolucoes.AddRange(result.Data ?? []);
+            }
+            else
+            {
+                _erro = result.Message ?? "Não foi possível carregar as evoluções do paciente.";
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erro = "Não foi possível carregar as evoluções do paciente.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private async Task AbrirEvolucaoAsync(EvolucaoDto evolucao)
+    {
+        var agendamento = new AgendamentoDetailsDto
+        {
+            Id = evolucao.AgendamentoId,
+            Status = evolucao.Status,
+            Tipo = evolucao.Tipo,
+            Procedimento = evolucao.Procedimento,
+            DataHoraInicial = evolucao.DataHoraInicial,
+            DataHoraFinal = evolucao.DataHoraFinal
+        };
+        var parameters = new DialogParameters<EvolucaoDialog>
+        {
+            { x => x.Agendamento, agendamento },
+            { x => x.PacienteNome, PacienteNome },
+            { x => x.ProfissionalNome, evolucao.ProfissionalNome },
+            { x => x.Evolucao, evolucao },
+            { x => x.PermitirEdicao, !EstaCancelado(evolucao) }
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = false,
+            BackdropClick = false,
+            CloseOnEscapeKey = false
+        };
+
+        var dialog = await DialogService.ShowAsync<EvolucaoDialog>(
+            "Evolução clínica",
+            parameters,
+            options);
+        await dialog.Result;
+        await CarregarEvolucoesAsync();
+    }
+
+    private static bool EstaCancelado(EvolucaoDto evolucao)
+        => string.Equals(evolucao.Status, "cancelado", StringComparison.OrdinalIgnoreCase);
+
+    private static string TextoOuPadrao(string? texto)
+        => string.IsNullOrWhiteSpace(texto) ? "Não informado" : texto;
+
+    private static string FormatarTipo(string? tipo)
+        => string.IsNullOrWhiteSpace(tipo)
+            ? "Tipo não informado"
+            : CultureInfo.GetCultureInfo("pt-BR").TextInfo.ToTitleCase(tipo.Trim().ToLowerInvariant());
+
+    private static string ObterTrecho(string? conteudo)
+    {
+        if (string.IsNullOrWhiteSpace(conteudo))
+            return "Sem conteúdo.";
+
+        const int limite = 180;
+        var texto = string.Join(' ', conteudo.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        return texto.Length <= limite ? texto : $"{texto[..limite].TrimEnd()}…";
+    }
+}

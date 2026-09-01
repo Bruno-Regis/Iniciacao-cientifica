@@ -31,7 +31,7 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                 .IsUnique();
 
             builder
-                .HasOne<Agendamento>()
+                .HasOne(e => e.Agendamento)
                 .WithMany()
                 .HasForeignKey(e => e.AgendamentoId)
                 .OnDelete(DeleteBehavior.Restrict);
