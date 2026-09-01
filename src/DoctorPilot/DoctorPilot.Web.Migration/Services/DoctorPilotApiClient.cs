@@ -171,6 +171,28 @@ namespace DoctorPilot.Web.Migration.Services
 
         // AGENDAMENTOS
 
+        public async Task<ResultViewModel<IEnumerable<AgendamentoElegivelEvolucaoDto>>> GetAgendamentosElegiveisParaEvolucaoAsync(
+            Guid pacienteId,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(
+                    $"api/agendamentos/paciente/{pacienteId}/elegiveis-evolucao",
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<IEnumerable<AgendamentoElegivelEvolucaoDto>>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<IEnumerable<AgendamentoElegivelEvolucaoDto>>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<IEnumerable<AgendamentoElegivelEvolucaoDto>>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
         public async Task<ResultViewModel<IEnumerable<AgendamentoItemDto>>> GetAgendamentosByPeriodoAsync(
             DateTime inicio,
             DateTime fim,

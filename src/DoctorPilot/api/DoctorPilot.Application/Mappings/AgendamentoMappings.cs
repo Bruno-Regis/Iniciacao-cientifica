@@ -47,5 +47,16 @@ namespace DoctorPilot.Application.Mappings
             dto.ProfissionalNome = resultado.ProfissionalNome;
             return dto;
         }
+
+        public static AgendamentoElegivelEvolucaoDto ToElegivelEvolucaoDto(this AgendamentoComNomes resultado)
+            => new()
+            {
+                Id = resultado.Agendamento.Id,
+                DataHoraInicial = resultado.Agendamento.DataHoraInicial,
+                DataHoraFinal = resultado.Agendamento.DataHoraFinal,
+                ProfissionalNome = resultado.ProfissionalNome,
+                Procedimento = resultado.Agendamento.Procedimento,
+                Tipo = resultado.Agendamento.Tipo.ToString()
+            };
     }
 }

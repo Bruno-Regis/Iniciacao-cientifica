@@ -5,6 +5,7 @@ using DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendamento;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentoById;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPaciente;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPeriodo;
+using DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentosElegiveisParaEvolucaoByPaciente;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -49,6 +50,15 @@ namespace DoctorPilot.Api.Controllers
         public async Task<IActionResult> GetByPaciente(Guid pacienteId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetAllAgendamentosByPacienteQuery(pacienteId, page, pageSize));
+            return Ok(result);
+        }
+
+        [HttpGet("paciente/{pacienteId}/elegiveis-evolucao")]
+        public async Task<IActionResult> GetElegiveisParaEvolucao(Guid pacienteId)
+        {
+            var result = await _mediator.Send(
+                new GetAgendamentosElegiveisParaEvolucaoByPacienteQuery(pacienteId));
+            if (!result.IsSuccess) return NotFound(result);
             return Ok(result);
         }
 

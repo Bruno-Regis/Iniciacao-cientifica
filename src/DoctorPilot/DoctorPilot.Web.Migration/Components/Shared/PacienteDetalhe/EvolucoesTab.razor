@@ -1,5 +1,26 @@
 @inject DoctorPilotApiClient ApiClient
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="RegistrarEvolucaoAsync"
+               Disabled="_carregandoAgendamentos">
+        Registrar evolução
+    </MudButton>
+
+    @if (_carregandoAgendamentos)
+    {
+        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+    }
+    else if (_agendamentosElegiveisCarregados)
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary" role="status" aria-live="polite">
+            @TextoPendencias
+        </MudText>
+    }
+</MudStack>
 
 @if (_carregando)
 {
@@ -61,10 +82,23 @@ else
     public string? PacienteNome { get; set; }
 
     private readonly List<EvolucaoDto> _evolucoes = [];
+    private readonly List<AgendamentoElegivelEvolucaoDto> _agendamentosElegiveis = [];
     private bool _carregando = true;
+    private bool _carregandoAgendamentos = true;
+    private bool _agendamentosElegiveisCarregados;
     private string? _erro;
 
-    protected override async Task OnInitializedAsync() => await CarregarEvolucoesAsync();
+    private string TextoPendencias => _agendamentosElegiveis.Count switch
+    {
+        0 => "Nenhuma evolução pendente.",
+        1 => "1 atendimento aguardando evolução",
+        var quantidade => $"{quantidade} atendimentos aguardando evolução"
+    };
+
+    protected override async Task OnInitializedAsync()
+        => await Task.WhenAll(
+            CarregarEvolucoesAsync(),
+            CarregarAgendamentosElegiveisAsync());
 
     private async Task CarregarEvolucoesAsync()
     {
@@ -129,6 +163,125 @@ else
             options);
         await dialog.Result;
         await CarregarEvolucoesAsync();
+    }
+
+    private async Task RegistrarEvolucaoAsync()
+    {
+        if (_carregandoAgendamentos)
+            return;
+
+        if (!_agendamentosElegiveisCarregados && !await CarregarAgendamentosElegiveisAsync(true))
+            return;
+
+        if (_agendamentosElegiveis.Count == 0)
+        {
+            Snackbar.Add("Não há agendamentos disponíveis para registrar evolução.", Severity.Info);
+            return;
+        }
+
+        var parameters = new DialogParameters<SelecionarAgendamentoEvolucaoDialog>
+        {
+            { x => x.Agendamentos, _agendamentosElegiveis }
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = false
+        };
+        var dialog = await DialogService.ShowAsync<SelecionarAgendamentoEvolucaoDialog>(
+            "Registrar evolução",
+            parameters,
+            options);
+        var selectionResult = await dialog.Result;
+
+        if (selectionResult is null || selectionResult.Canceled ||
+            selectionResult.Data is not AgendamentoElegivelEvolucaoDto agendamento)
+        {
+            return;
+        }
+
+        await AbrirNovaEvolucaoAsync(agendamento);
+    }
+
+    private async Task<bool> CarregarAgendamentosElegiveisAsync(bool exibirErro = false)
+    {
+        _carregandoAgendamentos = true;
+
+        try
+        {
+            var result = await ApiClient.GetAgendamentosElegiveisParaEvolucaoAsync(PacienteId);
+            if (!result.IsSuccess)
+            {
+                _agendamentosElegiveisCarregados = false;
+                if (exibirErro)
+                {
+                    Snackbar.Add(
+                        result.Message ?? "Não foi possível carregar os agendamentos disponíveis.",
+                        Severity.Error);
+                }
+
+                return false;
+            }
+
+            _agendamentosElegiveis.Clear();
+            _agendamentosElegiveis.AddRange(result.Data ?? []);
+            _agendamentosElegiveisCarregados = true;
+            return true;
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _agendamentosElegiveisCarregados = false;
+            if (exibirErro)
+                Snackbar.Add("Não foi possível carregar os agendamentos disponíveis.", Severity.Error);
+
+            return false;
+        }
+        finally
+        {
+            _carregandoAgendamentos = false;
+        }
+    }
+
+    private async Task AbrirNovaEvolucaoAsync(AgendamentoElegivelEvolucaoDto agendamentoElegivel)
+    {
+        var agendamento = new AgendamentoDetailsDto
+        {
+            Id = agendamentoElegivel.Id,
+            Tipo = agendamentoElegivel.Tipo,
+            Procedimento = agendamentoElegivel.Procedimento,
+            DataHoraInicial = agendamentoElegivel.DataHoraInicial,
+            DataHoraFinal = agendamentoElegivel.DataHoraFinal
+        };
+        var parameters = new DialogParameters<EvolucaoDialog>
+        {
+            { x => x.Agendamento, agendamento },
+            { x => x.PacienteNome, PacienteNome },
+            { x => x.ProfissionalNome, agendamentoElegivel.ProfissionalNome },
+            { x => x.Evolucao, null }
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = false,
+            BackdropClick = false,
+            CloseOnEscapeKey = false
+        };
+        var dialog = await DialogService.ShowAsync<EvolucaoDialog>(
+            "Registrar evolução",
+            parameters,
+            options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+            return;
+
+        Snackbar.Add("Evolução registrada com sucesso.", Severity.Success);
+        await Task.WhenAll(
+            CarregarEvolucoesAsync(),
+            CarregarAgendamentosElegiveisAsync());
     }
 
     private static bool EstaCancelado(EvolucaoDto evolucao)

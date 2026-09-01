@@ -1,0 +1,51 @@
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            Selecione o atendimento que receberá a evolução:
+        </MudText>
+
+        <div class="agendamentos-selecao" role="list">
+            @foreach (var agendamento in Agendamentos)
+            {
+                <button type="button" class="agendamento-opcao" role="listitem"
+                        @onclick="() => Selecionar(agendamento)">
+                    <span class="agendamento-horario">
+                        <strong>@agendamento.DataHoraInicial.ToString("dd/MM/yyyy")</strong>
+                        <span>
+                            @agendamento.DataHoraInicial.ToString("HH:mm")–@agendamento.DataHoraFinal.ToString("HH:mm")
+                        </span>
+                    </span>
+                    <span class="agendamento-identificacao">
+                        <strong>@TextoOuPadrao(agendamento.Procedimento)</strong>
+                        <span>@TextoOuPadrao(agendamento.ProfissionalNome) · @FormatarTipo(agendamento.Tipo)</span>
+                    </span>
+                    <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" />
+                </button>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancelar">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<AgendamentoElegivelEvolucaoDto> Agendamentos { get; set; } = [];
+
+    private void Selecionar(AgendamentoElegivelEvolucaoDto agendamento)
+        => MudDialog.Close(DialogResult.Ok(agendamento));
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private static string TextoOuPadrao(string? texto)
+        => string.IsNullOrWhiteSpace(texto) ? "Não informado" : texto;
+
+    private static string FormatarTipo(string? tipo)
+        => string.IsNullOrWhiteSpace(tipo)
+            ? "Tipo não informado"
+            : CultureInfo.GetCultureInfo("pt-BR").TextInfo.ToTitleCase(tipo.Trim().ToLowerInvariant());
+}

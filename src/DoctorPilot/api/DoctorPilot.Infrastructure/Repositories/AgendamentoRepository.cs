@@ -26,6 +26,24 @@ namespace DoctorPilot.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<IEnumerable<AgendamentoComNomes>> GetElegiveisParaEvolucaoByPacienteIdAsync(
+            Guid pacienteId,
+            Guid? clinicaId,
+            CancellationToken cancellationToken = default)
+        {
+            var agendamentos = _dbSet
+                .AsNoTracking()
+                .Where(a => a.PacienteId == pacienteId
+                         && (!clinicaId.HasValue || a.ClinicaId == clinicaId.Value)
+                         && a.Status != StatusAgendamentoEnum.cancelado
+                         && !_context.Evolucoes.Any(e => e.AgendamentoId == a.Id))
+                .OrderByDescending(a => a.DataHoraInicial)
+                .ThenByDescending(a => a.Id);
+
+            return await GetAgendamentosComNomes(agendamentos)
+                .ToListAsync(cancellationToken);
+        }
+
 
         public async Task<IEnumerable<AgendamentoComNomes>> GetByPeriodoAsync(Guid clinicaId, DateTime inicio, DateTime fim, Guid? profissionalId = null, CancellationToken cancellationToken = default)
         {
