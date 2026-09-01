@@ -372,6 +372,30 @@ namespace DoctorPilot.Web.Migration.Services
             }
         }
 
+        public async Task<ResultViewModel<Guid>> UpdateEvolucaoAsync(
+            Guid evolucaoId,
+            UpdateEvolucaoRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync(
+                    $"api/evolucoes/{evolucaoId}",
+                    request,
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<Guid>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
         // PROFISSIONAIS
 
         public async Task<ResultViewModel<IEnumerable<ProfissionalItemDto>>> GetProfissionaisAsync(

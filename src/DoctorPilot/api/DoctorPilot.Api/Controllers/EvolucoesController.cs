@@ -36,9 +36,13 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateEvolucaoCommand command)
+        public async Task<IActionResult> Put(Guid id, [FromBody] UpdateEvolucaoRequest request)
         {
-            command.Id = id;
+            var command = new UpdateEvolucaoCommand
+            {
+                Id = id,
+                Conteudo = request.Conteudo
+            };
             var result = await _mediator.Send(command);
             if (!result.IsSuccess) return BadRequest(result);
             return Ok(result);

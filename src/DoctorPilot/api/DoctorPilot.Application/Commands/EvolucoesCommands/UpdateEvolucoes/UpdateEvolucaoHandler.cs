@@ -1,9 +1,9 @@
 using DoctorPilot.Contracts.Common;
-using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
+using DoctorPilot.Core.Enums;
 
 namespace DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes
 {
@@ -25,13 +25,23 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes
         {
             var evolucao = await _evolucaoRepository.GetByIdAsync(command.Id);
             if (evolucao is null)
-                return ResultViewModel<Guid>.Error("Evolu��o n�o encontrada.");
+                return ResultViewModel<Guid>.Error("Evolução não encontrada.");
 
             var agendamento = await _agendamentoRepository.GetByIdAsync(evolucao.AgendamentoId);
             if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
-                return ResultViewModel<Guid>.Error("Evolu��o n�o encontrada.");
+                return ResultViewModel<Guid>.Error("Evolução não encontrada.");
 
-            evolucao.Conteudo = command.Conteudo;
+            if (agendamento.Status == StatusAgendamentoEnum.cancelado)
+                return ResultViewModel<Guid>.Error("Não é possível editar uma evolução de um agendamento cancelado.");
+
+            if (string.IsNullOrWhiteSpace(command.Conteudo))
+                return ResultViewModel<Guid>.Error("Conteúdo da evolução é obrigatório.");
+
+            var conteudo = command.Conteudo.Trim();
+            if (conteudo.Length > 4000)
+                return ResultViewModel<Guid>.Error("Conteúdo da evolução deve ter no máximo 4000 caracteres.");
+
+            evolucao.Conteudo = conteudo;
 
             await _evolucaoRepository.UpdateAsync(evolucao);
             await _unitOfWork.CommitAsync();

@@ -398,7 +398,8 @@
             { x => x.Agendamento, _agendamento },
             { x => x.PacienteNome, PacienteNome },
             { x => x.ProfissionalNome, ProfissionalNome },
-            { x => x.Evolucao, _evolucao }
+            { x => x.Evolucao, _evolucao },
+            { x => x.PermitirEdicao, Normalizar(_agendamento.Status) != "cancelado" }
         };
         var options = new DialogOptions
         {
@@ -414,10 +415,12 @@
             options);
         var result = await dialog.Result;
 
-        if (!criando || result is null || result.Canceled)
+        if (result is null || result.Canceled)
             return;
 
-        Snackbar.Add("Evolução registrada com sucesso.", Severity.Success);
+        if (criando)
+            Snackbar.Add("Evolução registrada com sucesso.", Severity.Success);
+
         await CarregarEvolucaoAsync();
     }
 

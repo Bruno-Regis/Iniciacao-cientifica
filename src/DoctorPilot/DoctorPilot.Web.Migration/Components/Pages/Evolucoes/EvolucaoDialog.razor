@@ -1,4 +1,5 @@
 @inject DoctorPilotApiClient ApiClient
+@inject ISnackbar Snackbar
 
 <MudDialog>
     <DialogContent>
@@ -25,15 +26,15 @@
                 </MudAlert>
             }
 
-            @if (SomenteLeitura)
+            @if (_modo == ModoEvolucaoDialog.Read)
             {
                 <section aria-labelledby="conteudo-evolucao-title">
                     <MudText Typo="Typo.subtitle2" HtmlTag="h2" id="conteudo-evolucao-title">
                         Evolução clínica
                     </MudText>
-                    <p class="evolucao-texto">@Evolucao!.Conteudo</p>
+                    <p class="evolucao-texto">@_evolucaoAtual!.Conteudo</p>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">
-                        Registrada em @Evolucao.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy 'às' HH:mm", _culture)
+                        Registrada em @_evolucaoAtual.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy 'às' HH:mm", _culture)
                     </MudText>
                 </section>
             }
@@ -57,16 +58,23 @@
         </MudStack>
     </DialogContent>
     <DialogActions>
-        @if (SomenteLeitura)
+        @if (_modo == ModoEvolucaoDialog.Read)
         {
+            @if (PermitirEdicao)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="IniciarEdicao"
+                           StartIcon="@Icons.Material.Filled.Edit">
+                    Editar evolução
+                </MudButton>
+            }
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Fechar">
                 Fechar
             </MudButton>
         }
         else
         {
-            <MudButton Variant="Variant.Text" OnClick="Cancelar" Disabled="_salvando">
-                Cancelar
+            <MudButton Variant="Variant.Text" OnClick="CancelarFormulario" Disabled="_salvando">
+                @(_modo == ModoEvolucaoDialog.Edit ? "Cancelar edição" : "Cancelar")
             </MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SalvarAsync" Disabled="_salvando">
                 @if (_salvando)
@@ -76,7 +84,7 @@
                 }
                 else
                 {
-                    <span>Salvar</span>
+                    <span>@(_modo == ModoEvolucaoDialog.Edit ? "Salvar alterações" : "Salvar")</span>
                 }
             </MudButton>
         }
@@ -87,8 +95,11 @@
     private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
     private MudForm? _form;
     private string _conteudo = string.Empty;
+    private string _conteudoOriginal = string.Empty;
     private string? _erro;
     private bool _salvando;
+    private ModoEvolucaoDialog _modo;
+    private EvolucaoDto? _evolucaoAtual;
 
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
@@ -105,11 +116,20 @@
     [Parameter]
     public EvolucaoDto? Evolucao { get; set; }
 
-    private bool SomenteLeitura => Evolucao is not null;
+    [Parameter]
+    public bool PermitirEdicao { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _evolucaoAtual = Evolucao;
+        _modo = Evolucao is null ? ModoEvolucaoDialog.Create : ModoEvolucaoDialog.Read;
+        _conteudoOriginal = Evolucao?.Conteudo ?? string.Empty;
+        _conteudo = _conteudoOriginal;
+    }
 
     private async Task SalvarAsync()
     {
-        if (_salvando || SomenteLeitura || _form is null)
+        if (_salvando || _modo == ModoEvolucaoDialog.Read || _form is null)
             return;
 
         await _form.ValidateAsync();
@@ -121,21 +141,39 @@
 
         try
         {
-            var result = await ApiClient.CreateEvolucaoAsync(
-                Agendamento.Id,
-                _conteudo.Trim());
+            var conteudo = _conteudo.Trim();
+            var result = _modo == ModoEvolucaoDialog.Create
+                ? await ApiClient.CreateEvolucaoAsync(Agendamento.Id, conteudo)
+                : await ApiClient.UpdateEvolucaoAsync(
+                    _evolucaoAtual!.Id,
+                    new UpdateEvolucaoRequest { Conteudo = conteudo });
+
             if (result.IsSuccess)
             {
-                MudDialog.Close(DialogResult.Ok(result.Data));
+                if (_modo == ModoEvolucaoDialog.Create)
+                {
+                    MudDialog.Close(DialogResult.Ok(result.Data));
+                    return;
+                }
+
+                _evolucaoAtual!.Conteudo = conteudo;
+                _conteudoOriginal = conteudo;
+                _conteudo = conteudo;
+                _modo = ModoEvolucaoDialog.Read;
+                Snackbar.Add("Evolução atualizada com sucesso.", Severity.Success);
                 return;
             }
 
-            _erro = result.Message ?? "Não foi possível registrar a evolução.";
+            _erro = result.Message ?? (_modo == ModoEvolucaoDialog.Edit
+                ? "Não foi possível atualizar a evolução."
+                : "Não foi possível registrar a evolução.");
         }
         catch (Exception exception) when (
             exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
         {
-            _erro = "Não foi possível registrar a evolução.";
+            _erro = _modo == ModoEvolucaoDialog.Edit
+                ? "Não foi possível atualizar a evolução."
+                : "Não foi possível registrar a evolução.";
         }
         finally
         {
@@ -149,7 +187,36 @@
     private static string NomeOuPadrao(string? nome)
         => string.IsNullOrWhiteSpace(nome) ? "Não informado" : nome;
 
-    private void Cancelar() => MudDialog.Cancel();
+    private void IniciarEdicao()
+    {
+        if (!PermitirEdicao || _evolucaoAtual is null)
+            return;
+
+        _conteudoOriginal = _evolucaoAtual.Conteudo;
+        _conteudo = _conteudoOriginal;
+        _erro = null;
+        _modo = ModoEvolucaoDialog.Edit;
+    }
+
+    private void CancelarFormulario()
+    {
+        if (_modo == ModoEvolucaoDialog.Edit)
+        {
+            _conteudo = _conteudoOriginal;
+            _erro = null;
+            _modo = ModoEvolucaoDialog.Read;
+            return;
+        }
+
+        MudDialog.Cancel();
+    }
 
     private void Fechar() => MudDialog.Close();
+
+    private enum ModoEvolucaoDialog
+    {
+        Create,
+        Read,
+        Edit
+    }
 }
