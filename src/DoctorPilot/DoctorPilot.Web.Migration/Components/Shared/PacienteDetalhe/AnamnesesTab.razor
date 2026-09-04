@@ -124,13 +124,47 @@ else
 
             if (result is not null && !result.Canceled && result.Data is string tipo)
             {
-                var descricao = tipo == NovaAnamneseTipoDialog.Template ? "por template" : "manual";
-                Snackbar.Add($"Criação {descricao} será implementada na próxima etapa.", Severity.Info);
+                if (tipo == NovaAnamneseTipoDialog.Manual)
+                {
+                    await AbrirAnamneseManualAsync();
+                }
+                else
+                {
+                    Snackbar.Add("Criação por template será implementada em uma próxima etapa.", Severity.Info);
+                }
             }
         }
         finally
         {
             _abrindoDialog = false;
         }
+    }
+
+    private async Task AbrirAnamneseManualAsync()
+    {
+        var parameters = new DialogParameters<AnamneseManualDialog>
+        {
+            { x => x.PacienteId, PacienteId },
+            { x => x.PacienteNome, PacienteNome }
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseButton = false,
+            BackdropClick = false,
+            CloseOnEscapeKey = false
+        };
+        var dialog = await DialogService.ShowAsync<AnamneseManualDialog>(
+            "Criar anamnese manual",
+            parameters,
+            options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+            return;
+
+        Snackbar.Add("Anamnese criada com sucesso.", Severity.Success);
+        await CarregarAnamnesesAsync();
     }
 }

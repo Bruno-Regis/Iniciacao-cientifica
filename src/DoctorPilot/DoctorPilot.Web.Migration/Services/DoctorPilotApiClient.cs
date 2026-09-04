@@ -487,6 +487,29 @@ namespace DoctorPilot.Web.Migration.Services
             }
         }
 
+        public async Task<ResultViewModel<Guid>> CreateAnamneseManualAsync(
+            CreateAnamneseManualRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/anamneses/manual",
+                    request,
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<Guid>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
         // PROFISSIONAIS
 
         public async Task<ResultViewModel<IEnumerable<ProfissionalItemDto>>> GetProfissionaisAsync(

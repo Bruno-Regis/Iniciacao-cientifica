@@ -6,7 +6,6 @@ namespace DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissio
 {
     public class InsertProfissionaisCommand : ICommand<ResultViewModel<Guid>>
     {
-       // public Guid ClinicaId { get; set; }
         public Guid UsuarioId { get; set; }
         public string Nome { get; set; }
         public string Profissao { get; set; }
