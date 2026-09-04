@@ -11,21 +11,24 @@ namespace DoctorPilot.Infrastructure.Repositories
         {
         }
 
-        public async Task<Anamnese?> GetByIdComSessoesAsync(Guid id)
+        public async Task<Anamnese?> GetByIdComSessoesAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _dbSet
+                .AsNoTracking()
                 .Include(a => a.Sessoes)
-                .FirstOrDefaultAsync(a => a.Id == id);
+                    .ThenInclude(s => s.Opcoes)
+                .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
         }
 
-        public async Task<IEnumerable<Anamnese>> GetByPacienteIdAsync(Guid pacienteId, int page = 1, int pageSize = 20)
+        public async Task<IEnumerable<Anamnese>> GetByPacienteIdAsync(Guid pacienteId, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
         {
             return await _dbSet
+                .AsNoTracking()
                 .Where(a => a.PacienteId == pacienteId)
                 .OrderByDescending(a => a.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
     }
 }

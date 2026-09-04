@@ -9,12 +9,13 @@ namespace DoctorPilot.Infrastructure.Repositories
     {
         public ProfissionalRepository(DoctorPilotDbContext context) : base(context) { }
 
-        public async Task<Profissional?> GetByUsuarioIdAsync(Guid usuarioId)
+        public async Task<Profissional?> GetByUsuarioIdAsync(Guid usuarioId, CancellationToken cancellationToken = default)
         {
             return await _dbSet
+                .AsNoTracking()
                 .Include(p => p.Clinica)
                 .Include(p => p.Usuario)
-                .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId);
+                .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId, cancellationToken);
         }
 
         public async Task<Profissional?> GetByIdComRelacionamentosAsync(Guid id, CancellationToken cancellationToken = default)

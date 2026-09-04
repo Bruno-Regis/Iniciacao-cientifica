@@ -11,10 +11,15 @@ namespace DoctorPilot.Application.Mappings
                 Id = anamnese.Id,
                 PacienteId = anamnese.PacienteId,
                 ProfissionalId = anamnese.ProfissionalId,
+                AnamneseTemplateId = anamnese.AnamneseTemplateId,
                 NomeDaAnamnese = anamnese.NomeDaAnamnese,
                 Observacoes = anamnese.Observacoes,
                 CreatedAt = anamnese.CreatedAt,
-                Sessoes = anamnese.Sessoes.Select(s => s.ToDto()).ToList()
+                Sessoes = anamnese.Sessoes
+                    .OrderBy(s => s.Ordem)
+                    .ThenBy(s => s.Id)
+                    .Select(s => s.ToDto())
+                    .ToList()
             };
 
         public static AnamneseItemDto ToItemDto(this Anamnese anamnese)
@@ -33,7 +38,19 @@ namespace DoctorPilot.Application.Mappings
                 Id = sessao.Id,
                 Pergunta = sessao.Pergunta,
                 Resposta = sessao.Resposta,
-                Tipo = sessao.Tipo.ToString()
+                Tipo = sessao.Tipo.ToString(),
+                Ordem = sessao.Ordem,
+                Opcoes = sessao.Opcoes
+                    .OrderBy(o => o.Ordem)
+                    .ThenBy(o => o.Id)
+                    .Select(o => new AnamneseSessaoOpcaoDto
+                    {
+                        Id = o.Id,
+                        Texto = o.Texto,
+                        Ordem = o.Ordem,
+                        Selecionada = o.Selecionada
+                    })
+                    .ToList()
             };
     }
 }

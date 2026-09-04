@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using DoctorPilot.Application.Behaviors;
+using FluentValidation;
 using Mediator;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DoctorPilot.Application
 {
@@ -8,8 +10,8 @@ namespace DoctorPilot.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services
-                .AddHandlers();
-                //.AddValidation();
+                .AddHandlers()
+                .AddValidation();
 
             return services;
         }
@@ -19,18 +21,20 @@ namespace DoctorPilot.Application
             services.AddMediator(options =>
             {
                 options.ServiceLifetime = ServiceLifetime.Scoped;
+                options.PipelineBehaviors =
+                [
+                    typeof(ValidationBehavior<,>)
+                ];
             });
 
             return services;
         }
 
-        //private static IServiceCollection AddValidation(this IServiceCollection services)
-        //{
-        //    services
-        //        .AddFluentValidationAutoValidation()
-        //        .AddValidatorsFromAssemblyContaining<ApplicationModule>();
+        private static IServiceCollection AddValidation(this IServiceCollection services)
+        {
+            services.AddValidatorsFromAssembly(typeof(ApplicationModule).Assembly, ServiceLifetime.Scoped);
 
-        //    return services;
-        //}
+            return services;
+        }
     }
 }

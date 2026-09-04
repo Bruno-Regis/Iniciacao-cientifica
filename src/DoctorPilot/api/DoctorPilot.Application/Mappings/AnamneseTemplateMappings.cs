@@ -12,7 +12,11 @@ namespace DoctorPilot.Application.Mappings
                 ClinicaId = template.ClinicaId,
                 Nome = template.Nome,
                 Descricao = template.Descricao,
-                Sessoes = template.Sessoes.Select(s => s.ToDto()).ToList()
+                Sessoes = template.Sessoes
+                    .OrderBy(s => s.Ordem)
+                    .ThenBy(s => s.Id)
+                    .Select(s => s.ToDto())
+                    .ToList()
             };
 
         public static AnamneseTemplateItemDto ToItemDto(this AnamneseTemplate template)
@@ -29,7 +33,19 @@ namespace DoctorPilot.Application.Mappings
             {
                 Id = sessao.Id,
                 Pergunta = sessao.Pergunta,
-                Tipo = sessao.Tipo.ToString()
+                Tipo = sessao.Tipo.ToString(),
+                Ordem = sessao.Ordem,
+                Obrigatoria = sessao.Obrigatoria,
+                Opcoes = sessao.Opcoes
+                    .OrderBy(o => o.Ordem)
+                    .ThenBy(o => o.Id)
+                    .Select(o => new AnamneseTemplateOpcaoDto
+                    {
+                        Id = o.Id,
+                        Texto = o.Texto,
+                        Ordem = o.Ordem
+                    })
+                    .ToList()
             };
     }
 }

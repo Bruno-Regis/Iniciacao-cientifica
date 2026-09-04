@@ -6,6 +6,6 @@ namespace DoctorPilot.Contracts.AnamneseTemplates
         public Guid ClinicaId { get; set; }
         public string Nome { get; set; }
         public string? Descricao { get; set; }
-        public List<AnamneseTemplateSessaoDto> Sessoes { get; set; }
+        public List<AnamneseTemplateSessaoDto> Sessoes { get; set; } = [];
     }
 }

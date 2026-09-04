@@ -19,10 +19,10 @@ namespace DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAnamneseTe
         }
         public async ValueTask<ResultViewModel<AnamneseTemplateDetailsDto>> Handle(GetAnamneseTemplateByIdQuery query, CancellationToken cancellationToken)
         {
-            var template = await _templateRepository.GetByIdComSessoesAsync(query.Id);
+            var template = await _templateRepository.GetByIdComSessoesAsync(query.Id, cancellationToken);
 
             if (template is null || (!_currentUser.IsSuperAdmin && template.ClinicaId != _currentUser.ClinicaId))
-                return ResultViewModel<AnamneseTemplateDetailsDto>.Error("Template n„o encontrado.");
+                return ResultViewModel<AnamneseTemplateDetailsDto>.Error("Template n√£o encontrado.");
 
             return ResultViewModel<AnamneseTemplateDetailsDto>.Success(template.ToDetailsDto());
         }

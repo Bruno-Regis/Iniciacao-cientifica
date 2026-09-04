@@ -26,7 +26,11 @@ namespace DoctorPilot.Application.Queries.AnamnesesQueries.GetAllAnamnesesByPaci
             if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
                 return ResultViewModel<IEnumerable<AnamneseItemDto>>.Error("Paciente não encontrado.");
 
-            var anamneses = await _anamneseRepository.GetByPacienteIdAsync(query.PacienteId, query.Page, query.PageSize);
+            var anamneses = await _anamneseRepository.GetByPacienteIdAsync(
+                query.PacienteId,
+                query.Page,
+                query.PageSize,
+                cancellationToken);
             var viewModels = anamneses.Select(a => a.ToItemDto());
             return ResultViewModel<IEnumerable<AnamneseItemDto>>.Success(viewModels);
         }

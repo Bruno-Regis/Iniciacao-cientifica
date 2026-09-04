@@ -21,7 +21,7 @@ namespace DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamnes
         {
             var clinicaId =  _currentUser.ClinicaId; 
             var templates = await _templateRepository
-                .GetByClinicaIdAsync(clinicaId, query.Page, query.PageSize);
+                .GetByClinicaIdAsync(clinicaId, query.Page, query.PageSize, cancellationToken);
 
             var viewModels = templates
                 .Select(t => t.ToItemDto());

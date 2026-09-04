@@ -37,6 +37,10 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                 .HasConversion<string>()
                 .HasMaxLength(50);
 
+            builder
+                .Property(s => s.Ordem)
+                .IsRequired();
+
             // Nav prop existe em Anamnese (Sessoes), então HasOne com lambda
             builder
                 .HasOne(s => s.Anamnese)

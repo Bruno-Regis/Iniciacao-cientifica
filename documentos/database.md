@@ -181,6 +181,17 @@ A cardinalidade atual de transcrição é `Agendamento 1 -> N Transcricoes`. `Tr
 > em `Especificação do Projeto.md`.
 ```
 
+O núcleo de Anamnese está separado em duas partes. `ANAMNESE_TEMPLATE`,
+`ANAMNESE_TEMPLATE_SESSAO` e `ANAMNESE_TEMPLATE_OPCAO` representam a estrutura
+configurável. `ANAMNESE`, `ANAMNESE_SESSAO` e `ANAMNESE_SESSAO_OPCAO` representam
+o registro clínico histórico: pergunta, tipo, ordem, resposta e opções são
+snapshots e não dependem do estado atual do template para serem interpretados.
+
+`ANAMNESE.AnamneseTemplateId` é nullable. Quando preenchido, identifica o
+template que originou a anamnese; quando nulo, identifica uma anamnese manual.
+A clínica da anamnese continua sendo derivada do paciente, sem `ClinicaId`
+direto e sem relacionamento com `AGENDAMENTO`.
+
 ```mermaid
 erDiagram
     CLINICA ||--o{ USUARIO : possui
@@ -200,12 +211,65 @@ erDiagram
     PROFISSIONAL ||--o{ ANAMNESE : preenche
 
     ANAMNESE ||--o{ ANAMNESE_SESSAO : contem
+    ANAMNESE_SESSAO ||--o{ ANAMNESE_SESSAO_OPCAO : preserva
+    ANAMNESE_TEMPLATE o|--o{ ANAMNESE : origina
     ANAMNESE_TEMPLATE ||--o{ ANAMNESE_TEMPLATE_SESSAO : contem
+    ANAMNESE_TEMPLATE_SESSAO ||--o{ ANAMNESE_TEMPLATE_OPCAO : oferece
 
     AGENDAMENTO ||--o| EVOLUCAO : gera
     AGENDAMENTO ||--o{ TRANSCRICAO : gera
 
     CHAT ||--o{ CHAT_MENSAGEM : contem
+
+    ANAMNESE {
+        Guid Id PK
+        Guid PacienteId FK
+        Guid ProfissionalId FK
+        Guid AnamneseTemplateId FK "nullable"
+        string NomeDaAnamnese
+        string Observacoes "nullable"
+        DateTime CreatedAt
+    }
+
+    ANAMNESE_SESSAO {
+        Guid Id PK
+        Guid AnamneseId FK
+        string Pergunta
+        string Tipo
+        int Ordem
+        string Resposta
+    }
+
+    ANAMNESE_SESSAO_OPCAO {
+        Guid Id PK
+        Guid AnamneseSessaoId FK
+        string Texto
+        int Ordem
+        bool Selecionada
+    }
+
+    ANAMNESE_TEMPLATE {
+        Guid Id PK
+        Guid ClinicaId FK
+        string Nome
+        string Descricao "nullable"
+    }
+
+    ANAMNESE_TEMPLATE_SESSAO {
+        Guid Id PK
+        Guid AnamneseTemplateId FK
+        string Pergunta
+        string Tipo
+        int Ordem
+        bool Obrigatoria
+    }
+
+    ANAMNESE_TEMPLATE_OPCAO {
+        Guid Id PK
+        Guid AnamneseTemplateSessaoId FK
+        string Texto
+        int Ordem
+    }
 ```
 
 ## 8. Constraints, índices e conversões

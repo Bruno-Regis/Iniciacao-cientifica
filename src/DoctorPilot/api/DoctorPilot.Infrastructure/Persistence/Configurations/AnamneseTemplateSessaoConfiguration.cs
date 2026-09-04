@@ -36,6 +36,14 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                 .HasMaxLength(50);
 
             builder
+                .Property(s => s.Ordem)
+                .IsRequired();
+
+            builder
+                .Property(s => s.Obrigatoria)
+                .IsRequired();
+
+            builder
                 .HasOne<AnamneseTemplate>()
                 .WithMany(a => a.Sessoes)
                 .HasForeignKey(s => s.AnamneseTemplateId)

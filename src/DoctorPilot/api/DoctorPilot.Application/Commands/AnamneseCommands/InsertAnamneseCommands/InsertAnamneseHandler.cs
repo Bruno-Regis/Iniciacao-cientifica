@@ -26,11 +26,14 @@ namespace DoctorPilot.Application.Commands.AnamneseCommands.InsertAnamneseComman
         {
             var paciente = await _pacienteRepository.GetByIdAsync(command.PacienteId);
             if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
-                return ResultViewModel<Guid>.Error("Paciente n�o encontrado.");
+                return ResultViewModel<Guid>.Error("Paciente não encontrado.");
 
             var profissional = await _profissionalRepository.GetByIdAsync(command.ProfissionalId);
             if (profissional is null || (!_currentUser.IsSuperAdmin && profissional.ClinicaId != _currentUser.ClinicaId))
-                return ResultViewModel<Guid>.Error("Profissional n�o encontrado.");
+                return ResultViewModel<Guid>.Error("Profissional não encontrado.");
+
+            if (profissional.ClinicaId != paciente.ClinicaId)
+                return ResultViewModel<Guid>.Error("Paciente e profissional devem pertencer à mesma clínica.");
 
             var anamnese = command.ToEntity();
 

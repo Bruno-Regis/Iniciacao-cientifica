@@ -147,6 +147,9 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AnamneseTemplateId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -177,6 +180,8 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AnamneseTemplateId");
+
                     b.HasIndex("PacienteId");
 
                     b.HasIndex("ProfissionalId");
@@ -203,6 +208,9 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<int>("Ordem")
+                        .HasColumnType("int");
+
                     b.Property<string>("Pergunta")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -226,6 +234,46 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.HasIndex("AnamneseId");
 
                     b.ToTable("AnamneseSessoes");
+                });
+
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseSessaoOpcao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AnamneseSessaoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Selecionada")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnamneseSessaoId", "Ordem");
+
+                    b.ToTable("AnamneseSessaoOpcoes");
                 });
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplate", b =>
@@ -266,6 +314,43 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.ToTable("AnamneseTemplates");
                 });
 
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplateOpcao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AnamneseTemplateSessaoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnamneseTemplateSessaoId", "Ordem");
+
+                    b.ToTable("AnamneseTemplateOpcoes");
+                });
+
             modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplateSessao", b =>
                 {
                     b.Property<Guid>("Id")
@@ -284,6 +369,12 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<bool>("Obrigatoria")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Ordem")
+                        .HasColumnType("int");
 
                     b.Property<string>("Pergunta")
                         .IsRequired()
@@ -739,11 +830,13 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("DoctorPilot.Core.Entities.Profissional", null)
+                    b.HasOne("DoctorPilot.Core.Entities.Profissional", "Profissional")
                         .WithMany()
                         .HasForeignKey("ProfissionalId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Profissional");
                 });
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.Alergia", b =>
@@ -759,6 +852,11 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.Anamnese", b =>
                 {
+                    b.HasOne("DoctorPilot.Core.Entities.AnamneseTemplate", "AnamneseTemplate")
+                        .WithMany()
+                        .HasForeignKey("AnamneseTemplateId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("DoctorPilot.Core.Entities.Paciente", null)
                         .WithMany()
                         .HasForeignKey("PacienteId")
@@ -770,6 +868,8 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ProfissionalId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("AnamneseTemplate");
                 });
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseSessao", b =>
@@ -783,6 +883,17 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.Navigation("Anamnese");
                 });
 
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseSessaoOpcao", b =>
+                {
+                    b.HasOne("DoctorPilot.Core.Entities.AnamneseSessao", "AnamneseSessao")
+                        .WithMany("Opcoes")
+                        .HasForeignKey("AnamneseSessaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AnamneseSessao");
+                });
+
             modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplate", b =>
                 {
                     b.HasOne("DoctorPilot.Core.Entities.Clinica", "Clinica")
@@ -792,6 +903,17 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Clinica");
+                });
+
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplateOpcao", b =>
+                {
+                    b.HasOne("DoctorPilot.Core.Entities.AnamneseTemplateSessao", "AnamneseTemplateSessao")
+                        .WithMany("Opcoes")
+                        .HasForeignKey("AnamneseTemplateSessaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AnamneseTemplateSessao");
                 });
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplateSessao", b =>
@@ -825,11 +947,13 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.Evolucao", b =>
                 {
-                    b.HasOne("DoctorPilot.Core.Entities.Agendamento", null)
+                    b.HasOne("DoctorPilot.Core.Entities.Agendamento", "Agendamento")
                         .WithMany()
                         .HasForeignKey("AgendamentoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Agendamento");
                 });
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.Paciente", b =>
@@ -887,9 +1011,19 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.Navigation("Sessoes");
                 });
 
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseSessao", b =>
+                {
+                    b.Navigation("Opcoes");
+                });
+
             modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplate", b =>
                 {
                     b.Navigation("Sessoes");
+                });
+
+            modelBuilder.Entity("DoctorPilot.Core.Entities.AnamneseTemplateSessao", b =>
+                {
+                    b.Navigation("Opcoes");
                 });
 
             modelBuilder.Entity("DoctorPilot.Core.Entities.Chat", b =>

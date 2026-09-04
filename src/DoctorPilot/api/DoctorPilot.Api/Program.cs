@@ -1,3 +1,4 @@
+using DoctorPilot.Api.ExceptionHandling;
 using DoctorPilot.Application;
 using DoctorPilot.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +16,9 @@ namespace DoctorPilot.Api
             builder.Services
                 .AddApplication()
                 .AddInfrastructure(builder.Configuration);
+
+            builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+            builder.Services.AddProblemDetails();
 
             var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 
@@ -41,6 +45,8 @@ namespace DoctorPilot.Api
             // builder.Services.AddOpenApi();
 
             var app = builder.Build();
+
+            app.UseExceptionHandler();
 
             // Configure the HTTP request pipeline.
             //if (app.Environment.IsDevelopment())

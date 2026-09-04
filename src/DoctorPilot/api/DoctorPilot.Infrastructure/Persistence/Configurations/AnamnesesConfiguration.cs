@@ -45,6 +45,12 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(a => a.ProfissionalId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasOne(a => a.AnamneseTemplate)
+                .WithMany()
+                .HasForeignKey(a => a.AnamneseTemplateId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using DoctorPilot.Application.Commands.InsertAnamneseTemplatesCommands.InsertAnamneseTemplate;
 using DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamneseTemplatesByClinica;
 using DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAnamneseTemplateById;
+using DoctorPilot.Application.DTOs;
+using DoctorPilot.Contracts.AnamneseTemplates;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,8 +19,25 @@ namespace DoctorPilot.Api.Controllers
             _mediator = mediator;
         }
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] InsertAnamneseTemplateCommand command)
+        public async Task<IActionResult> Post([FromBody] CreateAnamneseTemplateRequest request)
         {
+            var command = new InsertAnamneseTemplateCommand
+            {
+                Nome = request.Nome,
+                Descricao = request.Descricao,
+                Sessoes = request.Sessoes.Select(s => new InsertAnamneseTemplateSessaoDto
+                {
+                    Pergunta = s.Pergunta,
+                    Tipo = s.Tipo,
+                    Ordem = s.Ordem,
+                    Obrigatoria = s.Obrigatoria,
+                    Opcoes = s.Opcoes.Select(o => new InsertAnamneseTemplateOpcaoDto
+                    {
+                        Texto = o.Texto,
+                        Ordem = o.Ordem
+                    }).ToList()
+                }).ToList()
+            };
             var result = await _mediator.Send(command);
             if (!result.IsSuccess) return BadRequest(result);
             return CreatedAtAction(nameof(GetById), new { id = result.Data }, result);

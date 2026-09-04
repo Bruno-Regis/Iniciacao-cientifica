@@ -21,14 +21,14 @@ namespace DoctorPilot.Application.Queries.AnamnesesQueries.GetAnamneseById
         }
         public async ValueTask<ResultViewModel<AnamneseDetailsDto>> Handle(GetAnamneseByIdQuery query, CancellationToken cancellationToken)
         {
-            var anamnese = await _anamneseRepository.GetByIdComSessoesAsync(query.Id);
+            var anamnese = await _anamneseRepository.GetByIdComSessoesAsync(query.Id, cancellationToken);
 
             if (anamnese is null)
-                return ResultViewModel<AnamneseDetailsDto>.Error("Anamnese n„o encontrada.");
+                return ResultViewModel<AnamneseDetailsDto>.Error("Anamnese n√£o encontrada.");
 
             var paciente = await _pacienteRepository.GetByIdAsync(anamnese.PacienteId);
             if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
-                return ResultViewModel<AnamneseDetailsDto>.Error("Anamnese n„o encontrada.");
+                return ResultViewModel<AnamneseDetailsDto>.Error("Anamnese n√£o encontrada.");
 
             return ResultViewModel<AnamneseDetailsDto>.Success(anamnese.ToDetailsDto());
         }
