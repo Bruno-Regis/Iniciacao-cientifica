@@ -1,0 +1,129 @@
+@inject DoctorPilotApiClient ApiClient
+
+<MudDialog>
+    <DialogContent>
+        @if (_carregando)
+        {
+            <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-6" role="status" aria-live="polite">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                <MudText Typo="Typo.body2">Carregando anamnese...</MudText>
+            </MudStack>
+        }
+        else if (!string.IsNullOrWhiteSpace(_erro))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">@_erro</MudAlert>
+        }
+        else if (_anamnese is not null)
+        {
+            <MudStack Spacing="3">
+                <div>
+                    <MudText Typo="Typo.h6">@_anamnese.NomeDaAnamnese</MudText>
+                    @if (!string.IsNullOrWhiteSpace(PacienteNome))
+                    {
+                        <MudText Typo="Typo.body2">Paciente: @PacienteNome</MudText>
+                    }
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Registrada em @_anamnese.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy 'às' HH:mm", _culture)
+                    </MudText>
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Class="mt-2">
+                        @(_anamnese.AnamneseTemplateId.HasValue ? "Baseada em template" : "Manual")
+                    </MudChip>
+                </div>
+
+                <MudDivider />
+
+                <div>
+                    <MudText Typo="Typo.subtitle2">Observações</MudText>
+                    <MudText Typo="Typo.body2">@TextoOuPadrao(_anamnese.Observacoes, "Sem observações.")</MudText>
+                </div>
+
+                <MudText Typo="Typo.subtitle2">Perguntas e respostas</MudText>
+                @if (_anamnese.Sessoes.Count == 0)
+                {
+                    <MudText Typo="Typo.body2">Nenhuma pergunta registrada.</MudText>
+                }
+                else
+                {
+                    @foreach (var sessao in _anamnese.Sessoes.OrderBy(s => s.Ordem))
+                    {
+                        <MudPaper Outlined="true" Class="pa-3">
+                            <MudStack Spacing="2">
+                                <MudText Typo="Typo.subtitle2">@sessao.Pergunta</MudText>
+                                @if (EhTexto(sessao))
+                                {
+                                    <MudText Typo="Typo.body2">@TextoOuPadrao(sessao.Resposta, "Sem resposta.")</MudText>
+                                }
+                                else if (sessao.Opcoes.Count > 0)
+                                {
+                                    <MudStack Row="true" Spacing="1">
+                                        @foreach (var opcao in sessao.Opcoes.OrderBy(o => o.Ordem))
+                                        {
+                                            <MudChip T="string"
+                                                     Size="Size.Small"
+                                                     Color="@(opcao.Selecionada ? Color.Primary : Color.Default)"
+                                                     Variant="@(opcao.Selecionada ? Variant.Filled : Variant.Outlined)">
+                                                @opcao.Texto
+                                            </MudChip>
+                                        }
+                                    </MudStack>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2">@TextoOuPadrao(sessao.Resposta, "Sem resposta.")</MudText>
+                                }
+                            </MudStack>
+                        </MudPaper>
+                    }
+                }
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Fechar">Fechar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Guid AnamneseId { get; set; }
+
+    [Parameter]
+    public string? PacienteNome { get; set; }
+
+    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
+    private AnamneseDetailsDto? _anamnese;
+    private bool _carregando = true;
+    private string? _erro;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await ApiClient.GetAnamneseByIdAsync(AnamneseId);
+            if (result.IsSuccess)
+                _anamnese = result.Data;
+            else
+                _erro = result.Message ?? "Não foi possível carregar a anamnese.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erro = "Não foi possível carregar a anamnese.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private static bool EhTexto(AnamneseSessaoDto sessao)
+        => string.Equals(sessao.Tipo, "texto", StringComparison.OrdinalIgnoreCase);
+
+    private static string TextoOuPadrao(string? texto, string padrao)
+        => string.IsNullOrWhiteSpace(texto) ? padrao : texto;
+
+    private void Fechar() => MudDialog.Close();
+}

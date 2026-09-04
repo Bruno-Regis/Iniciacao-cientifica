@@ -1,5 +1,6 @@
 using DoctorPilot.Contracts.Agendamentos;
 using DoctorPilot.Contracts.Alergias;
+using DoctorPilot.Contracts.Anamneses;
 using DoctorPilot.Contracts.Auth;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Evolucoes;
@@ -436,6 +437,52 @@ namespace DoctorPilot.Web.Migration.Services
             catch (HttpRequestException)
             {
                 return ResultViewModel<Guid>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        // ANAMNESES
+
+        public async Task<ResultViewModel<IEnumerable<AnamneseItemDto>>> GetAnamnesesByPacienteAsync(
+            Guid pacienteId,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(
+                    $"api/anamneses/paciente/{pacienteId}",
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<IEnumerable<AnamneseItemDto>>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<IEnumerable<AnamneseItemDto>>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<IEnumerable<AnamneseItemDto>>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<AnamneseDetailsDto>> GetAnamneseByIdAsync(
+            Guid anamneseId,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(
+                    $"api/anamneses/{anamneseId}",
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<AnamneseDetailsDto>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<AnamneseDetailsDto>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<AnamneseDetailsDto>.Error(
                     "Não foi possível conectar ao servidor. Tente novamente.");
             }
         }

@@ -1,0 +1,38 @@
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Como deseja criar a anamnese?
+        </MudText>
+        <MudStack Spacing="2">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Description"
+                       OnClick="SelecionarTemplate">
+                Usar template
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.EditNote"
+                       OnClick="SelecionarManual">
+                Criar manualmente
+            </MudButton>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancelar">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    public const string Template = "template";
+    public const string Manual = "manual";
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private void SelecionarTemplate() => MudDialog.Close(DialogResult.Ok(Template));
+
+    private void SelecionarManual() => MudDialog.Close(DialogResult.Ok(Manual));
+
+    private void Cancelar() => MudDialog.Cancel();
+}
