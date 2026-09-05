@@ -1,6 +1,7 @@
 using DoctorPilot.Contracts.Agendamentos;
 using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Contracts.Anamneses;
+using DoctorPilot.Contracts.AnamneseTemplates;
 using DoctorPilot.Contracts.Auth;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Evolucoes;
@@ -495,6 +496,98 @@ namespace DoctorPilot.Web.Migration.Services
             {
                 var response = await _httpClient.PostAsJsonAsync(
                     "api/anamneses/manual",
+                    request,
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<Guid>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>> GetAnamneseTemplatesAsync(
+            Guid clinicaId,
+            int page = 1,
+            int pageSize = 100,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(
+                    $"api/anamnese-templates/clinica/{clinicaId}?page={page}&pageSize={pageSize}",
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<AnamneseTemplateDetailsDto>> GetAnamneseTemplateByIdAsync(
+            Guid templateId,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(
+                    $"api/anamnese-templates/{templateId}",
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<AnamneseTemplateDetailsDto>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<AnamneseTemplateDetailsDto>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<AnamneseTemplateDetailsDto>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<Guid>> CreateAnamneseFromTemplateAsync(
+            CreateAnamneseFromTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/anamneses/from-template",
+                    request,
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<Guid>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
+        public async Task<ResultViewModel<Guid>> CreateAnamneseTemplateAsync(
+            CreateAnamneseTemplateRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/anamnese-templates",
                     request,
                     cancellationToken);
                 var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(

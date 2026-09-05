@@ -89,7 +89,9 @@
                         <EvolucoesTab PacienteId="_paciente.Id" PacienteNome="@_paciente.Nome" />
                     </MudTabPanel>
                     <MudTabPanel Text="Anamnese">
-                        <AnamnesesTab PacienteId="_paciente.Id" PacienteNome="@_paciente.Nome" />
+                        <AnamnesesTab PacienteId="_paciente.Id"
+                                      PacienteNome="@_paciente.Nome"
+                                      ClinicaId="_paciente.ClinicaId" />
                     </MudTabPanel>
                     <MudTabPanel Text="Histórico">
                         <MudText>Content Disabled</MudText>

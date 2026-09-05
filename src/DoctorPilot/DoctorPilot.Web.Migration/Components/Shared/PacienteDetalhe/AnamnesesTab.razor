@@ -63,6 +63,9 @@ else
     [Parameter]
     public string? PacienteNome { get; set; }
 
+    [Parameter, EditorRequired]
+    public Guid ClinicaId { get; set; }
+
     private readonly List<AnamneseItemDto> _anamneses = [];
     private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
     private bool _carregando = true;
@@ -128,9 +131,9 @@ else
                 {
                     await AbrirAnamneseManualAsync();
                 }
-                else
+                else if (tipo == NovaAnamneseTipoDialog.Template)
                 {
-                    Snackbar.Add("Criação por template será implementada em uma próxima etapa.", Severity.Info);
+                    await AbrirAnamneseTemplateAsync();
                 }
             }
         }
@@ -157,6 +160,35 @@ else
         };
         var dialog = await DialogService.ShowAsync<AnamneseManualDialog>(
             "Criar anamnese manual",
+            parameters,
+            options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+            return;
+
+        Snackbar.Add("Anamnese criada com sucesso.", Severity.Success);
+        await CarregarAnamnesesAsync();
+    }
+
+    private async Task AbrirAnamneseTemplateAsync()
+    {
+        var parameters = new DialogParameters<AnamneseTemplateDialog>
+        {
+            { x => x.PacienteId, PacienteId },
+            { x => x.PacienteNome, PacienteNome },
+            { x => x.ClinicaId, ClinicaId }
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseButton = false,
+            BackdropClick = false,
+            CloseOnEscapeKey = false
+        };
+        var dialog = await DialogService.ShowAsync<AnamneseTemplateDialog>(
+            "Criar anamnese por template",
             parameters,
             options);
         var result = await dialog.Result;

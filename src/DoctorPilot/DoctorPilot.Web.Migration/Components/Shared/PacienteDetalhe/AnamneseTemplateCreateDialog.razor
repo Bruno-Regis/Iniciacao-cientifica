@@ -1,0 +1,311 @@
+@inject DoctorPilotApiClient ApiClient
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (!string.IsNullOrWhiteSpace(_erroApi))
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">@_erroApi</MudAlert>
+            }
+
+            @if (_errosValidacao.Count > 0)
+            {
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                    <MudText Typo="Typo.subtitle2">Revise os campos:</MudText>
+                    <ul class="mb-0">
+                        @foreach (var erro in _errosValidacao)
+                        {
+                            <li>@erro</li>
+                        }
+                    </ul>
+                </MudAlert>
+            }
+
+            <MudTextField T="string"
+                          @bind-Value="_model.Nome"
+                          Label="Nome do template"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          MaxLength="200"
+                          Counter="200"
+                          Immediate="true"
+                          Disabled="_salvando" />
+
+            <MudTextField T="string"
+                          @bind-Value="_model.Descricao"
+                          Label="Descrição (opcional)"
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          MaxLength="1000"
+                          Counter="1000"
+                          Immediate="true"
+                          Disabled="_salvando" />
+
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h6">Perguntas</MudText>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="AdicionarPergunta"
+                           Disabled="_salvando">
+                    Adicionar pergunta
+                </MudButton>
+            </MudStack>
+
+            @for (var indicePergunta = 0; indicePergunta < _model.Sessoes.Count; indicePergunta++)
+            {
+                var sessao = _model.Sessoes[indicePergunta];
+                var numeroPergunta = indicePergunta + 1;
+
+                <MudPaper @key="sessao" Outlined="true" Class="pa-4">
+                    <MudStack Spacing="3">
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.subtitle1">Pergunta @numeroPergunta</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                           Color="Color.Error"
+                                           OnClick="() => RemoverPergunta(sessao)"
+                                           Disabled="_salvando"
+                                           aria-label="Remover pergunta" />
+                        </MudStack>
+
+                        <MudTextField T="string"
+                                      @bind-Value="sessao.Pergunta"
+                                      Label="Texto da pergunta"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      MaxLength="500"
+                                      Counter="500"
+                                      Immediate="true"
+                                      Disabled="_salvando" />
+
+                        <MudSelect T="string"
+                                   Value="@sessao.Tipo"
+                                   ValueChanged="@((string tipo) => AlterarTipo(sessao, tipo))"
+                                   Label="Tipo"
+                                   Variant="Variant.Outlined"
+                                   Disabled="_salvando">
+                            <MudSelectItem T="string" Value="@TipoTexto">Texto</MudSelectItem>
+                            <MudSelectItem T="string" Value="@TipoRadio">Radio</MudSelectItem>
+                            <MudSelectItem T="string" Value="@TipoCheckbox">Checkbox</MudSelectItem>
+                        </MudSelect>
+
+                        <MudCheckBox T="bool"
+                                     @bind-Value="sessao.Obrigatoria"
+                                     Label="Pergunta obrigatória"
+                                     Disabled="_salvando" />
+
+                        @if (sessao.Tipo != TipoTexto)
+                        {
+                            <MudStack Spacing="2">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.subtitle2">Opções</MudText>
+                                    <MudButton Variant="Variant.Text"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.Add"
+                                               OnClick="() => AdicionarOpcao(sessao)"
+                                               Disabled="_salvando">
+                                        Adicionar opção
+                                    </MudButton>
+                                </MudStack>
+
+                                @for (var indiceOpcao = 0; indiceOpcao < sessao.Opcoes.Count; indiceOpcao++)
+                                {
+                                    var opcao = sessao.Opcoes[indiceOpcao];
+                                    <MudStack @key="opcao" Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudTextField T="string"
+                                                      @bind-Value="opcao.Texto"
+                                                      Label="@($"Opção {indiceOpcao + 1}")"
+                                                      Variant="Variant.Outlined"
+                                                      Required="true"
+                                                      MaxLength="500"
+                                                      Immediate="true"
+                                                      Disabled="_salvando"
+                                                      Class="flex-grow-1" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                                       OnClick="() => RemoverOpcao(sessao, opcao)"
+                                                       Disabled="_salvando"
+                                                       aria-label="Remover opção" />
+                                    </MudStack>
+                                }
+                            </MudStack>
+                        }
+                    </MudStack>
+                </MudPaper>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancelar" Disabled="_salvando">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SalvarAsync" Disabled="_salvando">
+            @if (_salvando)
+            {
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" />
+                <span>Salvando...</span>
+            }
+            else
+            {
+                <span>Salvar template</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const string TipoTexto = "texto";
+    private const string TipoRadio = "radio";
+    private const string TipoCheckbox = "checkbox";
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private readonly AnamneseTemplateCreateFormModel _model = new();
+    private readonly List<string> _errosValidacao = [];
+    private string? _erroApi;
+    private bool _salvando;
+
+    protected override void OnInitialized() => AdicionarPergunta();
+
+    private void AdicionarPergunta()
+        => _model.Sessoes.Add(new AnamneseTemplateSessaoFormModel());
+
+    private void RemoverPergunta(AnamneseTemplateSessaoFormModel sessao)
+        => _model.Sessoes.Remove(sessao);
+
+    private static void AlterarTipo(AnamneseTemplateSessaoFormModel sessao, string tipo)
+    {
+        sessao.Tipo = tipo;
+        if (tipo == TipoTexto)
+        {
+            sessao.Opcoes.Clear();
+            return;
+        }
+
+        if (sessao.Opcoes.Count == 0)
+        {
+            sessao.Opcoes.Add(new AnamneseTemplateOpcaoFormModel());
+            sessao.Opcoes.Add(new AnamneseTemplateOpcaoFormModel());
+        }
+    }
+
+    private static void AdicionarOpcao(AnamneseTemplateSessaoFormModel sessao)
+        => sessao.Opcoes.Add(new AnamneseTemplateOpcaoFormModel());
+
+    private static void RemoverOpcao(
+        AnamneseTemplateSessaoFormModel sessao,
+        AnamneseTemplateOpcaoFormModel opcao)
+        => sessao.Opcoes.Remove(opcao);
+
+    private async Task SalvarAsync()
+    {
+        if (_salvando || !ValidarFormulario())
+            return;
+
+        _salvando = true;
+        _erroApi = null;
+
+        try
+        {
+            var result = await ApiClient.CreateAnamneseTemplateAsync(MapearRequest());
+            if (result.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(result.Data));
+                return;
+            }
+
+            _erroApi = result.Message ?? "Não foi possível criar o template.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erroApi = "Não foi possível criar o template.";
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+
+    private bool ValidarFormulario()
+    {
+        _errosValidacao.Clear();
+        _erroApi = null;
+
+        if (string.IsNullOrWhiteSpace(_model.Nome))
+            _errosValidacao.Add("Informe o nome do template.");
+        else if (_model.Nome.Trim().Length > 200)
+            _errosValidacao.Add("O nome do template deve possuir no máximo 200 caracteres.");
+
+        if ((_model.Descricao?.Trim().Length ?? 0) > 1000)
+            _errosValidacao.Add("A descrição deve possuir no máximo 1000 caracteres.");
+
+        if (_model.Sessoes.Count == 0)
+            _errosValidacao.Add("Adicione pelo menos uma pergunta.");
+
+        for (var indice = 0; indice < _model.Sessoes.Count; indice++)
+            ValidarSessao(_model.Sessoes[indice], indice + 1);
+
+        return _errosValidacao.Count == 0;
+    }
+
+    private void ValidarSessao(AnamneseTemplateSessaoFormModel sessao, int numero)
+    {
+        if (string.IsNullOrWhiteSpace(sessao.Pergunta))
+            _errosValidacao.Add($"Informe o texto da pergunta {numero}.");
+        else if (sessao.Pergunta.Trim().Length > 500)
+            _errosValidacao.Add($"A pergunta {numero} deve possuir no máximo 500 caracteres.");
+
+        if (sessao.Tipo is not (TipoTexto or TipoRadio or TipoCheckbox))
+        {
+            _errosValidacao.Add($"Selecione um tipo válido para a pergunta {numero}.");
+            return;
+        }
+
+        if (sessao.Tipo == TipoTexto)
+            return;
+
+        if (sessao.Opcoes.Count == 0)
+            _errosValidacao.Add($"Adicione pelo menos uma opção à pergunta {numero}.");
+
+        if (sessao.Opcoes.Any(opcao => string.IsNullOrWhiteSpace(opcao.Texto)))
+            _errosValidacao.Add($"Preencha todas as opções da pergunta {numero}.");
+        else if (sessao.Opcoes.Any(opcao => opcao.Texto.Trim().Length > 500))
+            _errosValidacao.Add($"As opções da pergunta {numero} devem possuir no máximo 500 caracteres.");
+
+        var possuiDuplicadas = sessao.Opcoes
+            .Where(opcao => !string.IsNullOrWhiteSpace(opcao.Texto))
+            .GroupBy(opcao => opcao.Texto.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Any(grupo => grupo.Count() > 1);
+        if (possuiDuplicadas)
+            _errosValidacao.Add($"A pergunta {numero} possui opções duplicadas.");
+    }
+
+    private CreateAnamneseTemplateRequest MapearRequest()
+        => new()
+        {
+            Nome = _model.Nome.Trim(),
+            Descricao = NormalizarOpcional(_model.Descricao),
+            Sessoes = _model.Sessoes.Select((sessao, indiceSessao) => new CreateAnamneseTemplateSessaoRequest
+            {
+                Pergunta = sessao.Pergunta.Trim(),
+                Tipo = sessao.Tipo,
+                Ordem = indiceSessao,
+                Obrigatoria = sessao.Obrigatoria,
+                Opcoes = sessao.Tipo == TipoTexto
+                    ? []
+                    : sessao.Opcoes.Select((opcao, indiceOpcao) => new CreateAnamneseTemplateOpcaoRequest
+                    {
+                        Texto = opcao.Texto.Trim(),
+                        Ordem = indiceOpcao
+                    }).ToList()
+            }).ToList()
+        };
+
+    private static string? NormalizarOpcional(string? texto)
+        => string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
+
+    private void Cancelar()
+    {
+        if (!_salvando)
+            MudDialog.Cancel();
+    }
+}

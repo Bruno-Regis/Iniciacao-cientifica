@@ -1,0 +1,435 @@
+@inject DoctorPilotApiClient ApiClient
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (!string.IsNullOrWhiteSpace(PacienteNome))
+            {
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Paciente: @PacienteNome</MudText>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_erroApi))
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">@_erroApi</MudAlert>
+            }
+
+            @if (_errosValidacao.Count > 0)
+            {
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                    <MudText Typo="Typo.subtitle2">Revise os campos:</MudText>
+                    <ul class="mb-0">
+                        @foreach (var erro in _errosValidacao)
+                        {
+                            <li>@erro</li>
+                        }
+                    </ul>
+                </MudAlert>
+            }
+
+            @if (_carregandoTemplates)
+            {
+                <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-6" role="status" aria-live="polite">
+                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                    <MudText Typo="Typo.body2">Carregando templates...</MudText>
+                </MudStack>
+            }
+            else if (_template is null)
+            {
+                @if (_templates.Count == 0 && string.IsNullOrWhiteSpace(_erroApi))
+                {
+                    <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-6">
+                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" />
+                        <MudText Typo="Typo.body1">Nenhum template disponível.</MudText>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AbrirNovoTemplateAsync">
+                            Criar primeiro template
+                        </MudButton>
+                    </MudStack>
+                }
+                else
+                {
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">Selecione um template</MudText>
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AbrirNovoTemplateAsync"
+                                   Disabled="_carregandoDetalhe">
+                            Novo template
+                        </MudButton>
+                    </MudStack>
+                    <MudStack Spacing="2">
+                        @foreach (var template in _templates)
+                        {
+                            <MudPaper Outlined="true" Class="pa-4">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <div>
+                                        <MudText Typo="Typo.subtitle1">@template.Nome</MudText>
+                                        @if (!string.IsNullOrWhiteSpace(template.Descricao))
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@template.Descricao</MudText>
+                                        }
+                                    </div>
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               OnClick="() => SelecionarTemplateAsync(template.Id)"
+                                               Disabled="_carregandoDetalhe">
+                                        Selecionar
+                                    </MudButton>
+                                </MudStack>
+                            </MudPaper>
+                        }
+                    </MudStack>
+                }
+
+                @if (_carregandoDetalhe)
+                {
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+                        <MudText Typo="Typo.body2">Carregando estrutura do template...</MudText>
+                    </MudStack>
+                }
+            }
+            else
+            {
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <div>
+                        <MudText Typo="Typo.h6">@_template.Nome</MudText>
+                        @if (!string.IsNullOrWhiteSpace(_template.Descricao))
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">@_template.Descricao</MudText>
+                        }
+                    </div>
+                    <MudButton Variant="Variant.Text" OnClick="TrocarTemplate" Disabled="_salvando">
+                        Trocar template
+                    </MudButton>
+                </MudStack>
+
+                <MudTextField T="string"
+                              @bind-Value="_model.Observacoes"
+                              Label="Observações (opcional)"
+                              Variant="Variant.Outlined"
+                              Lines="3"
+                              MaxLength="1000"
+                              Counter="1000"
+                              Immediate="true"
+                              Disabled="_salvando" />
+
+                @foreach (var pergunta in _template.Sessoes.OrderBy(s => s.Ordem).ThenBy(s => s.Id))
+                {
+                    var resposta = ObterResposta(pergunta.Id);
+                    <MudPaper @key="pergunta.Id" Outlined="true" Class="pa-4">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.subtitle1">
+                                @pergunta.Pergunta
+                                @if (pergunta.Obrigatoria)
+                                {
+                                    <span aria-label="obrigatória"> *</span>
+                                }
+                            </MudText>
+
+                            @if (EhTexto(pergunta))
+                            {
+                                <MudTextField T="string"
+                                              @bind-Value="resposta.Resposta"
+                                              Label="Resposta"
+                                              Variant="Variant.Outlined"
+                                              Lines="3"
+                                              Required="pergunta.Obrigatoria"
+                                              MaxLength="2000"
+                                              Counter="2000"
+                                              Immediate="true"
+                                              Disabled="_salvando" />
+                            }
+                            else
+                            {
+                                @foreach (var opcao in pergunta.Opcoes.OrderBy(o => o.Ordem).ThenBy(o => o.Id))
+                                {
+                                    if (EhRadio(pergunta))
+                                    {
+                                        <MudCheckBox T="bool"
+                                                     Label="@opcao.Texto"
+                                                     Value="@resposta.OpcaoIds.Contains(opcao.Id)"
+                                                     ValueChanged="@((bool selecionada) => SelecionarRadio(resposta, opcao.Id, selecionada))"
+                                                     Disabled="_salvando" />
+                                    }
+                                    else
+                                    {
+                                        <MudCheckBox T="bool"
+                                                     Label="@opcao.Texto"
+                                                     Value="@resposta.OpcaoIds.Contains(opcao.Id)"
+                                                     ValueChanged="@((bool selecionada) => SelecionarCheckbox(resposta, opcao.Id, selecionada))"
+                                                     Disabled="_salvando" />
+                                    }
+                                }
+                            }
+                        </MudStack>
+                    </MudPaper>
+                }
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancelar" Disabled="_salvando">Cancelar</MudButton>
+        @if (_template is not null)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SalvarAsync" Disabled="_salvando">
+                @if (_salvando)
+                {
+                    <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" />
+                    <span>Salvando...</span>
+                }
+                else
+                {
+                    <span>Salvar anamnese</span>
+                }
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const string TipoTexto = "texto";
+    private const string TipoRadio = "radio";
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Guid PacienteId { get; set; }
+
+    [Parameter, EditorRequired]
+    public Guid ClinicaId { get; set; }
+
+    [Parameter]
+    public string? PacienteNome { get; set; }
+
+    private readonly List<AnamneseTemplateItemDto> _templates = [];
+    private readonly AnamneseTemplateFillFormModel _model = new();
+    private readonly List<string> _errosValidacao = [];
+    private AnamneseTemplateDetailsDto? _template;
+    private bool _carregandoTemplates = true;
+    private bool _carregandoDetalhe;
+    private bool _salvando;
+    private string? _erroApi;
+
+    protected override async Task OnInitializedAsync() => await CarregarTemplatesAsync();
+
+    private async Task CarregarTemplatesAsync()
+    {
+        _carregandoTemplates = true;
+        _erroApi = null;
+
+        try
+        {
+            var result = await ApiClient.GetAnamneseTemplatesAsync(ClinicaId);
+            if (result.IsSuccess)
+            {
+                _templates.Clear();
+                _templates.AddRange(result.Data ?? []);
+            }
+            else
+            {
+                _erroApi = result.Message ?? "Não foi possível carregar os templates.";
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erroApi = "Não foi possível carregar os templates.";
+        }
+        finally
+        {
+            _carregandoTemplates = false;
+        }
+    }
+
+    private async Task SelecionarTemplateAsync(Guid templateId)
+    {
+        if (_carregandoDetalhe)
+            return;
+
+        _carregandoDetalhe = true;
+        _erroApi = null;
+        _errosValidacao.Clear();
+
+        try
+        {
+            var result = await ApiClient.GetAnamneseTemplateByIdAsync(templateId);
+            if (!result.IsSuccess || result.Data is null)
+            {
+                _erroApi = result.Message ?? "Não foi possível carregar o template.";
+                return;
+            }
+
+            _template = result.Data;
+            _model.TemplateId = _template.Id;
+            _model.Respostas = _template.Sessoes
+                .Select(pergunta => new AnamneseTemplateRespostaFormModel { PerguntaId = pergunta.Id })
+                .ToList();
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erroApi = "Não foi possível carregar o template.";
+        }
+        finally
+        {
+            _carregandoDetalhe = false;
+        }
+    }
+
+    private void TrocarTemplate()
+    {
+        _template = null;
+        _model.TemplateId = Guid.Empty;
+        _model.Respostas.Clear();
+        _errosValidacao.Clear();
+        _erroApi = null;
+    }
+
+    private async Task AbrirNovoTemplateAsync()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseButton = false,
+            BackdropClick = false,
+            CloseOnEscapeKey = false
+        };
+        var dialog = await DialogService.ShowAsync<AnamneseTemplateCreateDialog>(
+            "Criar template de anamnese",
+            options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled || result.Data is not Guid templateId)
+            return;
+
+        Snackbar.Add("Template criado com sucesso.", Severity.Success);
+        await CarregarTemplatesAsync();
+        await SelecionarTemplateAsync(templateId);
+    }
+
+    private AnamneseTemplateRespostaFormModel ObterResposta(Guid perguntaId)
+        => _model.Respostas.Single(resposta => resposta.PerguntaId == perguntaId);
+
+    private static bool EhTexto(AnamneseTemplateSessaoDto pergunta)
+        => string.Equals(pergunta.Tipo, TipoTexto, StringComparison.OrdinalIgnoreCase);
+
+    private static bool EhRadio(AnamneseTemplateSessaoDto pergunta)
+        => string.Equals(pergunta.Tipo, TipoRadio, StringComparison.OrdinalIgnoreCase);
+
+    private static void SelecionarRadio(
+        AnamneseTemplateRespostaFormModel resposta,
+        Guid opcaoId,
+        bool selecionada)
+    {
+        resposta.OpcaoIds.Clear();
+        if (selecionada)
+            resposta.OpcaoIds.Add(opcaoId);
+    }
+
+    private static void SelecionarCheckbox(
+        AnamneseTemplateRespostaFormModel resposta,
+        Guid opcaoId,
+        bool selecionada)
+    {
+        if (selecionada)
+            resposta.OpcaoIds.Add(opcaoId);
+        else
+            resposta.OpcaoIds.Remove(opcaoId);
+    }
+
+    private async Task SalvarAsync()
+    {
+        if (_salvando || !ValidarFormulario())
+            return;
+
+        _salvando = true;
+        _erroApi = null;
+
+        try
+        {
+            var result = await ApiClient.CreateAnamneseFromTemplateAsync(MapearRequest());
+            if (result.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(result.Data));
+                return;
+            }
+
+            _erroApi = result.Message ?? "Não foi possível criar a anamnese.";
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erroApi = "Não foi possível criar a anamnese.";
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+
+    private bool ValidarFormulario()
+    {
+        _errosValidacao.Clear();
+        _erroApi = null;
+
+        if (_template is null || _model.TemplateId == Guid.Empty)
+        {
+            _errosValidacao.Add("Selecione um template.");
+            return false;
+        }
+
+        if ((_model.Observacoes?.Trim().Length ?? 0) > 1000)
+            _errosValidacao.Add("As observações devem possuir no máximo 1000 caracteres.");
+
+        foreach (var pergunta in _template.Sessoes.Where(pergunta => pergunta.Obrigatoria))
+        {
+            var resposta = ObterResposta(pergunta.Id);
+            if (EhTexto(pergunta) && string.IsNullOrWhiteSpace(resposta.Resposta))
+                _errosValidacao.Add($"Responda a pergunta obrigatória '{pergunta.Pergunta}'.");
+            else if (!EhTexto(pergunta) && resposta.OpcaoIds.Count == 0)
+                _errosValidacao.Add($"Selecione uma opção na pergunta obrigatória '{pergunta.Pergunta}'.");
+        }
+
+        foreach (var pergunta in _template.Sessoes.Where(EhTexto))
+        {
+            var resposta = ObterResposta(pergunta.Id).Resposta;
+            if ((resposta?.Trim().Length ?? 0) > 2000)
+                _errosValidacao.Add($"A resposta da pergunta '{pergunta.Pergunta}' excede 2000 caracteres.");
+        }
+
+        return _errosValidacao.Count == 0;
+    }
+
+    private CreateAnamneseFromTemplateRequest MapearRequest()
+        => new()
+        {
+            PacienteId = PacienteId,
+            TemplateId = _model.TemplateId,
+            Observacoes = NormalizarOpcional(_model.Observacoes),
+            Respostas = _model.Respostas.Select(resposta => new CreateAnamneseFromTemplateRespostaRequest
+            {
+                PerguntaId = resposta.PerguntaId,
+                Resposta = EhTexto(_template!.Sessoes.Single(pergunta => pergunta.Id == resposta.PerguntaId))
+                    ? NormalizarOpcional(resposta.Resposta)
+                    : null,
+                OpcaoIds = resposta.OpcaoIds.ToList()
+            }).ToList()
+        };
+
+    private static string? NormalizarOpcional(string? texto)
+        => string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
+
+    private void Cancelar()
+    {
+        if (!_salvando)
+            MudDialog.Cancel();
+    }
+}
