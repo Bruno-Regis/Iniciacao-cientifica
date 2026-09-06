@@ -35,11 +35,11 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
             var usuarioJaExiste = await _usuarioRepository.ExistsEmailAsync(command.Email);
 
             if (usuarioJaExiste)
-                return ResultViewModel<Guid>.Error("J· existe um usu·rio com este e-mail.");
+                return ResultViewModel<Guid>.Error("J√° existe um usu√°rio com este e-mail.");
             
             var senhaHash = _passwordHasher.Hash(command.Senha);
 
-            var usuario = command.ToEntity(_currentUser.ClinicaId, senhaHash);
+            var usuario = command.ToEntity(_currentUser.GetRequiredClinicaId(), senhaHash);
 
             await _usuarioRepository.AddAsync(usuario);
             await _unitOfWork.CommitAsync();

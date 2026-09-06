@@ -25,19 +25,21 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
 
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertAgendamentoCommand command, CancellationToken cancellationToken)
         {
+            var clinicaId = _currentUser.GetRequiredClinicaId();
+
             if (command.DataHoraFinal <= command.DataHoraInicial)
                 return ResultViewModel<Guid>.Error("A data/hora final deve ser posterior à data/hora inicial.");
 
             var paciente = await _pacienteRepository.GetByIdAsync(command.PacienteId);
-            if (paciente is null || paciente.ClinicaId != _currentUser.ClinicaId)
+            if (paciente is null || paciente.ClinicaId != clinicaId)
                 return ResultViewModel<Guid>.Error("Paciente não encontrado.");
 
             var profissional = await _profissionalRepository.GetByIdAsync(command.ProfissionalId);
-            if (profissional is null || profissional.ClinicaId != _currentUser.ClinicaId)
+            if (profissional is null || profissional.ClinicaId != clinicaId)
                 return ResultViewModel<Guid>.Error("Profissional não encontrado.");
 
             var conflitoComProfissional = await _agendamentoRepository.ExisteConflitoProfissionalAsync(
-                _currentUser.ClinicaId,
+                clinicaId,
                 command.ProfissionalId,
                 command.DataHoraInicial,
                 command.DataHoraFinal,
@@ -48,7 +50,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
             if (!string.IsNullOrWhiteSpace(command.Sala))
             {
                 var conflitoComSala = await _agendamentoRepository.ExisteConflitoSalaAsync(
-                    _currentUser.ClinicaId,
+                    clinicaId,
                     command.Sala,
                     command.DataHoraInicial,
                     command.DataHoraFinal,
@@ -58,7 +60,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
                     return ResultViewModel<Guid>.Error("Sala já está ocupada neste período.");
             }
 
-            var agendamento = command.ToEntity(_currentUser.ClinicaId);   
+            var agendamento = command.ToEntity(clinicaId);
             await _agendamentoRepository.AddAsync(agendamento);
             await _unitOfWork.CommitAsync();
 

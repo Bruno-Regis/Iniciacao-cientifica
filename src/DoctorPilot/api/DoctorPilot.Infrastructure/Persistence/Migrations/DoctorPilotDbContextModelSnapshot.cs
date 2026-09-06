@@ -769,7 +769,7 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClinicaId")
+                    b.Property<Guid?>("ClinicaId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1000,8 +1000,7 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.HasOne("DoctorPilot.Core.Entities.Clinica", "Clinica")
                         .WithMany()
                         .HasForeignKey("ClinicaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Clinica");
                 });

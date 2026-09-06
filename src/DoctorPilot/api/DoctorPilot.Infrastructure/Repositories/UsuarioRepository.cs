@@ -1,4 +1,5 @@
 ﻿using DoctorPilot.Core.Entities;
+using DoctorPilot.Core.Enums;
 using DoctorPilot.Core.Repositories;
 using DoctorPilot.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,13 @@ namespace DoctorPilot.Infrastructure.Repositories
         public async Task<bool> ExistsEmailAsync(string email)
         {
             return await _dbSet.AnyAsync(u => u.Email == email);
+        }
+
+        public async Task<bool> ExistsSuperAdminAsync(CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .AnyAsync(u => u.Role == RoleEnum.SuperAdmin, cancellationToken);
         }
 
         public async Task<Usuario?> GetByEmailAsync(string email)

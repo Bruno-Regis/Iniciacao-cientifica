@@ -23,7 +23,7 @@ namespace DoctorPilot.Application.Queries.UsuariosQueries.GetAllUsuarios
         {
             var usuarios = _currentUser.IsSuperAdmin
                 ? await _usuarioRepository.GetAllAsync(query.Page, query.PageSize)
-                : await _usuarioRepository.GetByClinicaIdAsync(_currentUser.ClinicaId, query.Page, query.PageSize);
+                : await _usuarioRepository.GetByClinicaIdAsync(_currentUser.GetRequiredClinicaId(), query.Page, query.PageSize);
             var viewModels = usuarios.Select(u => u.ToItemDto());
             return ResultViewModel<IEnumerable<UsuarioItemDto>>.Success(viewModels);
         }

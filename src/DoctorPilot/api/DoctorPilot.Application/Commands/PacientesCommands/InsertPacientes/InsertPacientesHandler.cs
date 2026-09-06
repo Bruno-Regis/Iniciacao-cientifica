@@ -22,9 +22,9 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
         {
             var cpfJaCadastrado = await _pacienteRepository.GetByCpfAsync(command.Cpf);
             if (cpfJaCadastrado is not null)
-                return ResultViewModel<Guid>.Error("Já existe um paciente cadastrado com este CPF.");
+                return ResultViewModel<Guid>.Error("JÃ¡ existe um paciente cadastrado com este CPF.");
 
-            var paciente = command.ToEntity(_currentUser.ClinicaId);
+            var paciente = command.ToEntity(_currentUser.GetRequiredClinicaId());
 
             await _pacienteRepository.AddAsync(paciente);
             await _unitOfWork.CommitAsync();

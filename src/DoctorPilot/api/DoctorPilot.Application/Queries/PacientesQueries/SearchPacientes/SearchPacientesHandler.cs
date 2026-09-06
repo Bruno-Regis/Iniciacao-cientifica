@@ -19,7 +19,9 @@ namespace DoctorPilot.Application.Queries.PacientesQueries.SearchPacientes
 
         public async ValueTask<ResultViewModel<IEnumerable<PacienteItemDto>>> Handle(SearchPacientesQuery query, CancellationToken cancellationToken)
         {
-            var clinicaId = _currentUser.IsSuperAdmin ? query.ClinicaId : _currentUser.ClinicaId; // If the user is a super admin, use the provided ClinicaId; otherwise, use the ClinicaId from the current user context.
+            var clinicaId = _currentUser.IsSuperAdmin
+                ? query.ClinicaId
+                : _currentUser.GetRequiredClinicaId();
 
             var pacientes = await _pacienteRepository.SearchAsync(clinicaId, query.Termo, query.Page, query.PageSize);
             var viewModels = pacientes.Select(p => p.ToItemDto());

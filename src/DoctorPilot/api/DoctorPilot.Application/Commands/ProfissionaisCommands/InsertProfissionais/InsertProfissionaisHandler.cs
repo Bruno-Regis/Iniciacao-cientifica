@@ -22,15 +22,17 @@ namespace DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissio
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertProfissionaisCommand command, CancellationToken cancellationToken)
         {
+            var clinicaId = _currentUser.GetRequiredClinicaId();
+
             var usuario = await _usuarioRepository.GetByIdAsync(command.UsuarioId);
-            if (usuario is null || usuario.ClinicaId != _currentUser.ClinicaId)
-                return ResultViewModel<Guid>.Error("Usu·rio n„o encontrado.");
+            if (usuario is null || usuario.ClinicaId != clinicaId)
+                return ResultViewModel<Guid>.Error("Usu√°rio n√£o encontrado.");
 
             var usuarioJaEhProfissional = await _profissionalRepository.GetByUsuarioIdAsync(command.UsuarioId);
             if (usuarioJaEhProfissional is not null)
-                return ResultViewModel<Guid>.Error("Este usu·rio j· est· cadastrado como profissional.");
+                return ResultViewModel<Guid>.Error("Este usu√°rio j√° est√° cadastrado como profissional.");
 
-            var profissional = command.ToEntity(_currentUser.ClinicaId); // Cria a entidade Profissional a partir do comando e do ClinicaId do usu·rio atual
+            var profissional = command.ToEntity(clinicaId); // Cria a entidade Profissional a partir do comando e do ClinicaId do usu√°rio atual
 
             await _profissionalRepository.AddAsync(profissional);
             await _unitOfWork.CommitAsync();

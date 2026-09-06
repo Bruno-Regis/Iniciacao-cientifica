@@ -21,7 +21,7 @@ namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissiona
         public async ValueTask<ResultViewModel<IEnumerable<ProfissionalItemDto>>> Handle(GetAllProfissionaisByClinicaQuery query, CancellationToken cancellationToken)
         {
             var profissionais = await _profissionalRepository.GetByClinicaIdAsync(
-                _currentUser.ClinicaId,
+                _currentUser.GetRequiredClinicaId(),
                 query.Page,
                 query.PageSize,
                 cancellationToken);

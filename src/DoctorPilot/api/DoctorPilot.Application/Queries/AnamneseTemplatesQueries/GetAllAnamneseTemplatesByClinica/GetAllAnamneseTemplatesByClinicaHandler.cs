@@ -19,7 +19,9 @@ namespace DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamnes
 
         public async ValueTask<ResultViewModel<IEnumerable<AnamneseTemplateItemDto>>> Handle(GetAllAnamneseTemplatesByClinicaQuery query, CancellationToken cancellationToken)
         {
-            var clinicaId =  _currentUser.ClinicaId; 
+            var clinicaId = _currentUser.IsSuperAdmin
+                ? query.ClinicaId
+                : _currentUser.GetRequiredClinicaId();
             var templates = await _templateRepository
                 .GetByClinicaIdAsync(clinicaId, query.Page, query.PageSize, cancellationToken);
 

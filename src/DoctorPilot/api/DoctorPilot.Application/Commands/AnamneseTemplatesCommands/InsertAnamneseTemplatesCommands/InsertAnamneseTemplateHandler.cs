@@ -21,7 +21,7 @@ namespace DoctorPilot.Application.Commands.InsertAnamneseTemplatesCommands.Anamn
         }
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertAnamneseTemplateCommand command, CancellationToken cancellationToken)
         {
-            var template = command.ToEntity(_currentUser.ClinicaId);
+            var template = command.ToEntity(_currentUser.GetRequiredClinicaId());
 
             await _templateRepository.AddAsync(template);
             await _unitOfWork.CommitAsync();

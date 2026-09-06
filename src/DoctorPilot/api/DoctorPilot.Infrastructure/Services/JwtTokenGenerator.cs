@@ -22,13 +22,15 @@ namespace DoctorPilot.Infrastructure.Services
             var issuer = _configuration["Jwt:Issuer"];
             var audience = _configuration["Jwt:Audience"];
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
                 new Claim(ClaimTypes.Email, usuario.Email),
-                new Claim(ClaimTypes.Role, usuario.Role.ToString()),
-                new Claim("ClinicaId", usuario.ClinicaId.ToString())
+                new Claim(ClaimTypes.Role, usuario.Role.ToString())
             };
+
+            if (usuario.ClinicaId.HasValue)
+                claims.Add(new Claim("ClinicaId", usuario.ClinicaId.Value.ToString()));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

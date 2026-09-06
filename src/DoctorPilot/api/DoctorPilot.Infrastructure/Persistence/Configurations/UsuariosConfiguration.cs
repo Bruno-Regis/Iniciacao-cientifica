@@ -40,10 +40,15 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                 .HasConversion<string>()
                 .HasMaxLength(100)
                 .IsRequired();
+            builder
+                .Property(u => u.ClinicaId)
+                .IsRequired(false);
+
             builder 
                 .HasOne(u => u.Clinica)
                     .WithMany()
                     .HasForeignKey(u => u.ClinicaId)
+                    .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
         }
     }

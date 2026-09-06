@@ -22,7 +22,7 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentos
                 return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Error("A data/hora final deve ser posterior à data/hora inicial.");
 
             var agendamentos = await _agendamentoRepository
-                .GetByPeriodoAsync(_currentUser.ClinicaId, query.Inicio, query.Fim, query.ProfissionalId, cancellationToken);
+                .GetByPeriodoAsync(_currentUser.GetRequiredClinicaId(), query.Inicio, query.Fim, query.ProfissionalId, cancellationToken);
 
             var viewModels = agendamentos.Select(a => a.ToItemDto());
             return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Success(viewModels);
