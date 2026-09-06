@@ -1,4 +1,5 @@
 ﻿using DoctorPilot.Application.Commands.ClinicasCommands.InsertClinicas;
+using DoctorPilot.Contracts.Clinicas;
 using DoctorPilot.Core.Enums;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
@@ -20,8 +21,17 @@ namespace DoctorPilot.Api.Controllers
         // POST api/clinicas
         [HttpPost]
         [Authorize(Roles = nameof(RoleEnum.SuperAdmin))]
-        public async Task<IActionResult> Post([FromBody] InsertClinicasCommand command)
+        public async Task<IActionResult> Post([FromBody] CreateClinicaRequest request)
         {
+            var command = new InsertClinicasCommand
+            {
+                Nome = request.Nome,
+                Email = request.Email,
+                Cnpj = request.Cnpj,
+                AdminEmail = request.Administrador?.Email ?? string.Empty,
+                AdminSenha = request.Administrador?.Senha ?? string.Empty
+            };
+
             var result = await _mediator.Send(command);
             if (!result.IsSuccess)
                 return BadRequest(result);
