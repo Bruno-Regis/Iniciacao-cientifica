@@ -1,0 +1,137 @@
+@page "/admin/profissionais"
+@attribute [Authorize(Roles = "TenantAdmnin")]
+@rendermode InteractiveServer
+@inject DoctorPilotApiClient ApiClient
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Profissionais</PageTitle>
+
+<MudStack Spacing="4">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <div>
+            <MudText Typo="Typo.h4" HtmlTag="h1">Profissionais</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Gerencie os profissionais clínicos da sua clínica.
+            </MudText>
+        </div>
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AbrirNovoProfissionalAsync"
+                   Disabled="_carregando">
+            Novo profissional
+        </MudButton>
+    </MudStack>
+
+    @if (_carregando)
+    {
+        <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-8" role="status">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+            <MudText Typo="Typo.body2">Carregando profissionais...</MudText>
+        </MudStack>
+    }
+    else if (!string.IsNullOrWhiteSpace(_erro))
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+            @_erro
+        </MudAlert>
+    }
+    else if (_profissionais.Count == 0)
+    {
+        <MudPaper Outlined="true" Class="pa-8">
+            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Size="Size.Large" Color="Color.Secondary" />
+                <MudText Typo="Typo.h6">Nenhum profissional cadastrado.</MudText>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="AbrirNovoProfissionalAsync">
+                    Novo profissional
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+    }
+    else
+    {
+        <MudTable Items="_profissionais" Hover="true" Breakpoint="Breakpoint.Sm" Striped="true">
+            <HeaderContent>
+                <MudTh>Nome</MudTh>
+                <MudTh>Profissão</MudTh>
+                <MudTh>CRM</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nome">@context.Nome</MudTd>
+                <MudTd DataLabel="Profissão">@context.Profissao</MudTd>
+                <MudTd DataLabel="CRM">@ValorOuTraco(context.Crm)</MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</MudStack>
+
+@code {
+    private const int ProfissionaisPageSize = 200;
+
+    private readonly List<ProfissionalItemDto> _profissionais = [];
+    private string? _erro;
+    private bool _carregando;
+
+    protected override async Task OnInitializedAsync()
+        => await CarregarProfissionaisAsync();
+
+    private async Task CarregarProfissionaisAsync()
+    {
+        _carregando = true;
+        _erro = null;
+
+        try
+        {
+            var result = await ApiClient.GetProfissionaisAsync(page: 1, pageSize: ProfissionaisPageSize);
+            if (result.IsSuccess)
+            {
+                _profissionais.Clear();
+                _profissionais.AddRange(result.Data ?? []);
+                return;
+            }
+
+            _erro = string.IsNullOrWhiteSpace(result.Message)
+                ? "Não foi possível carregar os profissionais."
+                : result.Message;
+        }
+        catch (Exception exception) when (
+            exception is TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erro = "Não foi possível carregar os profissionais.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private async Task AbrirNovoProfissionalAsync()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = false,
+            BackdropClick = false,
+            CloseOnEscapeKey = false
+        };
+        var dialog = await DialogService.ShowAsync<ProfissionalCreateDialog>(
+            "Novo profissional",
+            options);
+        var result = await dialog.Result;
+
+        if (result is null || result.Canceled)
+            return;
+
+        Snackbar.Add("Profissional cadastrado com sucesso.", Severity.Success);
+        await CarregarProfissionaisAsync();
+    }
+
+    private static string ValorOuTraco(string? valor)
+        => string.IsNullOrWhiteSpace(valor) ? "—" : valor;
+}

@@ -24,12 +24,22 @@
             <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">
                 Visão geral
             </MudNavLink>
-            <MudNavLink Href="/pacientes" Icon="@Icons.Material.Filled.Groups">
-                Pacientes
-            </MudNavLink>
-            <MudNavLink Href="/agenda" Icon="@Icons.Material.Filled.CalendarMonth">
-                Agenda
-            </MudNavLink>
+            <AuthorizeView Roles="Medico">
+                <MudNavLink Href="/pacientes" Icon="@Icons.Material.Filled.Groups">
+                    Pacientes
+                </MudNavLink>
+            </AuthorizeView>
+            <AuthorizeView Roles="Medico">
+                <MudNavLink Href="/agenda" Icon="@Icons.Material.Filled.CalendarMonth">
+                    Agenda
+                </MudNavLink>
+            </AuthorizeView>
+            <AuthorizeView Roles="TenantAdmnin">
+                <MudNavLink Href="/admin/profissionais" Icon="@Icons.Material.Filled.MedicalServices">
+                    Profissionais
+                </MudNavLink>
+            </AuthorizeView >
+
              <MudNavLink Href="/counter" Icon="@Icons.Material.Filled.Mic">
                 Transcrições
             </MudNavLink>

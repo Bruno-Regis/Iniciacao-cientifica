@@ -1,0 +1,165 @@
+@inject DoctorPilotApiClient ApiClient
+
+<MudDialog>
+    <DialogContent>
+        <EditForm Model="_model" OnValidSubmit="SalvarAsync">
+            <DataAnnotationsValidator />
+
+            <MudStack Spacing="3">
+                @if (!string.IsNullOrWhiteSpace(_erroApi))
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined">
+                        @_erroApi
+                    </MudAlert>
+                }
+
+                <MudText Typo="Typo.subtitle1">Dados de acesso</MudText>
+
+                <MudTextField T="string"
+                              @bind-Value="_model.Email"
+                              For="@(() => _model.Email)"
+                              Label="E-mail"
+                              InputType="InputType.Email"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              MaxLength="100"
+                              Counter="100"
+                              Immediate="true"
+                              Disabled="_salvando" />
+
+                <MudTextField T="string"
+                              @bind-Value="_model.Senha"
+                              For="@(() => _model.Senha)"
+                              Label="Senha"
+                              InputType="InputType.Password"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              Disabled="_salvando" />
+
+                <MudDivider />
+                <MudText Typo="Typo.subtitle1">Dados profissionais</MudText>
+
+                <MudTextField T="string"
+                              @bind-Value="_model.Nome"
+                              For="@(() => _model.Nome)"
+                              Label="Nome"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              MaxLength="100"
+                              Counter="100"
+                              Immediate="true"
+                              Disabled="_salvando" />
+
+                <MudTextField T="string"
+                              @bind-Value="_model.Profissao"
+                              For="@(() => _model.Profissao)"
+                              Label="Profissão"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              MaxLength="100"
+                              Counter="100"
+                              Immediate="true"
+                              Disabled="_salvando" />
+
+                <MudTextField T="string"
+                              @bind-Value="_model.Crm"
+                              For="@(() => _model.Crm)"
+                              Label="CRM (opcional)"
+                              Variant="Variant.Outlined"
+                              MaxLength="100"
+                              Counter="100"
+                              Immediate="true"
+                              Disabled="_salvando" />
+
+                <MudTextField T="string"
+                              @bind-Value="_model.FotoUrl"
+                              For="@(() => _model.FotoUrl)"
+                              Label="URL da foto (opcional)"
+                              Variant="Variant.Outlined"
+                              Immediate="true"
+                              Disabled="_salvando" />
+
+                <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2">
+                    <MudButton Variant="Variant.Text" OnClick="Cancelar" Disabled="_salvando">
+                        Cancelar
+                    </MudButton>
+                    <MudButton ButtonType="ButtonType.Submit"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="_salvando">
+                        @if (_salvando)
+                        {
+                            <MudProgressCircular Indeterminate="true" Size="Size.Small" Class="me-2" />
+                            <span>Salvando...</span>
+                        }
+                        else
+                        {
+                            <span>Salvar</span>
+                        }
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </EditForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private readonly ProfissionalCreateFormModel _model = new();
+    private string? _erroApi;
+    private bool _salvando;
+
+    private async Task SalvarAsync()
+    {
+        if (_salvando)
+            return;
+
+        _salvando = true;
+        _erroApi = null;
+
+        try
+        {
+            var result = await ApiClient.CreateProfissionalAsync(MapearRequest());
+            if (result.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(result.Data));
+                return;
+            }
+
+            _erroApi = string.IsNullOrWhiteSpace(result.Message)
+                ? "Não foi possível cadastrar o profissional."
+                : result.Message;
+        }
+        catch (Exception exception) when (
+            exception is TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erroApi = "Não foi possível cadastrar o profissional.";
+        }
+        finally
+        {
+            _salvando = false;
+        }
+    }
+
+    private CreateProfissionalRequest MapearRequest()
+        => new()
+        {
+            Email = _model.Email.Trim(),
+            Senha = _model.Senha,
+            Nome = _model.Nome.Trim(),
+            Profissao = _model.Profissao.Trim(),
+            Crm = NormalizarOpcional(_model.Crm),
+            FotoUrl = NormalizarOpcional(_model.FotoUrl)
+        };
+
+    private static string? NormalizarOpcional(string? valor)
+        => string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
+
+    private void Cancelar()
+    {
+        if (!_salvando)
+            MudDialog.Cancel();
+    }
+}

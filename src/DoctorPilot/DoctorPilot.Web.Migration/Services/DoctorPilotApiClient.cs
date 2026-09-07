@@ -605,6 +605,29 @@ namespace DoctorPilot.Web.Migration.Services
 
         // PROFISSIONAIS
 
+        public async Task<ResultViewModel<Guid>> CreateProfissionalAsync(
+            CreateProfissionalRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/profissionais",
+                    request,
+                    cancellationToken);
+                var result = await response.Content.ReadFromJsonAsync<ResultViewModel<Guid>>(
+                    cancellationToken: cancellationToken);
+
+                return result ?? ResultViewModel<Guid>.Error(
+                    "Erro inesperado ao processar a resposta.");
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<Guid>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+
         public async Task<ResultViewModel<IEnumerable<ProfissionalItemDto>>> GetProfissionaisAsync(
             int page = 1,
             int pageSize = 20)
