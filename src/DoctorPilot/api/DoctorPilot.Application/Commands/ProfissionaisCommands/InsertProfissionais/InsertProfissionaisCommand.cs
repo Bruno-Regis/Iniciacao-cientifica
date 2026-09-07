@@ -6,13 +6,14 @@ namespace DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissio
 {
     public class InsertProfissionaisCommand : ICommand<ResultViewModel<Guid>>
     {
-        public Guid UsuarioId { get; set; }
-        public string Nome { get; set; }
-        public string Profissao { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Senha { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
+        public string Profissao { get; set; } = string.Empty;
         public string? FotoUrl { get; set; }
         public string? Crm { get; set; }
 
-        public Profissional ToEntity(Guid clinicaId)
-            => new(clinicaId, UsuarioId, Nome, Profissao, FotoUrl, Crm);
+        public Profissional ToEntity(Guid clinicaId, Guid usuarioId)
+            => new(clinicaId, usuarioId, Nome, Profissao, FotoUrl, Crm);
     }
 }

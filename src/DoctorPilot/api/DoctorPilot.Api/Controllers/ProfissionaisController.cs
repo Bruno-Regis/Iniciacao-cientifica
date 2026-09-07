@@ -1,7 +1,10 @@
 ﻿using DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissionais;
 using DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissionaisByClinica;
 using DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalById;
+using DoctorPilot.Contracts.Profissionais;
+using DoctorPilot.Core.Enums;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -18,8 +21,19 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] InsertProfissionaisCommand command)
+        [Authorize(Roles = nameof(RoleEnum.TenantAdmnin))]
+        public async Task<IActionResult> Post([FromBody] CreateProfissionalRequest request)
         {
+            var command = new InsertProfissionaisCommand
+            {
+                Email = request.Email,
+                Senha = request.Senha,
+                Nome = request.Nome,
+                Profissao = request.Profissao,
+                FotoUrl = request.FotoUrl,
+                Crm = request.Crm
+            };
+
             var result = await _mediator.Send(command);
             if (!result.IsSuccess)
                 return BadRequest(result);

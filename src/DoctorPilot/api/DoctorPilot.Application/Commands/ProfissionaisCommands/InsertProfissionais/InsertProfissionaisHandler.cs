@@ -1,6 +1,7 @@
-
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
+using DoctorPilot.Core.Entities;
+using DoctorPilot.Core.Enums;
 using DoctorPilot.Core.Repositories;
 using Mediator;
 
@@ -12,30 +13,38 @@ namespace DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissio
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUser;
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public InsertProfissionaisHandler(IProfissionalRepository profissionalRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUser, IUsuarioRepository usuarioRepository)
+        public InsertProfissionaisHandler(
+            IProfissionalRepository profissionalRepository,
+            IUnitOfWork unitOfWork,
+            ICurrentUserService currentUser,
+            IUsuarioRepository usuarioRepository,
+            IPasswordHasher passwordHasher)
         {
             _profissionalRepository = profissionalRepository;
             _unitOfWork = unitOfWork;
             _currentUser = currentUser;
             _usuarioRepository = usuarioRepository;
+            _passwordHasher = passwordHasher;
         }
-        public async ValueTask<ResultViewModel<Guid>> Handle(InsertProfissionaisCommand command, CancellationToken cancellationToken)
+
+        public async ValueTask<ResultViewModel<Guid>> Handle(
+            InsertProfissionaisCommand command,
+            CancellationToken cancellationToken)
         {
             var clinicaId = _currentUser.GetRequiredClinicaId();
 
-            var usuario = await _usuarioRepository.GetByIdAsync(command.UsuarioId);
-            if (usuario is null || usuario.ClinicaId != clinicaId)
-                return ResultViewModel<Guid>.Error("Usuário não encontrado.");
+            if (await _usuarioRepository.ExistsEmailAsync(command.Email))
+                return ResultViewModel<Guid>.Error("Já existe um usuário com este e-mail.");
 
-            var usuarioJaEhProfissional = await _profissionalRepository.GetByUsuarioIdAsync(command.UsuarioId);
-            if (usuarioJaEhProfissional is not null)
-                return ResultViewModel<Guid>.Error("Este usuário já está cadastrado como profissional.");
+            var senhaHash = _passwordHasher.Hash(command.Senha);
+            var usuario = new Usuario(clinicaId, command.Email, senhaHash, RoleEnum.Medico);
+            var profissional = command.ToEntity(clinicaId, usuario.Id);
 
-            var profissional = command.ToEntity(clinicaId); // Cria a entidade Profissional a partir do comando e do ClinicaId do usuário atual
-
+            await _usuarioRepository.AddAsync(usuario);
             await _profissionalRepository.AddAsync(profissional);
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             return ResultViewModel<Guid>.Success(profissional.Id);
         }
