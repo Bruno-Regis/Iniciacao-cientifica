@@ -44,6 +44,17 @@ Respect the existing project boundaries and dependency direction.
 
 Before introducing a new pattern or abstraction, inspect similar existing features and follow the established project conventions unless there is a clear reason not to.
 
+### Administrative Provisioning Invariants
+
+- `SuperAdmin` is global and must have `ClinicaId = null`.
+- Tenant users, including `TenantAdmnin`, `Medico`, and `Admnistrativo`, must have a `ClinicaId`.
+- The first `TenantAdmnin` is provisioned with the clinic when a `SuperAdmin` creates it.
+- `TenantAdmnin` does not imply that a corresponding `Profissional` exists; these are separate concepts.
+- Do not assume `ICurrentUserService.ClinicaId` has a value. Tenant operations that require a clinic must use the existing required-clinic mechanism (`GetRequiredClinicaId()`).
+- Do not create public endpoints for creating `SuperAdmin` users.
+- Do not change the bootstrap to update the password or credentials of an existing `SuperAdmin` automatically.
+- Preserve clinic isolation in all tenant operations.
+
 ## Agent Workflow
 
 Before making non-trivial changes:

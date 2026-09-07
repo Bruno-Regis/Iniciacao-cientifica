@@ -336,6 +336,77 @@ Authentication-related changes should not be made based only on this general arc
 
 ---
 
+## 7.1 Provisionamento e hierarquia administrativa
+
+O modelo administrativo separa a administração global da plataforma do contexto de cada clínica.
+
+### SuperAdmin global
+
+`SuperAdmin` é uma conta global da plataforma e não pertence a uma clínica. Na entidade `Usuario`, esse estado é representado por:
+
+- `Role = SuperAdmin`;
+- `ClinicaId = null`.
+
+`Usuario.ClinicaId` é nullable especificamente para permitir esse cenário. As demais roles existentes (`TenantAdmnin`, `Medico` e `Admnistrativo`) continuam exigindo um `ClinicaId`. O construtor de `Usuario` protege essa invariável: rejeita tanto um `SuperAdmin` associado a uma clínica quanto um usuário tenant sem clínica.
+
+### Bootstrap do SuperAdmin
+
+Durante a inicialização da API, depois que o contêiner de injeção de dependências está disponível e antes de a aplicação começar a atender requisições, `Program.cs` chama `SuperAdminBootstrap.EnsureCreatedAsync`.
+
+O bootstrap executa o seguinte fluxo:
+
+1. Consulta, por meio de `IUsuarioRepository`, se já existe algum usuário com `Role = SuperAdmin`.
+2. Se existir, encerra sem criar ou alterar usuários e sem exigir as configurações de bootstrap.
+3. Se não existir, lê `BootstrapAdmin:Email` e `BootstrapAdmin:Password`.
+4. Se uma dessas configurações estiver ausente ou vazia, interrompe a inicialização com uma mensagem segura, sem revelar os valores.
+5. Processa a senha com `IPasswordHasher`.
+6. Cria um `Usuario` com `ClinicaId = null` e `Role = SuperAdmin`.
+7. Adiciona o usuário pelo repositório e persiste com `IUnitOfWork.CommitAsync`.
+
+Esse comportamento é idempotente em inicializações sequenciais: depois que um `SuperAdmin` existe, outra inicialização não cria um novo usuário. Alterar os secrets não atualiza a senha ou as credenciais do usuário existente. Não há endpoint público para criação de `SuperAdmin`.
+
+User Secrets são apropriados para fornecer `BootstrapAdmin:Email` e `BootstrapAdmin:Password` durante o desenvolvimento. Em produção, os valores devem vir do mecanismo seguro de configuração ou secrets adotado pelo ambiente, sem armazenar credenciais no repositório. Nenhum provedor específico de produção é requisito arquitetural neste momento.
+
+### Criação e provisionamento de clínica
+
+O provisionamento administrativo de uma clínica começa no endpoint `POST /api/clinicas`, implementado por `ClinicasController` e autorizado exclusivamente para a role `SuperAdmin`.
+
+A requisição usa `CreateClinicaRequest` e contém os dados da clínica (`Nome`, `Email` e `Cnpj`) e os dados do administrador inicial em `CreateClinicaAdminRequest` (`Email` e `Senha`). O controller converte esses dados em `InsertClinicasCommand`, cujo handler:
+
+- cria a entidade `Clinica`;
+- processa a senha inicial com `IPasswordHasher`;
+- cria o primeiro administrador com `Role = TenantAdmnin` e `ClinicaId` igual ao identificador da clínica recém-criada;
+- adiciona a clínica e o usuário pelos respectivos repositórios;
+- executa um único `IUnitOfWork.CommitAsync` após as duas adições.
+
+Isso descreve a coordenação observada no handler. Não representa uma garantia transacional adicional além do comportamento oferecido pela implementação atual de `UnitOfWork` e Entity Framework Core.
+
+`TenantAdmnin` representa uma conta administrativa da clínica e não implica automaticamente a existência de uma entidade `Profissional`. `Usuario` e `Profissional` são conceitos distintos. Quando uma pessoa que administra a clínica também atua profissionalmente, o registro ou associação profissional deve ser tratado separadamente; a role administrativa, por si só, não cria essa associação.
+
+### ClinicaId e autenticação
+
+O contexto de clínica segue estas regras:
+
+- `Usuario.ClinicaId` é nullable;
+- `SuperAdmin` possui `ClinicaId = null`;
+- usuários tenant devem possuir `ClinicaId`;
+- o JWT de um `SuperAdmin` global não contém a claim `ClinicaId`;
+- usuários tenant recebem normalmente a claim com o identificador da clínica.
+
+`ICurrentUserService.ClinicaId` também é nullable. Operações que dependem obrigatoriamente de uma clínica usam `GetRequiredClinicaId()`, definido em `CurrentUserServiceExtensions`. Além disso, `CurrentUserService` rejeita a ausência ou um valor inválido da claim para usuários que não são `SuperAdmin`. Isso impede que uma operação tenant prossiga sem um contexto válido de clínica.
+
+```mermaid
+flowchart LR
+    A[Inicialização da API] --> B[SuperAdminBootstrap]
+    B --> C[SuperAdmin global<br/>ClinicaId = null]
+    C -->|POST /api/clinicas| D[Clínica]
+    D -->|provisiona| E[Primeiro TenantAdmnin]
+    E -->|administra| F[Usuários da clínica]
+    F -->|associação separada| G[Profissionais]
+```
+
+---
+
 ## 8. Architectural Goals
 
 The architecture aims to:
