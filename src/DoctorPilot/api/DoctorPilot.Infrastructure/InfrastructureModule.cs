@@ -1,5 +1,9 @@
 ﻿using DoctorPilot.Application.Services;
+using DoctorPilot.Application.AI.AdmnistrativeAssistant;
+using DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant;
+using DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant.Tools;
 using DoctorPilot.Core.Repositories;
+using DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant.Tools;
 using DoctorPilot.Infrastructure.Persistence;
 using DoctorPilot.Infrastructure.Repositories;
 using DoctorPilot.Infrastructure.Services;
@@ -19,6 +23,7 @@ namespace DoctorPilot.Infrastructure
             services
                 .AddData(configuration)
                 .AddRepositories()
+                .AddAI(configuration)
                 .AddAuth(configuration);
 
             return services;
@@ -74,6 +79,14 @@ namespace DoctorPilot.Infrastructure
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             return services;
         }
+        private static IServiceCollection AddAI(this IServiceCollection services, IConfiguration configuration)
+            {
+                services.AddScoped<GetProfissionaisByNomeTool>();
+                services.AddScoped<GetAgendamentosTool>();
+                services.AddScoped<IAdmnistrativeAssistantService, AdmnistrativeAssistantService>();
+
+            return services;
+            }
     }
 }
 

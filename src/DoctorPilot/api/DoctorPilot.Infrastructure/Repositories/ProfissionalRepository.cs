@@ -36,5 +36,17 @@ namespace DoctorPilot.Infrastructure.Repositories
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<IEnumerable<Profissional>> SearchByNomeAsync(Guid clinicaId, string nome, int limit = 10, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(p =>
+                    p.ClinicaId == clinicaId &&
+                    p.Nome.Contains(nome))
+                .OrderBy(p => p.Nome)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+        }
     }
 }
