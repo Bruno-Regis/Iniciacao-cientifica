@@ -20,6 +20,9 @@
         public string Profissao { get; set; }
         public string? FotoUrl { get; set; }
         public string? Crm { get; set; }
+        private readonly List<HorarioProfissional> _horarios = [];
+
+        public IReadOnlyCollection<HorarioProfissional> Horarios => _horarios;
 
         public void SetCrm(string crm)
         {
@@ -28,6 +31,15 @@
         public void SetFotoUrl(string fotoUrl)
         {
             FotoUrl = fotoUrl;
+        }
+        public void AdicionarHorario(HorarioProfissional horario)
+        {
+            _horarios.Add(horario);
+        }
+
+        public void RemoverHorario(HorarioProfissional horario)
+        {
+            _horarios.Remove(horario);
         }
     }
 }

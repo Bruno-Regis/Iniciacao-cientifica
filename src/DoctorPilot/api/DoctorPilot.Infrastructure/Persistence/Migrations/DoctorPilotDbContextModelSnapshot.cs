@@ -548,6 +548,40 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.ToTable("Evolucoes");
                 });
 
+            modelBuilder.Entity("DoctorPilot.Core.Entities.HorarioProfissional", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("int");
+
+                    b.Property<TimeOnly>("HoraFim")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("HoraInicio")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ProfissionalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfissionalId", "DiaSemana");
+
+                    b.ToTable("HorariosProfissionais");
+                });
+
             modelBuilder.Entity("DoctorPilot.Core.Entities.Paciente", b =>
                 {
                     b.Property<Guid>("Id")
@@ -956,6 +990,17 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
                     b.Navigation("Agendamento");
                 });
 
+            modelBuilder.Entity("DoctorPilot.Core.Entities.HorarioProfissional", b =>
+                {
+                    b.HasOne("DoctorPilot.Core.Entities.Profissional", "Profissional")
+                        .WithMany("Horarios")
+                        .HasForeignKey("ProfissionalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Profissional");
+                });
+
             modelBuilder.Entity("DoctorPilot.Core.Entities.Paciente", b =>
                 {
                     b.HasOne("DoctorPilot.Core.Entities.Clinica", "Clinica")
@@ -1033,6 +1078,11 @@ namespace DoctorPilot.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DoctorPilot.Core.Entities.Paciente", b =>
                 {
                     b.Navigation("Alergias");
+                });
+
+            modelBuilder.Entity("DoctorPilot.Core.Entities.Profissional", b =>
+                {
+                    b.Navigation("Horarios");
                 });
 #pragma warning restore 612, 618
         }

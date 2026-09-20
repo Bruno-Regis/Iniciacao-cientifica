@@ -1,11 +1,12 @@
-﻿using DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendamentos;
-using DoctorPilot.Application.Commands.AgendamentosCommands.CancelarAgendamento;
+﻿using DoctorPilot.Application.Commands.AgendamentosCommands.CancelarAgendamento;
 using DoctorPilot.Application.Commands.AgendamentosCommands.ConfirmarAgendamento;
+using DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendamentos;
 using DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendamento;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentoById;
+using DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentosElegiveisParaEvolucaoByPaciente;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPaciente;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPeriodo;
-using DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentosElegiveisParaEvolucaoByPaciente;
+using DoctorPilot.Application.Queries.AgendamentosQueries.GetAvailableSlots;
 using Mediator;
 using Microsoft.AspNetCore.Mvc;
 
@@ -84,6 +85,18 @@ namespace DoctorPilot.Api.Controllers
         {
             var result = await _mediator.Send(new ConfirmarAgendamentoCommand(id));
             if (!result.IsSuccess) return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpGet("available-slots")]
+        public async Task<IActionResult> GetAvailableSlots(Guid profissionalId, DateTime inicio, DateTime fim, int duracaoMinutos, CancellationToken cancellationToken)
+        {
+            var query = new GetAvailableSlotsQuery(profissionalId, inicio, fim, duracaoMinutos);
+            var result = await _mediator.Send(query, cancellationToken);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
             return Ok(result);
         }
 

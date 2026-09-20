@@ -45,6 +45,9 @@ namespace DoctorPilot.Infrastructure.Persistence.Configurations
                     .WithOne()
                     .HasForeignKey<Profissional>(p => p.UsuarioId)
                     .OnDelete(DeleteBehavior.Restrict);
+            builder
+                .Navigation(p => p.Horarios)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }

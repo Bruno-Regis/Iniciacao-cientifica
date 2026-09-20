@@ -49,6 +49,7 @@ namespace DoctorPilot.Infrastructure
             services.AddScoped<IProfissionalRepository, ProfissionalRepository>();
             services.AddScoped<IAnamneseTemplateRepository, AnamneseTemplateRepository>();
             services.AddScoped<IEvolucaoRepository, EvolucaoRepository>();
+            services.AddScoped<IHorarioProfissionalRepository, HorarioProfissionalRepository>();
             return services;
         }
 

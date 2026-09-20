@@ -28,6 +28,7 @@ namespace DoctorPilot.Infrastructure.Persistence
         public DbSet<AnamneseTemplateSessao> AnamneseTemplateSessoes { get; set; }
         public DbSet<AnamneseTemplateOpcao> AnamneseTemplateOpcoes { get; set; }
         public DbSet<AnamneseSessaoOpcao> AnamneseSessaoOpcoes { get; set; }
+        public DbSet<HorarioProfissional> HorariosProfissionais { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -47,6 +48,7 @@ namespace DoctorPilot.Infrastructure.Persistence
             builder.ApplyConfiguration(new AnamneseTemplateSessaoConfiguration());
             builder.ApplyConfiguration(new AnamneseTemplateOpcoesConfiguration());
             builder.ApplyConfiguration(new AnamneseSessaoOpcoesConfiguration());
+            builder.ApplyConfiguration(new HorariosProfissionaisConfiguration());
 
             foreach (var entityType in builder.Model.GetEntityTypes()
                          .Where(entityType => typeof(BaseEntity).IsAssignableFrom(entityType.ClrType)))
