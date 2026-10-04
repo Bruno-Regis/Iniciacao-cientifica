@@ -6,6 +6,7 @@ namespace DoctorPilot.Contracts.AI.AdmnistrativeAssistant
 {
     public class AssistantRequest
     {
+        public Guid? ConversationId { get; set; }
         public string Message { get; set; } = string.Empty;
     }
 }

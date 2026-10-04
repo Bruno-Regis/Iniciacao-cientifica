@@ -14,27 +14,29 @@ namespace DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant
         private readonly IConfiguration _configuration;
         private readonly GetProfissionaisByNomeTool _profissionaisTool;
         private readonly GetAgendamentosTool _agendamentosTool;
-
         private readonly GetAvailableSlotsTool _availableSlotsTool;
+        private readonly InMemoryAgentSessionStore _sessionStore;
 
-        public AdmnistrativeAssistantService(IConfiguration configuration, GetProfissionaisByNomeTool profissionaisTool, GetAgendamentosTool agendamentosTool, GetAvailableSlotsTool availableSlotsTool)
+        public AdmnistrativeAssistantService(IConfiguration configuration, GetProfissionaisByNomeTool profissionaisTool, GetAgendamentosTool agendamentosTool, GetAvailableSlotsTool availableSlotsTool, InMemoryAgentSessionStore sessionStore)
         {
             _configuration = configuration;
             _profissionaisTool = profissionaisTool;
             _agendamentosTool = agendamentosTool;
             _availableSlotsTool = availableSlotsTool;
+            _sessionStore = sessionStore;
         }
 
-        public async Task<string> AskAsync(string message, CancellationToken cancellationToken = default)
+        public async Task<AdministrativeAssistantResult> AskAsync(Guid? conversationId, string message, CancellationToken cancellationToken = default)
         {
             var endpoint = _configuration["AI:Foundry:ProjectEndpoint"] ?? throw new InvalidOperationException("Foundry ProjectEndpoint não configurado.");
             var deploymentName = _configuration["AI:Foundry:DeploymentName"] ?? throw new InvalidOperationException("Foundry DeploymentName não configurado.");
-
             var profissionaisTool = AIFunctionFactory.Create(_profissionaisTool.GetProfissionaisByNomeAsync);
             var agendamentosTool = AIFunctionFactory.Create(_agendamentosTool.GetAgendamentosAsync);
             var availableSlotsTool = AIFunctionFactory.Create(_availableSlotsTool.GetAvailableSlotsAsync);
-
             var agora = DateTimeOffset.Now;
+
+
+
             AIAgent agent = new AIProjectClient(
                 new Uri(endpoint),
                 new AzureCliCredential()) 
@@ -89,12 +91,35 @@ namespace DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant
 
                             Somente afirme que pode executar uma ação quando existir uma
                             ferramenta específica disponível para realizar essa ação.
+
+                            Não exponha identificadores internos do sistema, como IDs de
+                            profissionais, pacientes, clínicas ou agendamentos, nas respostas
+                            ao usuário.
                             """,
                         tools: [profissionaisTool, agendamentosTool, availableSlotsTool]);
 
-            var response = await agent.RunAsync(message, cancellationToken: cancellationToken);
+            AgentSession agentSession;
+            Guid currentConversationId;
 
-            return response.ToString();
+            // Se um ConversationId for fornecido, tente recuperar a sessão existente
+            if (conversationId.HasValue)
+            {
+                currentConversationId = conversationId.Value;
+
+                if (!_sessionStore.TryGet(currentConversationId, out var existingSession))
+                    throw new InvalidOperationException($"Sessão de agente não encontrada ou expirada para o ConversationId: {currentConversationId}");
+                agentSession = existingSession!;
+            }
+            else
+            {
+                agentSession = await agent.CreateSessionAsync(cancellationToken: cancellationToken);
+
+                currentConversationId =_sessionStore.Create(agentSession);
+            }
+
+            var response = await agent.RunAsync(message, agentSession, cancellationToken: cancellationToken);
+
+            return new AdministrativeAssistantResult(currentConversationId, response.ToString());
         }
     }
 }

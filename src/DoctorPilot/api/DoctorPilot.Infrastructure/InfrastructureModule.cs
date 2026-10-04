@@ -85,6 +85,7 @@ namespace DoctorPilot.Infrastructure
                 services.AddScoped<GetProfissionaisByNomeTool>();
                 services.AddScoped<GetAgendamentosTool>();
                 services.AddScoped<GetAvailableSlotsTool>();
+                services.AddSingleton<InMemoryAgentSessionStore>();
                 services.AddScoped<IAdmnistrativeAssistantService, AdmnistrativeAssistantService>();
 
                 return services;

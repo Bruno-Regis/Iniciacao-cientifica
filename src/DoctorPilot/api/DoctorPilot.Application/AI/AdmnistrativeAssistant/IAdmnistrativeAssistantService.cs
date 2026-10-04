@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DoctorPilot.Application.AI.AdmnistrativeAssistant
+﻿namespace DoctorPilot.Application.AI.AdmnistrativeAssistant
 {
     public interface IAdmnistrativeAssistantService
     {
-        Task<string> AskAsync(string message, CancellationToken cancellationToken = default);
+        Task<AdministrativeAssistantResult> AskAsync(Guid? conversationId, string message, CancellationToken cancellationToken = default);
     }
 }

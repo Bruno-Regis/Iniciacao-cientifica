@@ -1,6 +1,7 @@
 ﻿using DoctorPilot.Application.AI.AdmnistrativeAssistant;
 using DoctorPilot.Contracts.AI.AdmnistrativeAssistant;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers;
@@ -20,11 +21,12 @@ public class AdministrativeAssistantController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Ask(AssistantRequest request,CancellationToken cancellationToken)
     {
-        var answer = await _assistantService.AskAsync(request.Message,cancellationToken);
+        var result = await _assistantService.AskAsync(request.ConversationId, request.Message,cancellationToken);
 
         return Ok(new AssistantResponse
         {
-            Answer = answer
+            ConversationId = result.ConversationId,
+            Answer = result.Answer
         });
     }
 }
