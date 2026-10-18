@@ -1,4 +1,5 @@
 ﻿using DoctorPilot.Application.Mappings;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.HorariosProfissionais;
@@ -25,7 +26,10 @@ namespace DoctorPilot.Application.Queries.HorariosProfissionaisQueries.GetHorari
             var profissional = await _profissionalRepository
                 .GetByIdAsync(query.ProfissionalId);
 
-            if (profissional is null || profissional.ClinicaId != clinicaId)
+            if (profissional is null)
+                throw new NotFoundException("Profissional não encontrado.");
+
+            if (profissional.ClinicaId != clinicaId)
                 return ResultViewModel<IEnumerable<HorarioProfissionalDto>>
                     .Error("Profissional não encontrado.");
 

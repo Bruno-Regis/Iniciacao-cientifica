@@ -1,4 +1,5 @@
 ﻿using DoctorPilot.Application.Services;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Contracts.Agendamentos;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Enums;
@@ -37,7 +38,10 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAvailableSlots
             var profissional = await _profissionalRepository
                 .GetByIdAsync(query.ProfissionalId);
 
-            if (profissional is null || profissional.ClinicaId != clinicaId)
+            if (profissional is null)
+                throw new NotFoundException("Profissional não encontrado.");
+
+            if (profissional.ClinicaId != clinicaId)
                 return ResultViewModel<IEnumerable<AvailableSlotDto>>.Error("Profissional não encontrado.");
 
             var horarios = await _horarioRepository

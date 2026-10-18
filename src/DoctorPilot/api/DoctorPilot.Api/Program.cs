@@ -19,6 +19,7 @@ namespace DoctorPilot.Api
                 .AddInfrastructure(builder.Configuration);
 
             builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+            builder.Services.AddExceptionHandler<ApplicationExceptionHandler>();
             builder.Services.AddProblemDetails();
 
             var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();

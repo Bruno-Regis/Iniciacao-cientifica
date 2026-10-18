@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 
@@ -21,7 +22,10 @@ namespace DoctorPilot.Application.Queries.AlergiasQueries.GetAllAlergiasByPacien
         {
             var paciente = await _pacienteRepository.GetByIdComAlergias(query.PacienteId);
 
-            if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
+            if (paciente is null)
+                throw new NotFoundException("Paciente não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<IEnumerable<AlergiaDto>>.Error("Paciente não encontrado.");
 
             var viewModels = paciente.Alergias?.Select(a => a.ToDto()) ?? [];

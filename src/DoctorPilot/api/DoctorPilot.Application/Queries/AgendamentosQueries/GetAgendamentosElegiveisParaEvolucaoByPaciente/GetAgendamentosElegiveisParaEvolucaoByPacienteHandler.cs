@@ -1,3 +1,4 @@
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Agendamentos;
@@ -29,7 +30,10 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentosEle
             CancellationToken cancellationToken)
         {
             var paciente = await _pacienteRepository.GetByIdAsync(query.PacienteId);
-            if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
+            if (paciente is null)
+                throw new NotFoundException("Paciente não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<IEnumerable<AgendamentoElegivelEvolucaoDto>>.Error("Paciente não encontrado.");
 
             Guid? clinicaId = _currentUser.IsSuperAdmin ? null : _currentUser.ClinicaId;

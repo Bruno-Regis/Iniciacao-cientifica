@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Anamneses;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 
@@ -23,7 +24,10 @@ namespace DoctorPilot.Application.Queries.AnamnesesQueries.GetAllAnamnesesByPaci
         public async ValueTask<ResultViewModel<IEnumerable<AnamneseItemDto>>> Handle(GetAllAnamnesesByPacienteQuery query, CancellationToken cancellationToken)
         {
             var paciente = await _pacienteRepository.GetByIdAsync(query.PacienteId);
-            if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
+            if (paciente is null)
+                throw new NotFoundException("Paciente não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<IEnumerable<AnamneseItemDto>>.Error("Paciente não encontrado.");
 
             var anamneses = await _anamneseRepository.GetByPacienteIdAsync(

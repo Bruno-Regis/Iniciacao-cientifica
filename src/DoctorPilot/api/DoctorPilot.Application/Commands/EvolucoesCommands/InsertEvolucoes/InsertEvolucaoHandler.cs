@@ -1,6 +1,7 @@
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Core.Enums;
@@ -24,7 +25,10 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertEvolucaoCommand command, CancellationToken cancellationToken)
         {
             var agendamento = await _agendamentoRepository.GetByIdAsync(command.AgendamentoId);
-            if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
+            if (agendamento is null)
+                throw new NotFoundException("Agendamento não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<Guid>.Error("Agendamento não encontrado.");
 
             if (agendamento.Status == StatusAgendamentoEnum.cancelado)

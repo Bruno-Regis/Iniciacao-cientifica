@@ -1,6 +1,7 @@
 ﻿using Azure.AI.Projects;
 using Azure.Identity;
 using DoctorPilot.Application.AI.AdmnistrativeAssistant;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant.Tools;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -107,7 +108,7 @@ namespace DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant
                 currentConversationId = conversationId.Value;
 
                 if (!_sessionStore.TryGet(currentConversationId, out var existingSession))
-                    throw new InvalidOperationException($"Sessão de agente não encontrada ou expirada para o ConversationId: {currentConversationId}");
+                    throw new NotFoundException($"Sessão de agente não encontrada ou expirada para o ConversationId: {currentConversationId}");
                 agentSession = existingSession!;
             }
             else

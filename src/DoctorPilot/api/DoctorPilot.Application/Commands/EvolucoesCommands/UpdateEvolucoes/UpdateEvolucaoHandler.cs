@@ -1,6 +1,7 @@
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Core.Enums;
@@ -25,7 +26,7 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes
         {
             var evolucao = await _evolucaoRepository.GetByIdAsync(command.Id);
             if (evolucao is null)
-                return ResultViewModel<Guid>.Error("Evolução não encontrada.");
+                throw new NotFoundException("Evolução não encontrada.");
 
             var agendamento = await _agendamentoRepository.GetByIdAsync(evolucao.AgendamentoId);
             if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))

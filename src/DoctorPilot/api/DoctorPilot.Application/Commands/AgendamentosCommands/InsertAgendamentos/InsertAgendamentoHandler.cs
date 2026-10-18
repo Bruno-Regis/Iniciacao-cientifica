@@ -1,3 +1,4 @@
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
@@ -31,11 +32,17 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
                 return ResultViewModel<Guid>.Error("A data/hora final deve ser posterior à data/hora inicial.");
 
             var paciente = await _pacienteRepository.GetByIdAsync(command.PacienteId);
-            if (paciente is null || paciente.ClinicaId != clinicaId)
+            if (paciente is null)
+                throw new NotFoundException("Paciente não encontrado.");
+
+            if (paciente.ClinicaId != clinicaId)
                 return ResultViewModel<Guid>.Error("Paciente não encontrado.");
 
             var profissional = await _profissionalRepository.GetByIdAsync(command.ProfissionalId);
-            if (profissional is null || profissional.ClinicaId != clinicaId)
+            if (profissional is null)
+                throw new NotFoundException("Profissional não encontrado.");
+
+            if (profissional.ClinicaId != clinicaId)
                 return ResultViewModel<Guid>.Error("Profissional não encontrado.");
 
             var conflitoComProfissional = await _agendamentoRepository.ExisteConflitoProfissionalAsync(

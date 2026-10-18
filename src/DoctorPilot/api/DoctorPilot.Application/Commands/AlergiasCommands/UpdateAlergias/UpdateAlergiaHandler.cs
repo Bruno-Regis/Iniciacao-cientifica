@@ -2,6 +2,7 @@
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Services;
 
 namespace DoctorPilot.Application.Commands.AlergiasCommands.UpdateAlergias
@@ -24,8 +25,8 @@ namespace DoctorPilot.Application.Commands.AlergiasCommands.UpdateAlergias
         {
             var alergia = await _alergiaRepository.GetByIdAsync(command.AlergiaId); 
 
-            if (alergia == null)
-                return ResultViewModel<Guid>.Error("Alergia não encontrada.");
+            if (alergia is null)
+                throw new NotFoundException("Alergia não encontrada.");
 
             var paciente = await _pacienteRepository.GetByIdAsync(alergia.PacienteId);
             if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))

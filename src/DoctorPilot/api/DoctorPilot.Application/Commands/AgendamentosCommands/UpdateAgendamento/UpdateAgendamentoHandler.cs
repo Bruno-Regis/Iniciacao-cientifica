@@ -1,3 +1,4 @@
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Enums;
@@ -26,7 +27,10 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendament
         public async ValueTask<ResultViewModel<Guid>> Handle(UpdateAgendamentoCommand command, CancellationToken cancellationToken)
         {
             var agendamento = await _agendamentoRepository.GetByIdAsync(command.Id);
-            if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
+            if (agendamento is null)
+                throw new NotFoundException("Agendamento não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<Guid>.Error("Agendamento não encontrado.");
 
             if (agendamento.Status == StatusAgendamentoEnum.cancelado)
@@ -37,11 +41,17 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendament
 
             var clinicaId = agendamento.ClinicaId;
             var paciente = await _pacienteRepository.GetByIdAsync(command.PacienteId);
-            if (paciente is null || paciente.ClinicaId != clinicaId)
+            if (paciente is null)
+                throw new NotFoundException("Paciente não encontrado.");
+
+            if (paciente.ClinicaId != clinicaId)
                 return ResultViewModel<Guid>.Error("Paciente não encontrado.");
 
             var profissional = await _profissionalRepository.GetByIdAsync(command.ProfissionalId);
-            if (profissional is null || profissional.ClinicaId != clinicaId)
+            if (profissional is null)
+                throw new NotFoundException("Profissional não encontrado.");
+
+            if (profissional.ClinicaId != clinicaId)
                 return ResultViewModel<Guid>.Error("Profissional não encontrado.");
 
             if (await _agendamentoRepository.ExisteConflitoProfissionalAsync(clinicaId, command.ProfissionalId, command.DataHoraInicial, command.DataHoraFinal, command.Id, cancellationToken))

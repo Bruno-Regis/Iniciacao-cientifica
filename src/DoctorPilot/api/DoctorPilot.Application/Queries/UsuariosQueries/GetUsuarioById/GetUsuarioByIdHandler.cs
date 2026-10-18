@@ -3,6 +3,7 @@ using DoctorPilot.Contracts.Usuarios;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 
@@ -22,7 +23,10 @@ namespace DoctorPilot.Application.Queries.UsuariosQueries.GetUsuarioById
         {
             var usuario = await _usuarioRepository.GetByIdAsync(query.Id);
 
-            if (usuario is null || (!_currentUser.IsSuperAdmin && usuario.ClinicaId != _currentUser.ClinicaId))
+            if (usuario is null)
+                throw new NotFoundException("Usuário não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && usuario.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<UsuarioDetailsDto>.Error("Usuário não encontrado.");
 
             return ResultViewModel<UsuarioDetailsDto>.Success(usuario.ToDetailsDto());

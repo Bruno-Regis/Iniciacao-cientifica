@@ -1,3 +1,4 @@
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Enums;
@@ -28,8 +29,10 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.CancelarAgendame
         {
             var agendamento = await _agendamentoRepository.GetByIdAsync(command.Id);
 
-            if (agendamento is null ||
-                (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
+            if (agendamento is null)
+                throw new NotFoundException("Agendamento não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId)
             {
                 return ResultViewModel<Guid>.Error("Agendamento não encontrado.");
             }

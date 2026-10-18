@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Anamneses;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 
@@ -24,7 +25,7 @@ namespace DoctorPilot.Application.Queries.AnamnesesQueries.GetAnamneseById
             var anamnese = await _anamneseRepository.GetByIdComSessoesAsync(query.Id, cancellationToken);
 
             if (anamnese is null)
-                return ResultViewModel<AnamneseDetailsDto>.Error("Anamnese não encontrada.");
+                throw new NotFoundException("Anamnese não encontrada.");
 
             var paciente = await _pacienteRepository.GetByIdAsync(anamnese.PacienteId);
             if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))

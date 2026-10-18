@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Profissionais;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
  
@@ -22,7 +23,10 @@ namespace DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalBy
         {
             var profissional = await _profissionalRepository.GetByIdComRelacionamentosAsync(query.Id, cancellationToken);
 
-            if (profissional is null || (!_currentUser.IsSuperAdmin && profissional.ClinicaId != _currentUser.ClinicaId))
+            if (profissional is null)
+                throw new NotFoundException("Profissional não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && profissional.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<ProfissionalDetailsDto>.Error("Profissional não encontrado.");
 
             return ResultViewModel<ProfissionalDetailsDto>.Success(profissional.ToDetailsDto());

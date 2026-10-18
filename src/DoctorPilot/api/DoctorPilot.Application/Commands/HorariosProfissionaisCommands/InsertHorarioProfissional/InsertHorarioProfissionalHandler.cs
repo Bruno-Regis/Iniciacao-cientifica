@@ -1,4 +1,5 @@
 ﻿using DoctorPilot.Application.Services;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
@@ -31,7 +32,10 @@ namespace DoctorPilot.Application.Commands.HorariosProfissionaisCommands.InsertH
 
             var profissional = await _profissionalRepository.GetByIdAsync(command.ProfissionalId);
 
-            if (profissional is null || profissional.ClinicaId != clinicaId)
+            if (profissional is null)
+                throw new NotFoundException("Profissional não encontrado.");
+
+            if (profissional.ClinicaId != clinicaId)
                 return ResultViewModel<Guid>.Error("Profissional não encontrado.");
 
             var existeConflito = await _horarioRepository.ExistsConflitoAsync(command.ProfissionalId,command.DiaSemana,command.HoraInicio,command.HoraFim,cancellationToken);

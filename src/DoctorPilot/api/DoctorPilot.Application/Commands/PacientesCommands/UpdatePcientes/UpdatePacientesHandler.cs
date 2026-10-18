@@ -1,5 +1,6 @@
 ﻿using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Repositories;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Services;
 using Mediator;
 
@@ -21,7 +22,10 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.UpdatePcientes
         {
             var paciente = await _pacienteRepository.GetByIdAsync(command.PacienteId);
 
-            if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
+            if (paciente is null)
+                throw new NotFoundException("Paciente não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<Guid>.Error("Paciente não encontrado.");
 
             paciente.Nome = command.Nome;

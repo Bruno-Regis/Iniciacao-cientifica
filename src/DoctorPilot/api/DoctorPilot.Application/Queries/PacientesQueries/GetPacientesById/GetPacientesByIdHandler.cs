@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Pacientes;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 
@@ -22,7 +23,10 @@ public class GetPacienteByIdHandler : IQueryHandler<GetPacienteByIdQuery, Result
     {
         var paciente = await _pacienteRepository.GetByIdAsync(query.Id);
 
-        if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
+        if (paciente is null)
+            throw new NotFoundException("Paciente não encontrado.");
+
+        if (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId)
             return ResultViewModel<PacienteDetailsDto>.Error("Paciente não encontrado.");
 
         return ResultViewModel<PacienteDetailsDto>.Success(paciente.ToDetailsDto());

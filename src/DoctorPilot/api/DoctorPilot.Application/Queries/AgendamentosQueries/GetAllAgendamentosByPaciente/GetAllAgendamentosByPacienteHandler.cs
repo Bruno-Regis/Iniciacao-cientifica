@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Agendamentos;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 
@@ -22,7 +23,10 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentos
         public async ValueTask<ResultViewModel<IEnumerable<AgendamentoItemDto>>> Handle(GetAllAgendamentosByPacienteQuery query, CancellationToken cancellationToken)
         {
             var paciente = await _pacienteRepository.GetByIdAsync(query.PacienteId);
-            if (paciente is null || (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId))
+            if (paciente is null)
+                throw new NotFoundException("Paciente não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && paciente.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Error("Paciente não encontrado.");
 
             var agendamentos = await _agendamentoRepository.GetByPacienteIdAsync(query.PacienteId, query.Page, query.PageSize, cancellationToken);

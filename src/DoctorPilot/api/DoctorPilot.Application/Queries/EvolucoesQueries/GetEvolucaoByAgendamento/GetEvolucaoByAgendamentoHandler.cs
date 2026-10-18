@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Contracts.Evolucoes;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 
@@ -22,7 +23,10 @@ namespace DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucaoByAgendame
         public async ValueTask<ResultViewModel<EvolucaoDto>> Handle(GetEvolucaoByAgendamentoQuery query, CancellationToken cancellationToken)
         {
             var agendamento = await _agendamentoRepository.GetByIdAsync(query.AgendamentoId);
-            if (agendamento is null || (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId))
+            if (agendamento is null)
+                throw new NotFoundException("Agendamento não encontrado.");
+
+            if (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<EvolucaoDto>.Error("Agendamento não encontrado.");
 
             var evolucao = await _evolucaoRepository.GetByAgendamentoIdAsync(
@@ -30,7 +34,7 @@ namespace DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucaoByAgendame
                 cancellationToken);
 
             if (evolucao is null)
-                return ResultViewModel<EvolucaoDto>.Error("Evolução não encontrada para este agendamento.");
+                throw new NotFoundException("Evolução não encontrada para este agendamento.");
 
             return ResultViewModel<EvolucaoDto>.Success(evolucao.ToDto());
         }
