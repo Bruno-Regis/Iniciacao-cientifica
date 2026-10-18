@@ -3,7 +3,9 @@ using DoctorPilot.Application.Commands.PacientesCommands.UpdatePcientes;
 using DoctorPilot.Application.Queries.PacientesQueries.GetAllPacientesByClinica;
 using DoctorPilot.Application.Queries.PacientesQueries.GetPacienteById;
 using DoctorPilot.Application.Queries.PacientesQueries.SearchPacientes;
+using DoctorPilot.Api.Authorization;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -20,6 +22,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> Post([FromBody] InsertPacientesCommand command)
         {
             var result = await _mediator.Send(command);
@@ -27,6 +30,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> GetAllByClinica([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetAllPacientesByClinicaQuery(page, pageSize));

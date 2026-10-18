@@ -3,6 +3,7 @@ using DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissionaisBy
 using DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalById;
 using DoctorPilot.Contracts.Profissionais;
 using DoctorPilot.Core.Enums;
+using DoctorPilot.Api.Authorization;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> GetAllByClinica([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetAllProfissionaisByClinicaQuery(page, pageSize));

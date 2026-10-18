@@ -2,8 +2,10 @@
 using DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAllAnamneseTemplatesByClinica;
 using DoctorPilot.Application.Queries.AnamneseTemplatesQueries.GetAnamneseTemplateById;
 using DoctorPilot.Application.DTOs;
+using DoctorPilot.Api.Authorization;
 using DoctorPilot.Contracts.AnamneseTemplates;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -19,6 +21,7 @@ namespace DoctorPilot.Api.Controllers
             _mediator = mediator;
         }
         [HttpPost]
+        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> Post([FromBody] CreateAnamneseTemplateRequest request)
         {
             var command = new InsertAnamneseTemplateCommand

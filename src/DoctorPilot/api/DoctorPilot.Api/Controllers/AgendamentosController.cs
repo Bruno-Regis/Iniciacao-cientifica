@@ -7,7 +7,9 @@ using DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentosElegive
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPaciente;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPeriodo;
 using DoctorPilot.Application.Queries.AgendamentosQueries.GetAvailableSlots;
+using DoctorPilot.Api.Authorization;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -24,6 +26,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> Post([FromBody] InsertAgendamentoCommand command)
         {
             var result = await _mediator.Send(command);
@@ -40,6 +43,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("periodo")]
+        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> GetByPeriodo([FromQuery] DateTime inicio, [FromQuery] DateTime fim, [FromQuery] Guid? profissionalId = null)
         {
             var result = await _mediator.Send(new GetAllAgendamentosByPeriodoQuery(inicio, fim, profissionalId));
@@ -89,6 +93,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("available-slots")]
+        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> GetAvailableSlots(Guid profissionalId, DateTime inicio, DateTime fim, int duracaoMinutos, CancellationToken cancellationToken)
         {
             var query = new GetAvailableSlotsQuery(profissionalId, inicio, fim, duracaoMinutos);

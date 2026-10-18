@@ -1,5 +1,6 @@
 using DoctorPilot.Api.Bootstrap;
 using DoctorPilot.Api.ExceptionHandling;
+using DoctorPilot.Api.Authorization;
 using DoctorPilot.Application;
 using DoctorPilot.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,15 @@ namespace DoctorPilot.Api
             builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
             builder.Services.AddExceptionHandler<ApplicationExceptionHandler>();
             builder.Services.AddProblemDetails();
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy(AuthorizationPolicies.TenantRequired, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("ClinicaId");
+                });
+            });
 
             var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
 
