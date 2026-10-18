@@ -12,13 +12,15 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
     {
         private readonly IEvolucaoRepository _evolucaoRepository;
         private readonly IAgendamentoRepository _agendamentoRepository;
+        private readonly IProfissionalRepository _profissionalRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUser;
 
-        public InsertEvolucaoHandler(IEvolucaoRepository evolucaoRepository, IAgendamentoRepository agendamentoRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUser)
+        public InsertEvolucaoHandler(IEvolucaoRepository evolucaoRepository, IAgendamentoRepository agendamentoRepository, IProfissionalRepository profissionalRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUser)
         {
             _evolucaoRepository = evolucaoRepository;
             _agendamentoRepository = agendamentoRepository;
+            _profissionalRepository = profissionalRepository;
             _unitOfWork = unitOfWork;
             _currentUser = currentUser;
         }
@@ -30,6 +32,16 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
 
             if (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId)
                 return ResultViewModel<Guid>.Error("Agendamento não encontrado.");
+
+            var profissional = await _profissionalRepository.GetByUsuarioIdAsync(
+                _currentUser.UsuarioId,
+                cancellationToken);
+            if (profissional is null ||
+                profissional.ClinicaId != agendamento.ClinicaId ||
+                profissional.Id != agendamento.ProfissionalId)
+            {
+                throw new ForbiddenException("Você não tem permissão para registrar a evolução deste agendamento.");
+            }
 
             if (agendamento.Status == StatusAgendamentoEnum.cancelado)
                 throw new ConflictException("Não é possível registrar evolução para um agendamento cancelado.");

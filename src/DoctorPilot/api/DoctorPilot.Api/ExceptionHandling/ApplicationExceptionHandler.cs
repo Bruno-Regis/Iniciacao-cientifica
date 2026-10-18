@@ -14,6 +14,7 @@ public sealed class ApplicationExceptionHandler : IExceptionHandler
         var statusCode = exception switch
         {
             NotFoundException => StatusCodes.Status404NotFound,
+            ForbiddenException => StatusCodes.Status403Forbidden,
             ConflictException => StatusCodes.Status409Conflict,
             _ => (int?)null
         };

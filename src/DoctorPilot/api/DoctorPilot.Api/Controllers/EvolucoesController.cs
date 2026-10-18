@@ -2,8 +2,10 @@
 using DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes;
 using DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucaoByAgendamento;
 using DoctorPilot.Application.Queries.EvolucoesQueries.GetEvolucoesByPaciente;
+using DoctorPilot.Api.Authorization;
 using DoctorPilot.Contracts.Evolucoes;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -20,6 +22,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> Post([FromBody] CreateEvolucaoRequest request)
         {
             var command = new InsertEvolucaoCommand
@@ -36,6 +39,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> Put(Guid id, [FromBody] UpdateEvolucaoRequest request)
         {
             var command = new UpdateEvolucaoCommand
