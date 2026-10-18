@@ -2,6 +2,7 @@ using DoctorPilot.Api.Bootstrap;
 using DoctorPilot.Api.ExceptionHandling;
 using DoctorPilot.Api.Authorization;
 using DoctorPilot.Application;
+using DoctorPilot.Core.Enums;
 using DoctorPilot.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -29,6 +30,12 @@ namespace DoctorPilot.Api
                 {
                     policy.RequireAuthenticatedUser();
                     policy.RequireClaim("ClinicaId");
+                });
+
+                options.AddPolicy(AuthorizationPolicies.ProfessionalRequired, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireRole(nameof(RoleEnum.Medico));
                 });
             });
 

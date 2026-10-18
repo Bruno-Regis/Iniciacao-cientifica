@@ -1,7 +1,9 @@
 using DoctorPilot.Application.Commands.AnamneseCommands.InsertAnamneseFromTemplate;
 using DoctorPilot.Application.Commands.AnamneseCommands.InsertAnamneseManual;
+using DoctorPilot.Api.Authorization;
 using DoctorPilot.Contracts.Anamneses;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -18,6 +20,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost("from-template")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> PostFromTemplate(
             [FromBody] CreateAnamneseFromTemplateRequest request)
         {
@@ -46,6 +49,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost("manual")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> PostManual([FromBody] CreateAnamneseManualRequest request)
         {
             var command = new InsertAnamneseManualCommand
