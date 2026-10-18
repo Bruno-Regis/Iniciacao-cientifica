@@ -38,10 +38,10 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.ConfirmarAgendam
             }
 
             if (agendamento.Status == StatusAgendamentoEnum.cancelado)
-                return ResultViewModel<Guid>.Error("Não é possível confirmar um agendamento cancelado.");
+                throw new ConflictException("Não é possível confirmar um agendamento cancelado.");
 
             if (agendamento.Confirmacao)
-                return ResultViewModel<Guid>.Error("Agendamento já está confirmado.");
+                throw new ConflictException("Agendamento já está confirmado.");
 
             agendamento.Confirmar();
             await _agendamentoRepository.UpdateAsync(agendamento);

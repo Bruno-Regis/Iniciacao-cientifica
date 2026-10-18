@@ -1,3 +1,4 @@
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
@@ -36,7 +37,7 @@ namespace DoctorPilot.Application.Commands.ProfissionaisCommands.InsertProfissio
             var clinicaId = _currentUser.GetRequiredClinicaId();
 
             if (await _usuarioRepository.ExistsEmailAsync(command.Email))
-                return ResultViewModel<Guid>.Error("Já existe um usuário com este e-mail.");
+                throw new ConflictException("Já existe um usuário com este e-mail.");
 
             var senhaHash = _passwordHasher.Hash(command.Senha);
             var usuario = new Usuario(clinicaId, command.Email, senhaHash, RoleEnum.Medico);

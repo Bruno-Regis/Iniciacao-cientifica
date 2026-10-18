@@ -41,7 +41,7 @@ namespace DoctorPilot.Application.Commands.HorariosProfissionaisCommands.InsertH
             var existeConflito = await _horarioRepository.ExistsConflitoAsync(command.ProfissionalId,command.DiaSemana,command.HoraInicio,command.HoraFim,cancellationToken);
 
             if (existeConflito)
-                return ResultViewModel<Guid>.Error("Já existe um horário cadastrado para este profissional neste dia e horário.");
+                throw new ConflictException("Já existe um horário cadastrado para este profissional neste dia e horário.");
 
             var horario = new HorarioProfissional(command.ProfissionalId, command.DiaSemana, command.HoraInicio, command.HoraFim);
 

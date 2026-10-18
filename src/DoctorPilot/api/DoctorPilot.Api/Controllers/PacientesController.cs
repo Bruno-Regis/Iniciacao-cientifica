@@ -23,7 +23,6 @@ namespace DoctorPilot.Api.Controllers
         public async Task<IActionResult> Post([FromBody] InsertPacientesCommand command)
         {
             var result = await _mediator.Send(command);
-            if (!result.IsSuccess) return BadRequest(result);
             return CreatedAtAction(nameof(GetById), new { id = result.Data }, result);
         }
 

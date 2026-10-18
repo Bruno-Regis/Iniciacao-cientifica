@@ -2,6 +2,7 @@ using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Entities;
 using DoctorPilot.Core.Repositories;
 using Mediator;
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Core.Enums;
 
@@ -28,13 +29,13 @@ namespace DoctorPilot.Application.Commands.ClinicasCommands.InsertClinicas
         public async ValueTask<ResultViewModel<Guid>> Handle(InsertClinicasCommand command, CancellationToken cancellationToken)
         {
             if (await _clinicaRepository.ExistsCnpjAsync(command.Cnpj))
-                return ResultViewModel<Guid>.Error("Já existe uma clínica com este CNPJ.");
+                throw new ConflictException("Já existe uma clínica com este CNPJ.");
 
             if (await _clinicaRepository.ExistsEmailAsync(command.Email))
-                return ResultViewModel<Guid>.Error("Já existe uma clínica com este e-mail.");
+                throw new ConflictException("Já existe uma clínica com este e-mail.");
 
             if (await _usuarioRepository.ExistsEmailAsync(command.AdminEmail))
-                return ResultViewModel<Guid>.Error("Já existe um usuário com este e-mail.");
+                throw new ConflictException("Já existe um usuário com este e-mail.");
 
             var clinica = command.ToEntity();
             var senhaHash = _passwordHasher.Hash(command.AdminSenha);

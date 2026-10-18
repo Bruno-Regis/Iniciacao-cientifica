@@ -52,7 +52,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
                 command.DataHoraFinal,
                 cancellationToken: cancellationToken);
             if (conflitoComProfissional)
-                return ResultViewModel<Guid>.Error("Profissional já possui um agendamento neste período.");
+                throw new ConflictException("Profissional já possui um agendamento neste período.");
 
             if (!string.IsNullOrWhiteSpace(command.Sala))
             {
@@ -64,7 +64,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.InsertAgendament
                     cancellationToken: cancellationToken);
 
                 if (conflitoComSala)
-                    return ResultViewModel<Guid>.Error("Sala já está ocupada neste período.");
+                    throw new ConflictException("Sala já está ocupada neste período.");
             }
 
             var agendamento = command.ToEntity(clinicaId);

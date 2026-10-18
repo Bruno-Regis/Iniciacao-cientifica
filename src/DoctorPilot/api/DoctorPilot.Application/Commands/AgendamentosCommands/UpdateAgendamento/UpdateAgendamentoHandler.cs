@@ -34,7 +34,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendament
                 return ResultViewModel<Guid>.Error("Agendamento não encontrado.");
 
             if (agendamento.Status == StatusAgendamentoEnum.cancelado)
-                return ResultViewModel<Guid>.Error("Não é possível editar um agendamento cancelado.");
+                throw new ConflictException("Não é possível editar um agendamento cancelado.");
 
             if (command.DataHoraFinal <= command.DataHoraInicial)
                 return ResultViewModel<Guid>.Error("A data/hora final deve ser posterior à data/hora inicial.");
@@ -55,11 +55,11 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.UpdateAgendament
                 return ResultViewModel<Guid>.Error("Profissional não encontrado.");
 
             if (await _agendamentoRepository.ExisteConflitoProfissionalAsync(clinicaId, command.ProfissionalId, command.DataHoraInicial, command.DataHoraFinal, command.Id, cancellationToken))
-                return ResultViewModel<Guid>.Error("Profissional já possui um agendamento neste período.");
+                throw new ConflictException("Profissional já possui um agendamento neste período.");
 
             if (!string.IsNullOrWhiteSpace(command.Sala) &&
                 await _agendamentoRepository.ExisteConflitoSalaAsync(clinicaId, command.Sala, command.DataHoraInicial, command.DataHoraFinal, command.Id, cancellationToken))
-                return ResultViewModel<Guid>.Error("Sala já está ocupada neste período.");
+                throw new ConflictException("Sala já está ocupada neste período.");
 
             agendamento.Atualizar(command.PacienteId, command.ProfissionalId, command.Tipo, command.Procedimento, command.DataHoraInicial, command.DataHoraFinal, command.Sala, command.Descricao);
             await _agendamentoRepository.UpdateAsync(agendamento);

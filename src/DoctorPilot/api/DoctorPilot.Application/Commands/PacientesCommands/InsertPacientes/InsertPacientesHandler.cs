@@ -1,3 +1,4 @@
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Mappings;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
@@ -22,7 +23,7 @@ namespace DoctorPilot.Application.Commands.PacientesCommands.InsertPacientes
         {
             var cpfJaCadastrado = await _pacienteRepository.GetByCpfAsync(command.Cpf);
             if (cpfJaCadastrado is not null)
-                return ResultViewModel<Guid>.Error("JÃ¡ existe um paciente cadastrado com este CPF.");
+                throw new ConflictException("Já existe um paciente cadastrado com este CPF.");
 
             var paciente = command.ToEntity(_currentUser.GetRequiredClinicaId());
 

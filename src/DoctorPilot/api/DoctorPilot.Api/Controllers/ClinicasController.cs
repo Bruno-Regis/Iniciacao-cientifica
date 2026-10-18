@@ -33,8 +33,6 @@ namespace DoctorPilot.Api.Controllers
             };
 
             var result = await _mediator.Send(command);
-            if (!result.IsSuccess)
-                return BadRequest(result);
             return CreatedAtAction(nameof(Post), new { id = result.Data }, result);
         }
     }

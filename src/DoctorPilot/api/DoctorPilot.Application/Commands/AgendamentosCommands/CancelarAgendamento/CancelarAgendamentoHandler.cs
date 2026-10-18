@@ -38,7 +38,7 @@ namespace DoctorPilot.Application.Commands.AgendamentosCommands.CancelarAgendame
             }
 
             if (agendamento.Status == StatusAgendamentoEnum.cancelado)
-                return ResultViewModel<Guid>.Error("Agendamento já está cancelado.");
+                throw new ConflictException("Agendamento já está cancelado.");
 
             agendamento.Cancelar();
             await _agendamentoRepository.UpdateAsync(agendamento);

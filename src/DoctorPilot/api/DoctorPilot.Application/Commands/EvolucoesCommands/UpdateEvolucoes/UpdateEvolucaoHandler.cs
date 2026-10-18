@@ -33,7 +33,7 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.UpdateEvolucoes
                 return ResultViewModel<Guid>.Error("Evolução não encontrada.");
 
             if (agendamento.Status == StatusAgendamentoEnum.cancelado)
-                return ResultViewModel<Guid>.Error("Não é possível editar uma evolução de um agendamento cancelado.");
+                throw new ConflictException("Não é possível editar uma evolução de um agendamento cancelado.");
 
             if (string.IsNullOrWhiteSpace(command.Conteudo))
                 return ResultViewModel<Guid>.Error("Conteúdo da evolução é obrigatório.");

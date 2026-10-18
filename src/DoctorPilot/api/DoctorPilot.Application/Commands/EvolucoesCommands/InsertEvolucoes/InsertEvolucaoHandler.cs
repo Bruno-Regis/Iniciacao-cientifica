@@ -32,7 +32,7 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
                 return ResultViewModel<Guid>.Error("Agendamento não encontrado.");
 
             if (agendamento.Status == StatusAgendamentoEnum.cancelado)
-                return ResultViewModel<Guid>.Error("Não é possível registrar evolução para um agendamento cancelado.");
+                throw new ConflictException("Não é possível registrar evolução para um agendamento cancelado.");
 
             if (string.IsNullOrWhiteSpace(command.Conteudo))
                 return ResultViewModel<Guid>.Error("Conteúdo da evolução é obrigatório.");
@@ -44,7 +44,7 @@ namespace DoctorPilot.Application.Commands.EvolucoesCommands.InsertEvolucoes
                 command.AgendamentoId,
                 cancellationToken);
             if (evolucaoExistente is not null)
-                return ResultViewModel<Guid>.Error("Já existe uma evolução para este agendamento.");
+                throw new ConflictException("Já existe uma evolução para este agendamento.");
 
             var evolucao = command.ToEntity();
 

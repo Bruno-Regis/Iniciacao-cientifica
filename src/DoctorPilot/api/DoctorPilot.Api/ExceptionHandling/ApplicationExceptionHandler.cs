@@ -11,12 +11,19 @@ public sealed class ApplicationExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        if (exception is not NotFoundException notFoundException)
+        var statusCode = exception switch
+        {
+            NotFoundException => StatusCodes.Status404NotFound,
+            ConflictException => StatusCodes.Status409Conflict,
+            _ => (int?)null
+        };
+
+        if (statusCode is null)
             return false;
 
-        httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        httpContext.Response.StatusCode = statusCode.Value;
         await httpContext.Response.WriteAsJsonAsync(
-            ResultViewModel<object?>.Error(notFoundException.Message),
+            ResultViewModel<object?>.Error(exception.Message),
             cancellationToken);
 
         return true;

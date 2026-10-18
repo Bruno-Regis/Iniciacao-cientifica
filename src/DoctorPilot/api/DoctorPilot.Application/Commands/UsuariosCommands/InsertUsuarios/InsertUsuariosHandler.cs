@@ -1,3 +1,4 @@
+using DoctorPilot.Application.Exceptions;
 using DoctorPilot.Application.Services;
 using DoctorPilot.Contracts.Common;
 using DoctorPilot.Core.Enums;
@@ -35,7 +36,7 @@ namespace DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios
             var usuarioJaExiste = await _usuarioRepository.ExistsEmailAsync(command.Email);
 
             if (usuarioJaExiste)
-                return ResultViewModel<Guid>.Error("Já existe um usuário com este e-mail.");
+                throw new ConflictException("Já existe um usuário com este e-mail.");
             
             var senhaHash = _passwordHasher.Hash(command.Senha);
 
