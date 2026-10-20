@@ -12,6 +12,7 @@ namespace DoctorPilot.Api.Controllers
 {
     [Route("api/anamnese-templates")]
     [ApiController]
+    [Authorize(Policy = AuthorizationPolicies.TemplateAccess)]
     public class AnamneseTemplatesController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -21,7 +22,6 @@ namespace DoctorPilot.Api.Controllers
             _mediator = mediator;
         }
         [HttpPost]
-        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> Post([FromBody] CreateAnamneseTemplateRequest request)
         {
             var command = new InsertAnamneseTemplateCommand
