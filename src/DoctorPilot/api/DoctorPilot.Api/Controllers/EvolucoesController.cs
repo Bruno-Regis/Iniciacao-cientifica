@@ -53,6 +53,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("agendamento/{agendamentoId}")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> GetByAgendamento(Guid agendamentoId)
         {
             var result = await _mediator.Send(new GetEvolucaoByAgendamentoQuery(agendamentoId));
@@ -61,6 +62,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("paciente/{pacienteId}")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> GetByPaciente(Guid pacienteId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetEvolucoesByPacienteQuery(pacienteId, page, pageSize));

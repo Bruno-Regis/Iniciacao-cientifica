@@ -2,9 +2,11 @@
 using DoctorPilot.Application.Commands.AlergiasCommands.UpdateAlergias;
 using DoctorPilot.Application.Queries.AlergiasQueries.GetAlergiaById;
 using DoctorPilot.Application.Queries.AlergiasQueries.GetAllAlergiasByPaciente;
+using DoctorPilot.Api.Authorization;
 using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Core.Enums;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -21,6 +23,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> Post([FromBody] CreateAlergiaRequest request)
         {
             var command = new InsertAlergiaCommand
@@ -37,6 +40,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("paciente/{pacienteId}")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> GetByPaciente(Guid pacienteId)
         {
             var result = await _mediator.Send(new GetAllAlergiasByPacienteQuery(pacienteId));
@@ -45,6 +49,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _mediator.Send(new GetAlergiaByIdQuery(id));
@@ -53,6 +58,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> Put(Guid id, [FromBody] UpdateAlergiaCommand command)
         {
             command.AlergiaId = id;

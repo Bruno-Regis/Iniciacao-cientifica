@@ -1,7 +1,9 @@
 ﻿using DoctorPilot.Application.Commands.AnamneseCommands.InsertAnamneseCommands;
 using DoctorPilot.Application.Queries.AnamnesesQueries.GetAllAnamnesesByPaciente;
 using DoctorPilot.Application.Queries.AnamnesesQueries.GetAnamneseById;
+using DoctorPilot.Api.Authorization;
 using Mediator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DoctorPilot.Api.Controllers
@@ -25,6 +27,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("paciente/{pacienteId}")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> GetByPaciente(Guid pacienteId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetAllAnamnesesByPacienteQuery(pacienteId, page, pageSize));
@@ -32,6 +35,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalRequired)]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _mediator.Send(new GetAnamneseByIdQuery(id));
