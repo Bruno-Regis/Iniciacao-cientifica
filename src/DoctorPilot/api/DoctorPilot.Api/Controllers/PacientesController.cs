@@ -12,6 +12,7 @@ namespace DoctorPilot.Api.Controllers
 {
     [Route("api/pacientes")]
     [ApiController]
+    [Authorize(Policy = AuthorizationPolicies.OperationalAccess)]
     public class PacientesController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -22,7 +23,6 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> Post([FromBody] InsertPacientesCommand command)
         {
             var result = await _mediator.Send(command);
@@ -30,7 +30,6 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> GetAllByClinica([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetAllPacientesByClinicaQuery(page, pageSize));

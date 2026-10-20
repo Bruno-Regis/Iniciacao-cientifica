@@ -42,7 +42,7 @@ namespace DoctorPilot.Api.Controllers
                 return BadRequest(result);
 
             return CreatedAtAction(
-                nameof(AnamnesosController.GetById),
+                nameof(AnamnesesController.GetById),
                 "Anamnesos",
                 new { id = result.Data },
                 result);
@@ -77,7 +77,7 @@ namespace DoctorPilot.Api.Controllers
                 return BadRequest(result);
 
             return CreatedAtAction(
-                nameof(AnamnesosController.GetById),
+                nameof(AnamnesesController.GetById),
                 "Anamnesos",
                 new { id = result.Data },
                 result);

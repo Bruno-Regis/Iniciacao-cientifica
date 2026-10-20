@@ -16,6 +16,7 @@ namespace DoctorPilot.Api.Controllers
 {
     [Route("api/agendamentos")]
     [ApiController]
+    [Authorize(Policy = AuthorizationPolicies.OperationalAccess)]
     public class AgendamentosController : ControllerBase 
     {
         private readonly IMediator _mediator;
@@ -26,7 +27,6 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> Post([FromBody] InsertAgendamentoCommand command)
         {
             var result = await _mediator.Send(command);
@@ -43,7 +43,6 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("periodo")]
-        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> GetByPeriodo([FromQuery] DateTime inicio, [FromQuery] DateTime fim, [FromQuery] Guid? profissionalId = null)
         {
             var result = await _mediator.Send(new GetAllAgendamentosByPeriodoQuery(inicio, fim, profissionalId));
@@ -93,7 +92,6 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("available-slots")]
-        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
         public async Task<IActionResult> GetAvailableSlots(Guid profissionalId, DateTime inicio, DateTime fim, int duracaoMinutos, CancellationToken cancellationToken)
         {
             var query = new GetAvailableSlotsQuery(profissionalId, inicio, fim, duracaoMinutos);

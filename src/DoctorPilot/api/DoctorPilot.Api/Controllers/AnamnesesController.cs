@@ -1,4 +1,3 @@
-﻿using DoctorPilot.Application.Commands.AnamneseCommands.InsertAnamneseCommands;
 using DoctorPilot.Application.Queries.AnamnesesQueries.GetAllAnamnesesByPaciente;
 using DoctorPilot.Application.Queries.AnamnesesQueries.GetAnamneseById;
 using DoctorPilot.Api.Authorization;
@@ -10,20 +9,13 @@ namespace DoctorPilot.Api.Controllers
 {
     [Route("api/anamneses")]
     [ApiController]
-    public class AnamnesosController : ControllerBase
+    public class AnamnesesController : ControllerBase
     {
         private readonly IMediator _mediator;
 
-        public AnamnesosController(IMediator mediator)
+        public AnamnesesController(IMediator mediator)
         {
             _mediator = mediator;
-        }
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] InsertAnamneseCommand command)
-        {
-            var result = await _mediator.Send(command);
-            if (!result.IsSuccess) return BadRequest(result);
-            return CreatedAtAction(nameof(GetById), new { id = result.Data }, result);
         }
 
         [HttpGet("paciente/{pacienteId}")]
