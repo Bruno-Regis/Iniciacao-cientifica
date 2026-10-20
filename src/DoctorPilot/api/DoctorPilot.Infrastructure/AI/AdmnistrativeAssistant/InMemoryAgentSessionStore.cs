@@ -3,20 +3,30 @@ using System.Collections.Concurrent;
 
 namespace DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant
 {
+    internal sealed record AdministrativeAssistantSession(
+        Guid ConversationId,
+        Guid UsuarioId,
+        Guid ClinicaId,
+        AgentSession Session);
+
     public class InMemoryAgentSessionStore
     {
-        private readonly ConcurrentDictionary<Guid, AgentSession> _sessions = new();
+        private readonly ConcurrentDictionary<Guid, AdministrativeAssistantSession> _sessions = new();
 
-        public Guid Create(AgentSession session)
+        internal Guid Create(Guid usuarioId, Guid clinicaId, AgentSession session)
         {
             var conversationId = Guid.NewGuid();
 
-            _sessions[conversationId] = session;
+            _sessions[conversationId] = new AdministrativeAssistantSession(
+                conversationId,
+                usuarioId,
+                clinicaId,
+                session);
 
             return conversationId;
         }
 
-        public bool TryGet(Guid conversationId, out AgentSession? session)
+        internal bool TryGet(Guid conversationId, out AdministrativeAssistantSession? session)
         {
             return _sessions.TryGetValue(conversationId, out session);
         }

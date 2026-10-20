@@ -44,6 +44,13 @@ namespace DoctorPilot.Api
                     policy.RequireRole(nameof(RoleEnum.Medico), nameof(RoleEnum.Admnistrativo));
                     policy.RequireClaim("ClinicaId");
                 });
+
+                options.AddPolicy(AuthorizationPolicies.AdministrativeAssistantAccess, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireRole(nameof(RoleEnum.Admnistrativo));
+                    policy.RequireClaim("ClinicaId");
+                });
             });
 
             var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();

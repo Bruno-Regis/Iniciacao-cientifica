@@ -1,4 +1,5 @@
 ﻿using DoctorPilot.Application.AI.AdmnistrativeAssistant;
+using DoctorPilot.Api.Authorization;
 using DoctorPilot.Contracts.AI.AdmnistrativeAssistant;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -8,7 +9,7 @@ namespace DoctorPilot.Api.Controllers;
 
 [ApiController]
 [Route("api/ai/administrative-assistant")]
-[Authorize(Roles = "TenantAdmnin")]
+[Authorize(Policy = AuthorizationPolicies.AdministrativeAssistantAccess)]
 public class AdministrativeAssistantController : ControllerBase
 {
     private readonly IAdmnistrativeAssistantService _assistantService;

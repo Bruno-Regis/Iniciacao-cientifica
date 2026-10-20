@@ -2,6 +2,7 @@
 using Azure.Identity;
 using DoctorPilot.Application.AI.AdmnistrativeAssistant;
 using DoctorPilot.Application.Exceptions;
+using DoctorPilot.Application.Services;
 using DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant.Tools;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -17,14 +18,16 @@ namespace DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant
         private readonly GetAgendamentosTool _agendamentosTool;
         private readonly GetAvailableSlotsTool _availableSlotsTool;
         private readonly InMemoryAgentSessionStore _sessionStore;
+        private readonly ICurrentUserService _currentUser;
 
-        public AdmnistrativeAssistantService(IConfiguration configuration, GetProfissionaisByNomeTool profissionaisTool, GetAgendamentosTool agendamentosTool, GetAvailableSlotsTool availableSlotsTool, InMemoryAgentSessionStore sessionStore)
+        public AdmnistrativeAssistantService(IConfiguration configuration, GetProfissionaisByNomeTool profissionaisTool, GetAgendamentosTool agendamentosTool, GetAvailableSlotsTool availableSlotsTool, InMemoryAgentSessionStore sessionStore, ICurrentUserService currentUser)
         {
             _configuration = configuration;
             _profissionaisTool = profissionaisTool;
             _agendamentosTool = agendamentosTool;
             _availableSlotsTool = availableSlotsTool;
             _sessionStore = sessionStore;
+            _currentUser = currentUser;
         }
 
         public async Task<AdministrativeAssistantResult> AskAsync(Guid? conversationId, string message, CancellationToken cancellationToken = default)
@@ -101,21 +104,28 @@ namespace DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant
 
             AgentSession agentSession;
             Guid currentConversationId;
+            var usuarioId = _currentUser.UsuarioId;
+            var clinicaId = _currentUser.GetRequiredClinicaId();
 
             // Se um ConversationId for fornecido, tente recuperar a sessão existente
             if (conversationId.HasValue)
             {
                 currentConversationId = conversationId.Value;
 
-                if (!_sessionStore.TryGet(currentConversationId, out var existingSession))
-                    throw new NotFoundException($"Sessão de agente não encontrada ou expirada para o ConversationId: {currentConversationId}");
-                agentSession = existingSession!;
+                if (!_sessionStore.TryGet(currentConversationId, out var existingSession) ||
+                    existingSession!.UsuarioId != usuarioId ||
+                    existingSession.ClinicaId != clinicaId)
+                {
+                    throw new NotFoundException("Conversa não encontrada ou expirada.");
+                }
+
+                agentSession = existingSession.Session;
             }
             else
             {
                 agentSession = await agent.CreateSessionAsync(cancellationToken: cancellationToken);
 
-                currentConversationId =_sessionStore.Create(agentSession);
+                currentConversationId = _sessionStore.Create(usuarioId, clinicaId, agentSession);
             }
 
             var response = await agent.RunAsync(message, agentSession, cancellationToken: cancellationToken);
