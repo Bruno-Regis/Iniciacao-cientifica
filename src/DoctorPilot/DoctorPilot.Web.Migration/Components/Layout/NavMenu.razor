@@ -43,9 +43,11 @@
              <MudNavLink Href="/counter" Icon="@Icons.Material.Filled.Mic">
                 Transcrições
             </MudNavLink>
-            <MudNavLink Href="/counter" Icon="@Icons.Material.Filled.SmartToy">
-                Agente de IA
-            </MudNavLink>
+            <AuthorizeView Roles="Admnistrativo,Medico">
+                <MudNavLink Href="/assistente-administrativo" Icon="@Icons.Material.Filled.SmartToy">
+                    Assistente administrativo
+                </MudNavLink>
+            </AuthorizeView>
         </MudNavMenu>
     </div>
 

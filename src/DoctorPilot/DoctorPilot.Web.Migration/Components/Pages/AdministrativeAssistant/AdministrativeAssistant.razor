@@ -1,0 +1,207 @@
+@page "/assistente-administrativo"
+@attribute [Authorize(Roles = "Admnistrativo,Medico")]
+@rendermode InteractiveServer
+@using DoctorPilot.Contracts.AI.AdmnistrativeAssistant
+@inject DoctorPilotApiClient ApiClient
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<PageTitle>Assistente administrativo</PageTitle>
+
+<div class="assistant-page">
+    <header class="assistant-header">
+        <div class="assistant-heading">
+            <span class="assistant-icon" aria-hidden="true">
+                <MudIcon Icon="@Icons.Material.Filled.SmartToy" />
+            </span>
+            <div>
+                <MudText Typo="Typo.h4" HtmlTag="h1">Assistente administrativo</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Consulte profissionais, agenda e horários disponíveis da clínica.
+                </MudText>
+            </div>
+        </div>
+        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Icon="@Icons.Material.Filled.Visibility">
+            Somente consultas
+        </MudChip>
+    </header>
+
+    <MudPaper Class="assistant-shell" Elevation="1">
+        <div class="assistant-messages"
+             role="log"
+             aria-live="polite"
+             aria-label="Conversa com o assistente administrativo"
+             @ref="_messagesContainer">
+            @if (_messages.Count == 0)
+            {
+                <div class="assistant-empty">
+                    <MudIcon Icon="@Icons.Material.Outlined.QuestionAnswer" Size="Size.Large" Color="Color.Primary" />
+                    <MudText Typo="Typo.h6">Como posso ajudar?</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Pergunte sobre profissionais, compromissos ou disponibilidade de horários.
+                    </MudText>
+                </div>
+            }
+            else
+            {
+                @foreach (var message in _messages)
+                {
+                    <div class="message-row @(message.IsUser ? "message-row-user" : "message-row-assistant")">
+                        <div class="message-avatar" aria-hidden="true">
+                            <MudIcon Icon="@(message.IsUser ? Icons.Material.Filled.Person : Icons.Material.Filled.SmartToy)"
+                                     Size="Size.Small" />
+                        </div>
+                        <div class="message-content">
+                            <MudText Typo="Typo.caption" Class="message-author">
+                                @(message.IsUser ? "Você" : "Assistente")
+                            </MudText>
+                            <MudText Typo="Typo.body1" Class="message-text">@message.Text</MudText>
+                        </div>
+                    </div>
+                }
+            }
+
+            @if (_isSending)
+            {
+                <div class="message-row message-row-assistant" role="status">
+                    <div class="message-avatar" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.SmartToy" Size="Size.Small" />
+                    </div>
+                    <div class="message-content thinking-content">
+                        <MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Primary" />
+                        <MudText Typo="Typo.body2">Pensando...</MudText>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="assistant-composer">
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mb-3">
+                    @_error
+                </MudAlert>
+            }
+
+            <div class="composer-row">
+                <MudTextField T="string"
+                              @bind-Value="_message"
+                              Label="Mensagem"
+                              Placeholder="Ex.: Quais horários a Dra. Ana tem disponíveis amanhã?"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              Disabled="_isSending"
+                              OnKeyDown="HandleKeyDownAsync"
+                              Class="composer-input"
+                              aria-label="Mensagem para o assistente" />
+                <MudIconButton Icon="@Icons.Material.Filled.Send"
+                               Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               Size="Size.Large"
+                               Disabled="@(!CanSend)"
+                               OnClick="SendAsync"
+                               aria-label="Enviar mensagem" />
+            </div>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                Pressione Enter para enviar. O assistente não cria nem altera agendamentos.
+            </MudText>
+        </div>
+    </MudPaper>
+</div>
+
+@code {
+    private readonly List<ChatMessage> _messages = [];
+    private ElementReference _messagesContainer;
+    private IJSObjectReference? _module;
+    private Guid? _conversationId;
+    private string _message = string.Empty;
+    private string? _error;
+    private bool _isSending;
+    private bool _scrollPending;
+
+    private bool CanSend => !_isSending && !string.IsNullOrWhiteSpace(_message);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            _module = await JS.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./Components/Pages/AdministrativeAssistant/AdministrativeAssistant.razor.js");
+
+        if (_scrollPending && _module is not null)
+        {
+            _scrollPending = false;
+            await _module.InvokeVoidAsync("scrollToEnd", _messagesContainer);
+        }
+    }
+
+    private async Task HandleKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && CanSend)
+            await SendAsync();
+    }
+
+    private async Task SendAsync()
+    {
+        if (!CanSend)
+            return;
+
+        var message = _message.Trim();
+        _message = string.Empty;
+        _error = null;
+        _isSending = true;
+        _messages.Add(new ChatMessage(message, IsUser: true));
+        RequestScroll();
+
+        try
+        {
+            var result = await ApiClient.AskAdministrativeAssistantAsync(new AssistantRequest
+            {
+                ConversationId = _conversationId,
+                Message = message
+            });
+
+            if (!result.IsSuccess || result.Data is null)
+            {
+                _error = string.IsNullOrWhiteSpace(result.Message)
+                    ? "Não foi possível obter uma resposta do assistente. Tente novamente."
+                    : result.Message;
+                return;
+            }
+
+            if (!result.Data.ConversationId.HasValue || string.IsNullOrWhiteSpace(result.Data.Answer))
+            {
+                _error = "O assistente retornou uma resposta inválida. Tente novamente.";
+                return;
+            }
+
+            _conversationId = result.Data.ConversationId;
+            _messages.Add(new ChatMessage(result.Data.Answer.Trim(), IsUser: false));
+        }
+        catch (Exception exception) when (
+            exception is TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _error = "Não foi possível obter uma resposta do assistente. Tente novamente.";
+        }
+        finally
+        {
+            _isSending = false;
+            RequestScroll();
+        }
+    }
+
+    private void RequestScroll()
+    {
+        _scrollPending = true;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+            await _module.DisposeAsync();
+    }
+
+    private sealed record ChatMessage(string Text, bool IsUser);
+}

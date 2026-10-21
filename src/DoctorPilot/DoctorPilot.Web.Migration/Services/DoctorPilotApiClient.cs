@@ -1,4 +1,5 @@
 using DoctorPilot.Contracts.Agendamentos;
+using DoctorPilot.Contracts.AI.AdmnistrativeAssistant;
 using DoctorPilot.Contracts.Alergias;
 using DoctorPilot.Contracts.Anamneses;
 using DoctorPilot.Contracts.AnamneseTemplates;
@@ -648,6 +649,41 @@ namespace DoctorPilot.Web.Migration.Services
             catch (HttpRequestException)
             {
                 return ResultViewModel<IEnumerable<ProfissionalItemDto>>.Error(
+                    "Não foi possível conectar ao servidor. Tente novamente.");
+            }
+        }
+        // ASSISTENTE ADMINISTRATIVO
+
+        public async Task<ResultViewModel<AssistantResponse>> AskAdministrativeAssistantAsync(
+            AssistantRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/ai/administrative-assistant",
+                    request,
+                    cancellationToken);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadFromJsonAsync<ResultViewModel<object>>(
+                        cancellationToken: cancellationToken);
+                    return ResultViewModel<AssistantResponse>.Error(
+                        string.IsNullOrWhiteSpace(error?.Message)
+                            ? "Não foi possível obter uma resposta do assistente. Tente novamente."
+                            : error.Message);
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<AssistantResponse>(
+                    cancellationToken: cancellationToken);
+                return result is null
+                    ? ResultViewModel<AssistantResponse>.Error("Erro inesperado ao processar a resposta.")
+                    : ResultViewModel<AssistantResponse>.Success(result);
+            }
+            catch (HttpRequestException)
+            {
+                return ResultViewModel<AssistantResponse>.Error(
                     "Não foi possível conectar ao servidor. Tente novamente.");
             }
         }
