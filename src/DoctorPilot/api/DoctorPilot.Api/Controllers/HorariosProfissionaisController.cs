@@ -1,6 +1,7 @@
 ﻿using DoctorPilot.Application.Commands.HorariosProfissionaisCommands.InsertHorarioProfissional;
 using DoctorPilot.Application.Queries.HorariosProfissionaisQueries.GetHorariosByProfissional;
 using DoctorPilot.Contracts.HorariosProfissionais;
+using DoctorPilot.Api.Authorization;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,7 @@ namespace DoctorPilot.Api.Controllers
 {
     [ApiController]
     [Route("api/horarios-profissionais")]
-    [Authorize(Roles = "TenantAdmnin")]
+    [Authorize(Policy = AuthorizationPolicies.TenantAdministration)]
     public class HorariosProfissionaisController : ControllerBase
     {
         private readonly IMediator _mediator;

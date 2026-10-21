@@ -2,7 +2,6 @@
 using DoctorPilot.Application.Queries.ProfissionaisQueries.GetAllProfissionaisByClinica;
 using DoctorPilot.Application.Queries.ProfissionaisQueries.GetProfissionalById;
 using DoctorPilot.Contracts.Profissionais;
-using DoctorPilot.Core.Enums;
 using DoctorPilot.Api.Authorization;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +21,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = nameof(RoleEnum.TenantAdmnin))]
+        [Authorize(Policy = AuthorizationPolicies.TenantAdministration)]
         public async Task<IActionResult> Post([FromBody] CreateProfissionalRequest request)
         {
             var command = new InsertProfissionaisCommand
@@ -40,7 +39,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = AuthorizationPolicies.TenantRequired)]
+        [Authorize(Policy = AuthorizationPolicies.ProfessionalDirectoryAccess)]
         public async Task<IActionResult> GetAllByClinica([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var result = await _mediator.Send(new GetAllProfissionaisByClinicaQuery(page, pageSize));
@@ -48,6 +47,7 @@ namespace DoctorPilot.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = AuthorizationPolicies.TenantAdministration)]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _mediator.Send(new GetProfissionalByIdQuery(id));

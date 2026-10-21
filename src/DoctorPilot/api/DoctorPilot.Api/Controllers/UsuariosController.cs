@@ -1,7 +1,7 @@
 ﻿using DoctorPilot.Application.Commands.UsuariosCommands.InsertUsuarios;
 using DoctorPilot.Application.Queries.UsuariosQueries.GetAllUsuarios;
 using DoctorPilot.Application.Queries.UsuariosQueries.GetUsuarioById;
-using DoctorPilot.Core.Enums;
+using DoctorPilot.Api.Authorization;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +10,7 @@ namespace DoctorPilot.Api.Controllers
 {
     [Route("api/usuarios")]
     [ApiController]
+    [Authorize(Policy = AuthorizationPolicies.TenantAdministration)]
     public class UsuariosController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -21,7 +22,6 @@ namespace DoctorPilot.Api.Controllers
 
         // POST api/usuarios
         [HttpPost]
-        [Authorize(Roles = nameof(RoleEnum.TenantAdmnin))]
         public async Task<IActionResult> Post([FromBody] InsertUsuariosCommand command)
         {
             var result = await _mediator.Send(command);

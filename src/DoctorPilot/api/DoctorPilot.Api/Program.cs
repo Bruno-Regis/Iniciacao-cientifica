@@ -32,6 +32,23 @@ namespace DoctorPilot.Api
                     policy.RequireClaim("ClinicaId");
                 });
 
+                options.AddPolicy(AuthorizationPolicies.TenantAdministration, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireRole(nameof(RoleEnum.TenantAdmnin));
+                    policy.RequireClaim("ClinicaId");
+                });
+
+                options.AddPolicy(AuthorizationPolicies.ProfessionalDirectoryAccess, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireRole(
+                        nameof(RoleEnum.TenantAdmnin),
+                        nameof(RoleEnum.Medico),
+                        nameof(RoleEnum.Admnistrativo));
+                    policy.RequireClaim("ClinicaId");
+                });
+
                 options.AddPolicy(AuthorizationPolicies.ProfessionalRequired, policy =>
                 {
                     policy.RequireAuthenticatedUser();
