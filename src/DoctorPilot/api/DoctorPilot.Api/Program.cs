@@ -53,6 +53,7 @@ namespace DoctorPilot.Api
                 {
                     policy.RequireAuthenticatedUser();
                     policy.RequireRole(nameof(RoleEnum.Medico));
+                    policy.RequireClaim("ClinicaId");
                 });
 
                 options.AddPolicy(AuthorizationPolicies.OperationalAccess, policy =>
