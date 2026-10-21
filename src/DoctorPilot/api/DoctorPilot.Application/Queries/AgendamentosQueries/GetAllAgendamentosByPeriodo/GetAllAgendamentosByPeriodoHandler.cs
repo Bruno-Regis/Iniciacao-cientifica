@@ -7,7 +7,7 @@ using Mediator;
 
 namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPeriodo
 {
-    public class GetAllAgendamentosByPeriodoHandler : IQueryHandler<GetAllAgendamentosByPeriodoQuery, ResultViewModel<IEnumerable<AgendamentoItemDto>>>
+    public class GetAllAgendamentosByPeriodoHandler : IQueryHandler<GetAllAgendamentosByPeriodoQuery, ResultViewModel<IEnumerable<AgendamentoPeriodoItemDto>>>
     {
         private readonly IAgendamentoRepository _agendamentoRepository;
         private readonly ICurrentUserService _currentUser;
@@ -16,16 +16,16 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentos
             _agendamentoRepository = agendamentoRepository;
             _currentUser = currentUser;
         }
-        public async ValueTask<ResultViewModel<IEnumerable<AgendamentoItemDto>>> Handle(GetAllAgendamentosByPeriodoQuery query, CancellationToken cancellationToken)
+        public async ValueTask<ResultViewModel<IEnumerable<AgendamentoPeriodoItemDto>>> Handle(GetAllAgendamentosByPeriodoQuery query, CancellationToken cancellationToken)
         {
             if (query.Fim <= query.Inicio)
-                return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Error("A data/hora final deve ser posterior à data/hora inicial.");
+                return ResultViewModel<IEnumerable<AgendamentoPeriodoItemDto>>.Error("A data/hora final deve ser posterior à data/hora inicial.");
 
             var agendamentos = await _agendamentoRepository
                 .GetByPeriodoAsync(_currentUser.GetRequiredClinicaId(), query.Inicio, query.Fim, query.ProfissionalId, cancellationToken);
 
-            var viewModels = agendamentos.Select(a => a.ToItemDto());
-            return ResultViewModel<IEnumerable<AgendamentoItemDto>>.Success(viewModels);
+            var viewModels = agendamentos.Select(a => a.ToPeriodoItemDto());
+            return ResultViewModel<IEnumerable<AgendamentoPeriodoItemDto>>.Success(viewModels);
         }
     }
 }

@@ -58,5 +58,18 @@ namespace DoctorPilot.Application.Mappings
                 Procedimento = resultado.Agendamento.Procedimento,
                 Tipo = resultado.Agendamento.Tipo.ToString()
             };
+        public static AgendamentoPeriodoItemDto ToPeriodoItemDto(this AgendamentoComNomes resultado)
+            => new()
+            {
+                PacienteNome = resultado.PacienteNome,
+                ProfissionalNome = resultado.ProfissionalNome,
+                Status = resultado.Agendamento.Status.ToString(),
+                Tipo = resultado.Agendamento.Tipo.ToString(),
+                Procedimento = resultado.Agendamento.Procedimento,
+                DataHoraInicial = resultado.Agendamento.DataHoraInicial,
+                DataHoraFinal = resultado.Agendamento.DataHoraFinal,
+                Sala = resultado.Agendamento.Sala,
+                Confirmacao = resultado.Agendamento.Confirmacao
+            };
     }
 }

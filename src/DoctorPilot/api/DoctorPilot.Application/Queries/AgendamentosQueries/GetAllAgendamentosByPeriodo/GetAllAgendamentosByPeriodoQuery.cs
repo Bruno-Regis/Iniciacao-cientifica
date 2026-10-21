@@ -4,7 +4,7 @@ using Mediator;
 
 namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAllAgendamentosByPeriodo
 {
-    public class GetAllAgendamentosByPeriodoQuery : IQuery<ResultViewModel<IEnumerable<AgendamentoItemDto>>>
+    public class GetAllAgendamentosByPeriodoQuery : IQuery<ResultViewModel<IEnumerable<AgendamentoPeriodoItemDto>>>
     {
         public GetAllAgendamentosByPeriodoQuery(DateTime inicio, DateTime fim, Guid? profissionalId = null)
         {
