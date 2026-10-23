@@ -1,9 +1,10 @@
-﻿using DoctorPilot.Application.Services;
-using DoctorPilot.Application.AI.AdmnistrativeAssistant;
+﻿using DoctorPilot.Application.AI.AdmnistrativeAssistant;
+using DoctorPilot.Application.AI.Transcription;
+using DoctorPilot.Application.Services;
+using DoctorPilot.Core.Repositories;
 using DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant;
 using DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant.Tools;
-using DoctorPilot.Core.Repositories;
-using DoctorPilot.Infrastructure.AI.AdmnistrativeAssistant.Tools;
+using DoctorPilot.Infrastructure.AI.Transcription;
 using DoctorPilot.Infrastructure.Persistence;
 using DoctorPilot.Infrastructure.Repositories;
 using DoctorPilot.Infrastructure.Services;
@@ -81,15 +82,17 @@ namespace DoctorPilot.Infrastructure
             return services;
         }
         private static IServiceCollection AddAI(this IServiceCollection services, IConfiguration configuration)
-            {
-                services.AddScoped<GetProfissionaisByNomeTool>();
-                services.AddScoped<GetAgendamentosTool>();
-                services.AddScoped<GetAvailableSlotsTool>();
-                services.AddSingleton<InMemoryAgentSessionStore>();
-                services.AddScoped<IAdmnistrativeAssistantService, AdmnistrativeAssistantService>();
+        {
+            services.AddScoped<GetProfissionaisByNomeTool>();
+            services.AddScoped<GetAgendamentosTool>();
+            services.AddScoped<GetAvailableSlotsTool>();
+            services.AddSingleton<InMemoryAgentSessionStore>();
+            services.AddScoped<IAdmnistrativeAssistantService, AdmnistrativeAssistantService>();
+            services.Configure<AzureSpeechOptions>(configuration.GetSection(AzureSpeechOptions.SectionName));
+            services.AddHttpClient<ITranscriptionService, AzureSpeechTranscriptionService>();
 
-                return services;
-            }
+            return services;
+        }
     }
 }
 
