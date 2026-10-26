@@ -29,9 +29,7 @@ namespace DoctorPilot.Application.Commands.TranscricoesCommands.TranscribeAppoin
 
         public async ValueTask<TranscribeAppointmentResponse> Handle(TranscribeAppointmentCommand command, CancellationToken cancellationToken)
         {
-            var clinicaId = _currentUserService.ClinicaId
-               ?? throw new ForbiddenException(
-                   "Usuário não possui vínculo com uma clínica.");
+            var clinicaId = _currentUserService.GetRequiredClinicaId();
 
             var profissional = await _profissionalRepository.GetByUsuarioIdAsync(
                 _currentUserService.UsuarioId,
@@ -81,7 +79,7 @@ namespace DoctorPilot.Application.Commands.TranscricoesCommands.TranscribeAppoin
 
             await _transcricaoRepository.AddAsync(transcricao);
 
-            await _unitOfWork.CommitAsync();
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             return new TranscribeAppointmentResponse
             {
