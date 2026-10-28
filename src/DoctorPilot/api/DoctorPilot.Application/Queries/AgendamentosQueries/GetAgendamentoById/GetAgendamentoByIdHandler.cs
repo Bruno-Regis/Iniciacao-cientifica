@@ -20,15 +20,22 @@ namespace DoctorPilot.Application.Queries.AgendamentosQueries.GetAgendamentoById
         }
         public async ValueTask<ResultViewModel<AgendamentoDetailsDto>> Handle(GetAgendamentoByIdQuery query, CancellationToken cancellationToken)
         {
-            var agendamento = await _agendamentoRepository.GetByIdAsync(query.Id);
+            var resultado = await _agendamentoRepository.GetByIdComNomesAsync(query.Id,cancellationToken);
 
-            if (agendamento is null)
+            if (resultado is null)
                 throw new NotFoundException("Agendamento não encontrado.");
 
-            if (!_currentUser.IsSuperAdmin && agendamento.ClinicaId != _currentUser.ClinicaId)
-                return ResultViewModel<AgendamentoDetailsDto>.Error("Agendamento não encontrado.");
+            var agendamento = resultado.Agendamento;
 
-            return ResultViewModel<AgendamentoDetailsDto>.Success(agendamento.ToDetailsDto());
+            if (!_currentUser.IsSuperAdmin &&
+                agendamento.ClinicaId != _currentUser.ClinicaId)
+            {
+                return ResultViewModel<AgendamentoDetailsDto>
+                    .Error("Agendamento não encontrado.");
+            }
+
+            return ResultViewModel<AgendamentoDetailsDto>
+                .Success(resultado.ToDetailsDto());
         }
     }
 }

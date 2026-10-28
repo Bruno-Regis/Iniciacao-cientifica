@@ -22,7 +22,17 @@ namespace DoctorPilot.Application.Mappings
                 Confirmacao = agendamento.Confirmacao,
                 Descricao = agendamento.Descricao,
                 CreatedAt = agendamento.CreatedAt
+
             };
+        public static AgendamentoDetailsDto ToDetailsDto(this AgendamentoComNomes resultado)
+        {
+            var dto = resultado.Agendamento.ToDetailsDto();
+
+            dto.PacienteNome = resultado.PacienteNome;
+            dto.ProfissionalNome = resultado.ProfissionalNome;
+
+            return dto;
+        }
 
         public static AgendamentoItemDto ToItemDto(this Agendamento agendamento)
             => new()
@@ -71,5 +81,6 @@ namespace DoctorPilot.Application.Mappings
                 Sala = resultado.Agendamento.Sala,
                 Confirmacao = resultado.Agendamento.Confirmacao
             };
+
     }
 }

@@ -110,5 +110,15 @@ namespace DoctorPilot.Infrastructure.Repositories
                        equals new { profissional.Id, profissional.ClinicaId }
                    select new AgendamentoComNomes(agendamento, paciente.Nome, profissional.Nome);
         }
+
+        public async Task<AgendamentoComNomes?> GetByIdComNomesAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var agendamentos = _dbSet
+                .AsNoTracking()
+                .Where(a => a.Id == id);
+
+            return await GetAgendamentosComNomes(agendamentos)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }
