@@ -1,0 +1,282 @@
+@page "/agendamentos/{AgendamentoId:guid}/atendimento"
+@attribute [Authorize]
+@inject DoctorPilotApiClient ApiClient
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Atendimento</PageTitle>
+
+<div class="atendimento-page">
+    <nav class="atendimento-context" aria-label="Navegação contextual">
+        @if (_agendamento is not null)
+        {
+            <MudButton Variant="Variant.Text" Color="Color.Default"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="VoltarAoPaciente" Class="context-link">
+                Paciente
+            </MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Text" Color="Color.Default"
+                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                       OnClick="VoltarParaAgenda" Class="context-link">
+                Agenda
+            </MudButton>
+        }
+        <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" aria-hidden="true" />
+        <MudText Typo="Typo.body2">Atendimento</MudText>
+    </nav>
+
+    @if (_carregando)
+    {
+        <MudPaper Class="atendimento-state" Elevation="0" role="status" aria-live="polite">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+            <div>
+                <MudText Typo="Typo.subtitle1">Preparando o atendimento</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Carregando os dados do agendamento...
+                </MudText>
+            </div>
+        </MudPaper>
+    }
+    else if (!string.IsNullOrWhiteSpace(_erro))
+    {
+        <MudPaper Class="atendimento-state atendimento-state-error" Elevation="0" role="alert">
+            <span class="state-icon" aria-hidden="true">
+                <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" />
+            </span>
+            <div class="state-copy">
+                <MudText Typo="Typo.h6" HtmlTag="h1">Não foi possível abrir o atendimento</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@_erro</MudText>
+            </div>
+            <div class="state-actions">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Refresh" OnClick="CarregarAgendamentoAsync">
+                    Tentar novamente
+                </MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="VoltarParaAgenda">
+                    Voltar para a agenda
+                </MudButton>
+            </div>
+        </MudPaper>
+    }
+    else if (_agendamento is not null)
+    {
+        <header class="atendimento-hero">
+            <div class="hero-main">
+                <span class="hero-icon" aria-hidden="true">
+                    <MudIcon Icon="@Icons.Material.Filled.MedicalServices" />
+                </span>
+                <div class="hero-copy">
+                    <MudText Typo="Typo.overline" Color="Color.Secondary">Workspace clínico</MudText>
+                    <MudText Typo="Typo.h4" HtmlTag="h1">@NomeOuPadrao(_agendamento.PacienteNome)</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Atendimento com @NomeOuPadrao(_agendamento.ProfissionalNome)
+                    </MudText>
+                </div>
+            </div>
+
+            <div class="hero-status">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                         Color="@CorStatus(_agendamento.Status)">
+                    @FormatarTexto(_agendamento.Status)
+                </MudChip>
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined"
+                         Color="@(_agendamento.Confirmacao ? Color.Success : Color.Warning)"
+                         Icon="@(_agendamento.Confirmacao
+                             ? Icons.Material.Filled.CheckCircle
+                             : Icons.Material.Filled.Schedule)">
+                    @(_agendamento.Confirmacao ? "Confirmado" : "Aguardando confirmação")
+                </MudChip>
+            </div>
+        </header>
+
+        <main class="atendimento-workspace">
+            <MudPaper Class="appointment-panel" Elevation="0">
+                <div class="section-heading">
+                    <span class="section-icon" aria-hidden="true">
+                        <MudIcon Icon="@Icons.Material.Filled.EventNote" />
+                    </span>
+                    <div>
+                        <MudText Typo="Typo.h6" HtmlTag="h2">Resumo do agendamento</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Contexto da consulta em andamento.
+                        </MudText>
+                    </div>
+                </div>
+
+                <div class="appointment-grid">
+                    <div class="appointment-field">
+                        <span class="field-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" />
+                        </span>
+                        <div>
+                            <span class="field-label">Data</span>
+                            <span class="field-value">@_agendamento.DataHoraInicial.ToString("dddd, dd 'de' MMMM 'de' yyyy", _culture)</span>
+                        </div>
+                    </div>
+                    <div class="appointment-field">
+                        <span class="field-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" />
+                        </span>
+                        <div>
+                            <span class="field-label">Horário</span>
+                            <span class="field-value">
+                                @_agendamento.DataHoraInicial.ToString("HH:mm", _culture) às @_agendamento.DataHoraFinal.ToString("HH:mm", _culture)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="appointment-field">
+                        <span class="field-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" />
+                        </span>
+                        <div>
+                            <span class="field-label">Profissional</span>
+                            <span class="field-value">@NomeOuPadrao(_agendamento.ProfissionalNome)</span>
+                        </div>
+                    </div>
+                    <div class="appointment-field">
+                        <span class="field-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.MedicalInformation" Size="Size.Small" />
+                        </span>
+                        <div>
+                            <span class="field-label">Tipo</span>
+                            <span class="field-value">@FormatarTexto(_agendamento.Tipo)</span>
+                        </div>
+                    </div>
+                    <div class="appointment-field appointment-field-wide">
+                        <span class="field-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.HealthAndSafety" Size="Size.Small" />
+                        </span>
+                        <div>
+                            <span class="field-label">Procedimento</span>
+                            <span class="field-value">@TextoOuPadrao(_agendamento.Procedimento)</span>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(_agendamento.Sala))
+                    {
+                        <div class="appointment-field">
+                            <span class="field-icon" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.MeetingRoom" Size="Size.Small" />
+                            </span>
+                            <div>
+                                <span class="field-label">Sala</span>
+                                <span class="field-value">@_agendamento.Sala</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="transcription-panel" Elevation="0">
+                <div class="transcription-content">
+                    <div class="section-heading">
+                        <span class="section-icon transcription-icon" aria-hidden="true">
+                            <MudIcon Icon="@Icons.Material.Filled.Mic" />
+                        </span>
+                        <div>
+                            <MudText Typo="Typo.h6" HtmlTag="h2">Transcrição da consulta</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                A gravação da consulta poderá gerar uma transcrição para apoiar a elaboração e a revisão posterior da evolução clínica.
+                            </MudText>
+                        </div>
+                    </div>
+
+                    <div class="transcription-placeholder">
+                        <span class="audio-visual" aria-hidden="true">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </span>
+                        <div>
+                            <MudText Typo="Typo.subtitle2">Gravação ainda não iniciada</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                O recurso de captura de áudio será habilitado em uma próxima etapa.
+                            </MudText>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recording-action">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.Mic" Disabled="true">
+                        Iniciar gravação
+                    </MudButton>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        Em breve
+                    </MudText>
+                </div>
+            </MudPaper>
+        </main>
+    }
+</div>
+
+@code {
+    private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
+    private AgendamentoDetailsDto? _agendamento;
+    private string? _erro;
+    private bool _carregando = true;
+
+    [Parameter]
+    public Guid AgendamentoId { get; set; }
+
+    protected override Task OnParametersSetAsync() => CarregarAgendamentoAsync();
+
+    private async Task CarregarAgendamentoAsync()
+    {
+        _carregando = true;
+        _erro = null;
+        _agendamento = null;
+
+        try
+        {
+            var result = await ApiClient.GetAgendamentoByIdAsync(AgendamentoId);
+            if (result.IsSuccess && result.Data is not null)
+            {
+                _agendamento = result.Data;
+            }
+            else
+            {
+                _erro = string.IsNullOrWhiteSpace(result.Message)
+                    ? "Não foi possível carregar os dados do agendamento."
+                    : result.Message;
+            }
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException)
+        {
+            _erro = "Não foi possível carregar os dados do agendamento. Verifique sua conexão e tente novamente.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private void VoltarAoPaciente()
+    {
+        if (_agendamento is not null)
+            NavigationManager.NavigateTo($"/pacientes/{_agendamento.PacienteId}");
+    }
+
+    private void VoltarParaAgenda() => NavigationManager.NavigateTo("/agenda");
+
+    private static string NomeOuPadrao(string? nome)
+        => string.IsNullOrWhiteSpace(nome) ? "Nome não informado" : nome;
+
+    private static string TextoOuPadrao(string? texto)
+        => string.IsNullOrWhiteSpace(texto) ? "Não informado" : texto;
+
+    private static string FormatarTexto(string? valor)
+        => string.IsNullOrWhiteSpace(valor)
+            ? "Não informado"
+            : CultureInfo.GetCultureInfo("pt-BR").TextInfo.ToTitleCase(valor.Trim().ToLowerInvariant());
+
+    private static Color CorStatus(string? status)
+        => status?.Trim().ToLowerInvariant() switch
+        {
+            "confirmado" => Color.Success,
+            "cancelado" => Color.Error,
+            "agendado" => Color.Info,
+            _ => Color.Default
+        };
+}

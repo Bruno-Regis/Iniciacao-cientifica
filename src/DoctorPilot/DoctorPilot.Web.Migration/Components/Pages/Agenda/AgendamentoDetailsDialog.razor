@@ -1,6 +1,7 @@
 @inject DoctorPilotApiClient ApiClient
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
 
 <MudDialog>
     <DialogContent>
@@ -131,6 +132,13 @@
         }
     </DialogContent>
     <DialogActions>
+        @if (_agendamento is not null)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="AbrirAtendimento"
+                       Disabled="_processando" StartIcon="@Icons.Material.Filled.MedicalServices">
+                Abrir atendimento
+            </MudButton>
+        }
         @if (PodeEditar)
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Editar"
@@ -286,6 +294,12 @@
         => _agendamento is not null &&
            string.IsNullOrWhiteSpace(_erroEvolucao) &&
            (_evolucao is not null || Normalizar(_agendamento.Status) != "cancelado");
+
+    private void AbrirAtendimento()
+    {
+        MudDialog.Close();
+        NavigationManager.NavigateTo($"/agendamentos/{AgendamentoId}/atendimento");
+    }
 
     private void Editar()
     {

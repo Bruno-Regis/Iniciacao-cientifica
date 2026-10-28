@@ -71,6 +71,7 @@ namespace DoctorPilot.Application.Mappings
         public static AgendamentoPeriodoItemDto ToPeriodoItemDto(this AgendamentoComNomes resultado)
             => new()
             {
+                Id = resultado.Agendamento.Id,
                 PacienteNome = resultado.PacienteNome,
                 ProfissionalNome = resultado.ProfissionalNome,
                 Status = resultado.Agendamento.Status.ToString(),

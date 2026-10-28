@@ -2,6 +2,7 @@
 {
     public class AgendamentoPeriodoItemDto
     {
+        public Guid Id { get; set; }
         public string PacienteNome { get; set; } = string.Empty;
         public string ProfissionalNome { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
