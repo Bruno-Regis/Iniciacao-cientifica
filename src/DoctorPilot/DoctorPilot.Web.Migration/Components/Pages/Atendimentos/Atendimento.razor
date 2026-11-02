@@ -1,5 +1,6 @@
 @page "/agendamentos/{AgendamentoId:guid}/atendimento"
 @attribute [Authorize]
+@using DoctorPilot.Contracts.Transcricoes
 @inject DoctorPilotApiClient ApiClient
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
@@ -7,6 +8,10 @@
 @implements IAsyncDisposable
 
 <PageTitle>Atendimento</PageTitle>
+
+<form id="transcription-antiforgery" class="antiforgery-token" aria-hidden="true">
+    <AntiforgeryToken />
+</form>
 
 <div class="atendimento-page">
     <nav class="atendimento-context" aria-label="Navegação contextual">
@@ -193,7 +198,11 @@
                     }
 
                     <div class="transcription-placeholder @ClasseEstadoGravacao" aria-live="polite">
-                        @if (_gravacaoDisponivel)
+                        @if (_transcrevendo)
+                        {
+                            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+                        }
+                        else if (_gravacaoDisponivel)
                         {
                             <span class="recording-result-icon" aria-hidden="true">
                                 <MudIcon Icon="@Icons.Material.Filled.CheckCircle" />
@@ -222,6 +231,24 @@
                             }
                         </div>
                     </div>
+
+                    @if (_transcricaoConcluida && !string.IsNullOrWhiteSpace(_textoTranscrito))
+                    {
+                        <section class="transcription-result" aria-labelledby="transcription-result-title">
+                            <div class="transcription-result-heading">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" />
+                                <div>
+                                    <MudText id="transcription-result-title" Typo="Typo.subtitle1" HtmlTag="h3">
+                                        Transcrição concluída
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        Revise o texto antes de utilizá-lo no atendimento.
+                                    </MudText>
+                                </div>
+                            </div>
+                            <div class="transcription-text">@_textoTranscrito</div>
+                        </section>
+                    }
                 </div>
 
                 <div class="recording-action">
@@ -236,8 +263,9 @@
                     else if (_gravacaoDisponivel)
                     {
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
-                                   StartIcon="@Icons.Material.Filled.TextSnippet" Disabled="true">
-                            Transcrever
+                                   StartIcon="@Icons.Material.Filled.TextSnippet" Disabled="_transcrevendo"
+                                   OnClick="TranscreverGravacaoAsync">
+                            @(_transcrevendo ? "Transcrevendo..." : "Transcrever")
                         </MudButton>
                     }
                     else
@@ -268,7 +296,10 @@
     private bool _gravando;
     private bool _gravacaoDisponivel;
     private bool _processandoGravacao;
+    private bool _transcrevendo;
+    private bool _transcricaoConcluida;
     private long _gravacaoTamanho;
+    private string? _textoTranscrito;
 
     [Parameter]
     public Guid AgendamentoId { get; set; }
@@ -315,29 +346,43 @@
     private void VoltarParaAgenda() => NavigationManager.NavigateTo("/agenda");
 
     private string ClasseEstadoGravacao
-        => _gravacaoDisponivel
+        => _transcrevendo
+            ? "transcription-placeholder-transcribing"
+            : _gravacaoDisponivel
             ? "transcription-placeholder-complete"
             : _gravando
                 ? "transcription-placeholder-recording"
                 : string.Empty;
 
     private string TituloEstadoGravacao
-        => _gravacaoDisponivel
+        => _transcrevendo
+            ? "Transcrevendo consulta..."
+            : _transcricaoConcluida
+                ? "Transcrição concluída"
+                : _gravacaoDisponivel
             ? "Gravação concluída"
             : _gravando
                 ? "Gravando consulta"
                 : "Gravação ainda não iniciada";
 
     private string DescricaoEstadoGravacao
-        => _gravacaoDisponivel
+        => _transcrevendo
+            ? "O áudio está sendo enviado com segurança para transcrição."
+            : _transcricaoConcluida
+                ? "O texto retornado pelo serviço está disponível abaixo."
+                : _gravacaoDisponivel
             ? "O áudio foi capturado com sucesso e está mantido temporariamente no navegador."
             : _gravando
                 ? "O microfone está capturando o áudio da consulta. Finalize quando encerrar."
                 : "Inicie quando estiver pronto para capturar o áudio da consulta.";
 
     private string TextoAuxiliarGravacao
-        => _gravacaoDisponivel
-            ? "A transcrição será habilitada em uma próxima etapa."
+        => _transcrevendo
+            ? "Aguarde a conclusão antes de iniciar outra gravação."
+            : _transcricaoConcluida
+                ? "A gravação permanece disponível somente durante esta página."
+                : _gravacaoDisponivel
+            ? "Se a transcrição falhar, você poderá tentar novamente com a mesma gravação."
             : _gravando
                 ? "O indicador do navegador deve mostrar que o microfone está em uso."
                 : "O navegador solicitará permissão para usar o microfone.";
@@ -352,6 +397,8 @@
         _gravacaoDisponivel = false;
         _gravacaoTamanho = 0;
         _gravacaoMimeType = null;
+        _transcricaoConcluida = false;
+        _textoTranscrito = null;
 
         try
         {
@@ -410,6 +457,44 @@
         }
     }
 
+    private async Task TranscreverGravacaoAsync()
+    {
+        if (_transcrevendo || !_gravacaoDisponivel || _recordingModule is null)
+            return;
+
+        _transcrevendo = true;
+        _erroGravacao = null;
+
+        try
+        {
+            var result = await _recordingModule.InvokeAsync<TranscribeAppointmentResponse>(
+                "transcribeRecording",
+                TimeSpan.FromMinutes(10),
+                [AgendamentoId]);
+
+            if (result is null || string.IsNullOrWhiteSpace(result.TextoTranscrito))
+            {
+                _erroGravacao = "A transcrição foi concluída sem retornar um texto válido. Tente novamente.";
+                return;
+            }
+
+            _textoTranscrito = result.TextoTranscrito;
+            _transcricaoConcluida = true;
+        }
+        catch (JSException exception)
+        {
+            _erroGravacao = ObterMensagemErroTranscricao(exception);
+        }
+        catch (TaskCanceledException)
+        {
+            _erroGravacao = "A transcrição foi interrompida. A gravação continua disponível para tentar novamente.";
+        }
+        finally
+        {
+            _transcrevendo = false;
+        }
+    }
+
     private async Task<IJSObjectReference> ObterModuloGravacaoAsync()
     {
         _recordingModule ??= await JS.InvokeAsync<IJSObjectReference>(
@@ -437,6 +522,29 @@
             return "Este navegador não oferece suporte à gravação de áudio necessária.";
 
         return "Não foi possível acessar o microfone. Verifique as permissões do navegador e tente novamente.";
+    }
+
+    private static string ObterMensagemErroTranscricao(JSException exception)
+    {
+        if (exception.Message.Contains("MissingRecording", StringComparison.OrdinalIgnoreCase))
+            return "Nenhuma gravação concluída está disponível para transcrever.";
+
+        if (exception.Message.Contains("AuthenticationError", StringComparison.OrdinalIgnoreCase))
+            return "Sua sessão expirou. Entre novamente para transcrever a gravação.";
+
+        if (exception.Message.Contains("NetworkError", StringComparison.OrdinalIgnoreCase))
+            return "Não foi possível conectar ao servidor. A gravação continua disponível para tentar novamente.";
+
+        if (exception.Message.Contains("UploadCanceled", StringComparison.OrdinalIgnoreCase))
+            return "A transcrição foi interrompida. A gravação continua disponível para tentar novamente.";
+
+        if (exception.Message.Contains("UploadRejected", StringComparison.OrdinalIgnoreCase))
+            return "O servidor não conseguiu processar a gravação. Verifique o acesso ao agendamento e tente novamente.";
+
+        if (exception.Message.Contains("TranscriptionServiceError", StringComparison.OrdinalIgnoreCase))
+            return "O serviço de transcrição está indisponível no momento. A gravação continua disponível para tentar novamente.";
+
+        return "Não foi possível transcrever a gravação. Ela continua disponível para tentar novamente.";
     }
 
     private static string FormatarTamanho(long bytes)
@@ -495,4 +603,5 @@
         public long Size { get; set; }
         public string? MimeType { get; set; }
     }
+
 }

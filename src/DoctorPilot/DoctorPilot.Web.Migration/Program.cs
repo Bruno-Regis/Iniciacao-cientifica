@@ -1,6 +1,7 @@
 using DoctorPilot.Web.Migration.Components;
 using DoctorPilot.Contracts.Auth;
 using DoctorPilot.Contracts.Common;
+using DoctorPilot.Web.Migration.Endpoints;
 using DoctorPilot.Web.Migration.Services;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
@@ -145,6 +146,8 @@ namespace DoctorPilot.Web.Migration
                 return Results.LocalRedirect("/login");
             })
                 .RequireAuthorization();
+
+            app.MapTranscriptionUploadEndpoint();
 
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
