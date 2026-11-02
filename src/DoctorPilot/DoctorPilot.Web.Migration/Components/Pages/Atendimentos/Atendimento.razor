@@ -2,7 +2,9 @@
 @attribute [Authorize]
 @inject DoctorPilotApiClient ApiClient
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 @rendermode InteractiveServer
+@implements IAsyncDisposable
 
 <PageTitle>Atendimento</PageTitle>
 
@@ -183,26 +185,71 @@
                         </div>
                     </div>
 
-                    <div class="transcription-placeholder">
-                        <span class="audio-visual" aria-hidden="true">
-                            <span></span><span></span><span></span><span></span><span></span>
-                        </span>
+                    @if (!string.IsNullOrWhiteSpace(_erroGravacao))
+                    {
+                        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">
+                            @_erroGravacao
+                        </MudAlert>
+                    }
+
+                    <div class="transcription-placeholder @ClasseEstadoGravacao" aria-live="polite">
+                        @if (_gravacaoDisponivel)
+                        {
+                            <span class="recording-result-icon" aria-hidden="true">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" />
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="audio-visual @(_gravando ? "audio-visual-active" : null)" aria-hidden="true">
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </span>
+                        }
                         <div>
-                            <MudText Typo="Typo.subtitle2">Gravação ainda não iniciada</MudText>
+                            <MudText Typo="Typo.subtitle2">@TituloEstadoGravacao</MudText>
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                O recurso de captura de áudio será habilitado em uma próxima etapa.
+                                @DescricaoEstadoGravacao
                             </MudText>
+                            @if (_gravacaoDisponivel && _gravacaoTamanho > 0)
+                            {
+                                <MudText Typo="Typo.caption" Class="recording-metadata">
+                                    @FormatarTamanho(_gravacaoTamanho)
+                                    @if (!string.IsNullOrWhiteSpace(_gravacaoMimeType))
+                                    {
+                                        <span> • @_gravacaoMimeType</span>
+                                    }
+                                </MudText>
+                            }
                         </div>
                     </div>
                 </div>
 
                 <div class="recording-action">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
-                               StartIcon="@Icons.Material.Filled.Mic" Disabled="true">
-                        Iniciar gravação
-                    </MudButton>
+                    @if (_gravando)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.Stop" Disabled="_processandoGravacao"
+                                   OnClick="FinalizarGravacaoAsync">
+                            @(_processandoGravacao ? "Finalizando..." : "Finalizar gravação")
+                        </MudButton>
+                    }
+                    else if (_gravacaoDisponivel)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.TextSnippet" Disabled="true">
+                            Transcrever
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.Mic" Disabled="_processandoGravacao"
+                                   OnClick="IniciarGravacaoAsync">
+                            @(_processandoGravacao ? "Solicitando acesso..." : "Iniciar gravação")
+                        </MudButton>
+                    }
                     <MudText Typo="Typo.caption" Color="Color.Secondary">
-                        Em breve
+                        @TextoAuxiliarGravacao
                     </MudText>
                 </div>
             </MudPaper>
@@ -213,8 +260,15 @@
 @code {
     private readonly CultureInfo _culture = CultureInfo.GetCultureInfo("pt-BR");
     private AgendamentoDetailsDto? _agendamento;
+    private IJSObjectReference? _recordingModule;
     private string? _erro;
+    private string? _erroGravacao;
+    private string? _gravacaoMimeType;
     private bool _carregando = true;
+    private bool _gravando;
+    private bool _gravacaoDisponivel;
+    private bool _processandoGravacao;
+    private long _gravacaoTamanho;
 
     [Parameter]
     public Guid AgendamentoId { get; set; }
@@ -260,6 +314,136 @@
 
     private void VoltarParaAgenda() => NavigationManager.NavigateTo("/agenda");
 
+    private string ClasseEstadoGravacao
+        => _gravacaoDisponivel
+            ? "transcription-placeholder-complete"
+            : _gravando
+                ? "transcription-placeholder-recording"
+                : string.Empty;
+
+    private string TituloEstadoGravacao
+        => _gravacaoDisponivel
+            ? "Gravação concluída"
+            : _gravando
+                ? "Gravando consulta"
+                : "Gravação ainda não iniciada";
+
+    private string DescricaoEstadoGravacao
+        => _gravacaoDisponivel
+            ? "O áudio foi capturado com sucesso e está mantido temporariamente no navegador."
+            : _gravando
+                ? "O microfone está capturando o áudio da consulta. Finalize quando encerrar."
+                : "Inicie quando estiver pronto para capturar o áudio da consulta.";
+
+    private string TextoAuxiliarGravacao
+        => _gravacaoDisponivel
+            ? "A transcrição será habilitada em uma próxima etapa."
+            : _gravando
+                ? "O indicador do navegador deve mostrar que o microfone está em uso."
+                : "O navegador solicitará permissão para usar o microfone.";
+
+    private async Task IniciarGravacaoAsync()
+    {
+        if (_processandoGravacao || _gravando)
+            return;
+
+        _processandoGravacao = true;
+        _erroGravacao = null;
+        _gravacaoDisponivel = false;
+        _gravacaoTamanho = 0;
+        _gravacaoMimeType = null;
+
+        try
+        {
+            var module = await ObterModuloGravacaoAsync();
+            await module.InvokeVoidAsync("startRecording");
+            _gravando = true;
+        }
+        catch (JSException exception)
+        {
+            _erroGravacao = ObterMensagemErroMicrofone(exception);
+        }
+        catch (Exception exception) when (exception is TaskCanceledException or InvalidOperationException)
+        {
+            _erroGravacao = "Não foi possível iniciar a gravação. Tente novamente.";
+        }
+        finally
+        {
+            _processandoGravacao = false;
+        }
+    }
+
+    private async Task FinalizarGravacaoAsync()
+    {
+        if (_processandoGravacao || !_gravando || _recordingModule is null)
+            return;
+
+        _processandoGravacao = true;
+        _erroGravacao = null;
+
+        try
+        {
+            var result = await _recordingModule.InvokeAsync<RecordingResult>("stopRecording");
+            _gravando = false;
+            _gravacaoDisponivel = result.Success && result.Size > 0;
+            _gravacaoTamanho = result.Size;
+            _gravacaoMimeType = result.MimeType;
+
+            if (!_gravacaoDisponivel)
+                _erroGravacao = "A gravação foi finalizada, mas nenhum áudio foi capturado. Tente novamente.";
+        }
+        catch (JSException)
+        {
+            _gravando = false;
+            _gravacaoDisponivel = false;
+            _erroGravacao = "Não foi possível finalizar a gravação corretamente. Tente novamente.";
+        }
+        catch (TaskCanceledException)
+        {
+            _gravando = false;
+            _gravacaoDisponivel = false;
+            _erroGravacao = "A finalização da gravação foi interrompida.";
+        }
+        finally
+        {
+            _processandoGravacao = false;
+        }
+    }
+
+    private async Task<IJSObjectReference> ObterModuloGravacaoAsync()
+    {
+        _recordingModule ??= await JS.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./Components/Pages/Atendimentos/Atendimento.razor.js");
+
+        return _recordingModule;
+    }
+
+    private static string ObterMensagemErroMicrofone(JSException exception)
+    {
+        if (exception.Message.Contains("NotAllowedError", StringComparison.OrdinalIgnoreCase) ||
+            exception.Message.Contains("SecurityError", StringComparison.OrdinalIgnoreCase))
+        {
+            return "O acesso ao microfone foi negado. Autorize o microfone nas configurações do navegador e tente novamente.";
+        }
+
+        if (exception.Message.Contains("NotFoundError", StringComparison.OrdinalIgnoreCase))
+            return "Nenhum microfone foi encontrado neste dispositivo.";
+
+        if (exception.Message.Contains("NotReadableError", StringComparison.OrdinalIgnoreCase))
+            return "O microfone está indisponível ou sendo usado por outro aplicativo.";
+
+        if (exception.Message.Contains("NotSupportedError", StringComparison.OrdinalIgnoreCase))
+            return "Este navegador não oferece suporte à gravação de áudio necessária.";
+
+        return "Não foi possível acessar o microfone. Verifique as permissões do navegador e tente novamente.";
+    }
+
+    private static string FormatarTamanho(long bytes)
+        => bytes < 1024
+            ? $"{bytes} bytes"
+            : $"{bytes / 1024d:0.0} KB";
+
     private static string NomeOuPadrao(string? nome)
         => string.IsNullOrWhiteSpace(nome) ? "Nome não informado" : nome;
 
@@ -279,4 +463,36 @@
             "agendado" => Color.Info,
             _ => Color.Default
         };
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_recordingModule is null)
+            return;
+
+        try
+        {
+            await _recordingModule.InvokeVoidAsync("dispose");
+        }
+        catch (Exception exception) when (
+            exception is JSDisconnectedException or TaskCanceledException or ObjectDisposedException)
+        {
+            // O navegador encerra as tracks ao fechar a página ou desconectar o circuito.
+        }
+
+        try
+        {
+            await _recordingModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // O circuito já foi desconectado.
+        }
+    }
+
+    private sealed class RecordingResult
+    {
+        public bool Success { get; set; }
+        public long Size { get; set; }
+        public string? MimeType { get; set; }
+    }
 }
